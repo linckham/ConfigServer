@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>configserver-core</artifactId>
 	<packaging>jar</packaging>
-	<name>${project.artifactId} ${project.version}</name>
+	<name>configserver-core ${project.version}</name>
 	
 	<dependencyManagement>
 		<dependencies>
