@@ -1,7 +1,12 @@
 package com.cmbc.configserver.common.protocol;
 
 /**
- * Created by 达达 on 2014/10/20.
+ * the request code
  */
 public class RequestCode {
+    public static final int PUBLISH_CONFIG = 1;
+    public static final int UNPUBLISH_CONFIG = 2;
+    public static final int SUBSCRIBE_CONFIG = 3;
+    public static final int PUSH_CONFIG = 4;
+    public static final int HEARTBEAT = 5;
 }
