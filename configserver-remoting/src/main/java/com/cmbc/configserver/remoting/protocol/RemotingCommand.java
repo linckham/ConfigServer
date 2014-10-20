@@ -1,5 +1,6 @@
 package com.cmbc.configserver.remoting.protocol;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -19,10 +20,17 @@ import com.cmbc.configserver.remoting.CommandCustomHeader;
  * @author tongchuan.lin<linckham@gmail.com>
  * @since 2014年10月17日 下午3:01:22
  */
-public class RemotingCommand {
-	public final static String RemotingVersionKey = "configserver.remoting.version";
-	private static volatile int ConfigVersion = -1;
-	private static AtomicInteger RequestId = new AtomicInteger(0);
+public class RemotingCommand implements Serializable {
+    private static AtomicInteger requestId = new AtomicInteger(0);
+    private RemotingHeader header;
+    /**
+     * the body of the remote command
+     */
+    private transient byte[] body;
+
+	public final static String REMOTING_VERSION_KEY = "configserver.remoting.version";
+	private static volatile int configVersion = -1;
+
 	// 0-REQUEST_COMMAND,1-RESPONSE_COMMAND
 	private static final int RPC_TYPE = 0;
 	// 0-RPC,1-Oneway
@@ -34,17 +42,14 @@ public class RemotingCommand {
 	private int code;
 	private LanguageCode language = LanguageCode.JAVA;
 	private int version = 0;
-	private int opaque = RequestId.getAndIncrement();
+	private int opaque = requestId.getAndIncrement();
 	private int flag = 0;
 	private String remark;
 	private HashMap<String, String> extFields;
 
 	private transient CommandCustomHeader customHeader;
 
-	/**
-	 * the body of the remote command
-	 */
-	private transient byte[] body;
+
 
 	protected RemotingCommand() {
 	}
@@ -97,14 +102,14 @@ public class RemotingCommand {
 	}
 
 	private static void setCmdVersion(RemotingCommand cmd) {
-		if (ConfigVersion >= 0) {
-			cmd.setVersion(ConfigVersion);
+		if (configVersion >= 0) {
+			cmd.setVersion(configVersion);
 		} else {
-			String v = System.getProperty(RemotingVersionKey);
+			String v = System.getProperty(REMOTING_VERSION_KEY);
 			if (v != null) {
 				int value = Integer.parseInt(v);
 				cmd.setVersion(value);
-				ConfigVersion = value;
+				configVersion = value;
 			}
 		}
 	}

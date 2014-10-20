@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * the controller of config server
+ * the controller of config server.It is the core class of the configserver-core project
  *
  * @author tongchuan.lin<linckham@gmail.com>
  */

@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConfigServerStartup {
     public static void main(String[] args) {
-        //start the config server controller
         try {
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(19999);
@@ -35,8 +34,10 @@ public class ConfigServerStartup {
                         }
                     }, "ShutdownHook")
             );
+            //start the config server controller
             controller.start();
         } catch (Exception e) {
+            //log the exception
             e.printStackTrace();
         }
     }
