@@ -183,6 +183,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 		@Override
 		public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
 				throws Exception {
+			/*
 			if (evt instanceof IdleStateEvent) {
 				IdleStateEvent evnet = (IdleStateEvent) evt;
 				if (evnet.state().equals(IdleState.ALL_IDLE)) {
@@ -198,7 +199,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 					}
 				}
 			}
-
+			*/
 			ctx.fireUserEventTriggered(evt);
 		}
 	}
@@ -267,26 +268,18 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 
 		this.bootstrap.group(this.eventLoopGroupWorker)
 				.channel(NioSocketChannel.class)//
-				//
 				.option(ChannelOption.TCP_NODELAY, true)
-				//
-				.option(ChannelOption.SO_SNDBUF,
-						NettySystemConfig.SocketSndbufSize)
-				//
-				.option(ChannelOption.SO_RCVBUF,
-						NettySystemConfig.SocketRcvbufSize)
-				//
+				.option(ChannelOption.SO_SNDBUF,NettySystemConfig.SocketSndbufSize)
+				.option(ChannelOption.SO_RCVBUF,NettySystemConfig.SocketRcvbufSize)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					public void initChannel(SocketChannel ch) throws Exception {
 						ch.pipeline().addLast(
-								//
-								defaultEventExecutorGroup, //
-								new NettyEncoder(), //
-								new NettyDecoder(), //
-								new IdleStateHandler(0, 0, nettyClientConfig
-										.getClientChannelMaxIdleTimeSeconds()),//
-								new NettyConnetManageHandler(), //
+								defaultEventExecutorGroup,
+								new NettyEncoder(),
+								new NettyDecoder(), 
+								/* new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),*/
+								new NettyConnetManageHandler(),
 								new NettyClientHandler());
 					}
 				});
