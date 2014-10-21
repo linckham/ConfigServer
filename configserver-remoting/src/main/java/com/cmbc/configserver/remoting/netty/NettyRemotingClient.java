@@ -19,6 +19,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
@@ -697,6 +698,32 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 	public List<String> getNamesrvAddrList() {
 		return namesrvAddrList.get();
 	}
+	
+    public void updateNameServerAddressList(List<String> addrs) {
+        List<String> old = this.namesrvAddrList.get();
+        boolean update = false;
+
+        if (!addrs.isEmpty()) {
+            if (null == old) {
+                update = true;
+            }
+            else if (addrs.size() != old.size()) {
+                update = true;
+            }
+            else {
+                for (int i = 0; i < addrs.size() && !update; i++) {
+                    if (!old.contains(addrs.get(i))) {
+                        update = true;
+                    }
+                }
+            }
+
+            if (update) {
+                Collections.shuffle(addrs);
+                this.namesrvAddrList.set(addrs);
+            }
+        }
+    }
 
 	public RPCHook getRpcHook() {
 		return rpcHook;

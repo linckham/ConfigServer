@@ -1,25 +1,29 @@
 package com.cmbc.configserver.client.impl;
 
+import java.util.List;
+
 import com.cmbc.configserver.client.ConfigClient;
 import com.cmbc.configserver.client.ResourceListener;
 import com.cmbc.configserver.domain.Configuration;
-import com.cmbc.configserver.remoting.RemotingClient;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 
 public class ConfigClientImpl implements ConfigClient {
-	private final RemotingClient remotingClient;
+	private final NettyRemotingClient remotingClient;
 	private final ClientRemotingProcessor clientRemotingProcessor;
 	 
-	public ConfigClientImpl(final NettyClientConfig nettyClientConfig) {
+	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig);
+		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor();
-		//TODO register processor?
+		//TODO register processor
+		remotingClient.registerProcessor(0, clientRemotingProcessor, null);
 	}
 
 	@Override
 	public boolean publish(Configuration config) {
-		// TODO Auto-generated method stub
+		// TODO construct command,
+		//remotingClient.invokeSync(addr, request, timeoutMillis);
 		return false;
 	}
 
