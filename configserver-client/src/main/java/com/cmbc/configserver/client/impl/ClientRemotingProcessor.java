@@ -28,8 +28,7 @@ public class ClientRemotingProcessor implements RequestProcessor {
 		this.configClientImpl = configClientImpl;
 	}
 	@Override
-	public RemotingCommand processRequest(ChannelHandlerContext ctx,
-			RemotingCommand request) {
+	public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request){
 
 		return null;
 	}
