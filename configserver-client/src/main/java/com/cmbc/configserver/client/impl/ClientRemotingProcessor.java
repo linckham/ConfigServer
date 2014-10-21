@@ -21,7 +21,12 @@ import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 public class ClientRemotingProcessor implements RequestProcessor {
-
+	
+	private ConfigClientImpl configClientImpl;
+	
+	public ClientRemotingProcessor(ConfigClientImpl configClientImpl){
+		this.configClientImpl = configClientImpl;
+	}
 	@Override
 	public RemotingCommand processRequest(ChannelHandlerContext ctx,
 			RemotingCommand request) {

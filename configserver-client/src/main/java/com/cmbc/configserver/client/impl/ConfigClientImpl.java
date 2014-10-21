@@ -15,7 +15,7 @@ public class ConfigClientImpl implements ConfigClient {
 	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig);
 		remotingClient.updateNameServerAddressList(addrs);
-		this.clientRemotingProcessor = new ClientRemotingProcessor();
+		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		//TODO register processor
 		remotingClient.registerProcessor(0, clientRemotingProcessor, null);
 	}
