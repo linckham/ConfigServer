@@ -41,4 +41,15 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     public boolean subscribe(Configuration config){
         return this.configStorage.subscribe(config);
     }
+
+    /**
+     * unSubscribe the specified configuration which is in the config server
+     *
+     * @param config the configuration that will being unSubscribed
+     * @return true if unSubscribed successfully,else false
+     */
+    @Override
+    public boolean unSubscribe(Configuration config) {
+        return this.configStorage.unSubscribe(config);
+    }
 }

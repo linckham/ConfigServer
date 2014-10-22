@@ -2,6 +2,7 @@ package com.cmbc.configserver.core.server;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
+import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.remoting.RemotingServer;
 import com.cmbc.configserver.remoting.netty.NettyRemotingServer;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
@@ -18,10 +19,16 @@ public class ConfigServerController {
     private final NettyServerConfig nettyServerConfig;
     private RemotingServer remotingServer;
     private ExecutorService remotingExecutor;
-    public ConfigServerController(NettyServerConfig nettyServerConfig) {
+    private ConfigServerService configServerService;
+
+    public ConfigServerController(NettyServerConfig nettyServerConfig,ConfigServerService configServerService) {
         this.nettyServerConfig = nettyServerConfig;
+        this.configServerService =configServerService;
     }
 
+    public ConfigServerService getConfigServerService(){
+        return this.configServerService;
+    }
     /**
      * initialize the ConfigServer Controller
      * @return true if the controller initialize successfully,else false.

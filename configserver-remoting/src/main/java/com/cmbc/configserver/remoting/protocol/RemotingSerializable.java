@@ -1,7 +1,7 @@
 package com.cmbc.configserver.remoting.protocol;
 
 import java.nio.charset.Charset;
-
+import com.alibaba.fastjson.JSON;
 
 
 /**
@@ -21,14 +21,12 @@ public abstract class RemotingSerializable {
 
 
     public static String toJson(final Object obj, boolean prettyFormat) {
-        return null;
-    	//return JSON.toJSONString(obj, prettyFormat);
+    	return JSON.toJSONString(obj, prettyFormat);
     }
 
 
     public static <T> T fromJson(String json, Class<T> classOfT) {
-        return null;
-    	//return JSON.parseObject(json, classOfT);
+    	return JSON.parseObject(json, classOfT);
     }
 
 

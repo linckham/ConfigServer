@@ -17,10 +17,36 @@ package com.cmbc.configserver.remoting.protocol;
 
 /**
  * the types of all remote command
+ *
  * @author tongchuan.lin<linckham@gmail.com>
  * @since 2014年10月17日 下午3:30:18
  */
 public enum RemotingCommandType {
-    REQUEST_COMMAND,
-    RESPONSE_COMMAND;
+    REQUEST_COMMAND(0, "request"),
+    RESPONSE_COMMAND(1, "response");
+
+    public int getType() {
+        return type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    private int type;
+    private String description;
+
+    RemotingCommandType(int type, String description) {
+        this.type = type;
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(32).append("[type=").append(type).append(",desc=").append(description).append("]").toString();
+    }
 }
