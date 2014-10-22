@@ -8,6 +8,14 @@ import java.io.Serializable;
  */
 public class RemotingHeader implements Serializable {
     /**
+     * the packet length,which contains the header and body.
+     */
+    private int length;
+    /**
+     * the magic code of the ConfigServer communication protocol.
+     */
+    private short magicCode;
+    /**
      * the header length
      */
     private int headerLength;
@@ -90,6 +98,22 @@ public class RemotingHeader implements Serializable {
 
     public void setLanguageCode(int languageCode) {
         this.languageCode = languageCode;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public short getMagicCode() {
+        return magicCode;
+    }
+
+    public void setMagicCode(short magicCode) {
+        this.magicCode = magicCode;
     }
 
 }

@@ -30,4 +30,14 @@ public interface ConfigStorage {
      * @return true if subscribed successfully,else false
      */
     public boolean subscribe(Configuration config);
+
+    /**
+     * unSubscribe the specified configuration which is in the config server
+     *
+     * @param config the configuration that will being unSubscribed
+     * @return true if unSubscribed successfully,else false
+     */
+    public boolean unSubscribe(Configuration config);
+
+
 }

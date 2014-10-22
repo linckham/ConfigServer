@@ -25,6 +25,8 @@ public class DefaultRequestProcessor implements RequestProcessor {
                 return this.unPublishConfig(ctx, request);
             case RequestCode.SUBSCRIBE_CONFIG:
                 return this.subscribeConfig(ctx, request);
+            case RequestCode.UNSUBSCRIBE_CONFIG:
+                return this.unSubscribeConfig(ctx,request);
             case RequestCode.HEARTBEAT :
                 return this.heartBeat(ctx, request);
             default:
@@ -46,6 +48,10 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand heartBeat(ChannelHandlerContext ctx, RemotingCommand request) {
+        return null;
+    }
+
+    private RemotingCommand unSubscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
         return null;
     }
 }

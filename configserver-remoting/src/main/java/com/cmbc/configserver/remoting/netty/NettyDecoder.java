@@ -12,22 +12,19 @@ import org.slf4j.LoggerFactory;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-
+import com.cmbc.configserver.utils.Constants;
 
 /**
- * 协议解码器
- * 
- * @author shijia.wxr<vintage.wang@gmail.com>
- * @since 2013-7-13
+ * the decoder of communication protocol between server and client.<br/>
+ *
+ * @author tongchuan.lin<linckham@gmail.com>
+ * @since 2014-10-22
  */
 public class NettyDecoder extends LengthFieldBasedFrameDecoder {
     private static final Logger log = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
-    private static final int FRAME_MAX_LENGTH = //
-            Integer.parseInt(System.getProperty("com.cmbc.configserver.frameMaxLength", "8388608"));
-
 
     public NettyDecoder() {
-        super(FRAME_MAX_LENGTH, 0, 4, 0, 4);
+        super(Constants.MAX_PACKET_LENGTH, 0, 4, 0, 4);
     }
 
 
@@ -43,13 +40,11 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
             ByteBuffer byteBuffer = frame.nioBuffer();
 
             return RemotingCommand.decode(byteBuffer);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("decode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);
-            // 这里关闭后， 会在pipeline中产生事件，通过具体的close事件来清理数据结构
+            // a event will happen when the channel is closed,a clean up job will being triggered.
             RemotingUtil.closeChannel(ctx.channel());
-        }
-        finally {
+        } finally {
             if (null != frame) {
                 frame.release();
             }

@@ -1,15 +1,20 @@
 package com.cmbc.configserver.core.server;
 
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
+import com.cmbc.configserver.core.service.ConfigServerService;
+import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConfigServerStartup {
     public static void main(String[] args) {
         try {
+            // TODO: use spring to manage the property and injection of Java Object
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(19999);
-            final ConfigServerController controller = new ConfigServerController(nettyServerConfig);
+
+            final ConfigServerService configServerService = new ConfigServerServiceImpl();
+            final ConfigServerController controller = new ConfigServerController(nettyServerConfig,configServerService);
             boolean initialized = controller.intialize();
             if (!initialized) {
                 controller.shutdown();
