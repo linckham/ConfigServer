@@ -1,6 +1,8 @@
 package com.cmbc.configserver.core.processor;
 
 import com.cmbc.configserver.common.protocol.RequestCode;
+import com.cmbc.configserver.common.protocol.ResponseCode;
+import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
@@ -36,7 +38,29 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        return null;
+        final RemotingCommand responseCommand = new RemotingCommand();
+        //TODO:builder the response header
+        Configuration config=null;
+        if(null != request.getBody()){
+            config = Configuration.decode(request.getBody(),Configuration.class);
+        }
+
+        boolean publishResult = false;
+        //TODO: catch the exception
+        if(null != config){
+            publishResult = this.configServerController.getConfigServerService().publish(config);
+        }
+
+        //builder the response code
+        if(publishResult){
+            responseCommand.setCode(ResponseCode.PUBLISH_CONFIG_OK);
+        }
+        else{
+            //TODO:builder the response body for the publish
+            responseCommand.setCode(ResponseCode.PUBLISH_CONFIG_FAILED);
+            responseCommand.setBody(null);
+        }
+        return responseCommand;
     }
 
     private RemotingCommand unPublishConfig(ChannelHandlerContext ctx, RemotingCommand request) {

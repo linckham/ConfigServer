@@ -1,12 +1,10 @@
 package com.cmbc.configserver.remoting.protocol;
 
-import java.io.Serializable;
-
 /**
- * the remoting header of communication between server and client
+ * the remoting header of communication between server and client.<br/>
  * Created by tongchuan.lin<linckham@gmail.com> on 2014/10/20.
  */
-public class RemotingHeader implements Serializable {
+public class RemotingHeader {
     /**
      * the packet length,which contains the header and body.
      */

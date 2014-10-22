@@ -20,7 +20,7 @@ public class RemotingCommand {
      */
     private transient byte[] body;
 
-    protected RemotingCommand() {
+    public RemotingCommand() {
     }
 
     private byte[] buildHeader() {
@@ -161,11 +161,23 @@ public class RemotingCommand {
         return this.header.getCode();
     }
 
+    public void setCode(int code){
+        this.header.setCode(code);
+    }
+
     @JSONField(serialize = false)
     public RemotingCommandType getType() {
         if (this.isResponseType()) {
             return RemotingCommandType.RESPONSE_COMMAND;
         }
         return RemotingCommandType.REQUEST_COMMAND;
+    }
+
+    public byte[] getBody(){
+        return this.body;
+    }
+
+    public void setBody(byte[] body){
+        this.body = body;
     }
 }

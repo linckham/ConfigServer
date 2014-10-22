@@ -1,4 +1,5 @@
 package com.cmbc.configserver.domain;
+import com.cmbc.configserver.common.RemotingSerializable;
 /**
  * the domain of the Configuration
  * @author tongchuan.lin<linckham@gmail.com>
@@ -6,7 +7,7 @@ package com.cmbc.configserver.domain;
  * 
  * @since 2014年10月17日 下午4:38:03
  */
-public class Configuration {
+public class Configuration  extends RemotingSerializable{
 	private String cell;
 	private String resource;
 	private String type;
