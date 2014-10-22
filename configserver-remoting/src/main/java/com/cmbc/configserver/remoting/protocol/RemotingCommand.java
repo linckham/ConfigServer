@@ -1,10 +1,10 @@
 package com.cmbc.configserver.remoting.protocol;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.cmbc.configserver.utils.Constants;
-
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.alibaba.fastjson.annotation.JSONField;
+import com.cmbc.configserver.utils.Constants;
 
 /**
  * the base communicating unit between client and server
@@ -22,43 +22,22 @@ public class RemotingCommand {
 
     public RemotingCommand() {
     }
-
-    private byte[] buildHeader() {
-        return null;
+    
+    public static RemotingCommand createRequestCommand(int code){
+    	
+    	RemotingHeader hdr = new RemotingHeader();
+    	hdr.setCode(code);
+    	hdr.setRemotingType(RemotingCommandType.REQUEST_COMMAND.getType());
+    	hdr.setRequestId(requestId.getAndIncrement());
+    	
+    	RemotingCommand cmd = new RemotingCommand();
+    	cmd.header = hdr;
+    	return cmd;
     }
-
-    public ByteBuffer encode() {
-        // 1> header length size
-        int length = 4;
-
-        // 2> header data length
-        byte[] headerData = this.buildHeader();
-        length += headerData.length;
-
-        // 3> body data length
-        if (this.body != null) {
-            length += body.length;
-        }
-
-        ByteBuffer result = ByteBuffer.allocate(4 + length);
-
-        // length
-        result.putInt(length);
-
-        // header length
-        result.putInt(headerData.length);
-
-        // header data
-        result.put(headerData);
-
-        // body data;
-        if (this.body != null) {
-            result.put(this.body);
-        }
-
-        result.flip();
-
-        return result;
+    
+    private byte[] buildHeader() {
+    	//assert header not null 
+        return RemotingSerializable.encode(header);
     }
 
     public ByteBuffer encodeHeader() {
@@ -69,25 +48,27 @@ public class RemotingCommand {
      * 只打包Header，body部分独立传输
      */
     public ByteBuffer encodeHeader(final int bodyLength) {
-        // 1> header length size
-        int length = 4;
-
-        // 2> header data length
+    	
+    	int magicCodeSize = 2;
+        int totalLengthSize = 4;
+        int headerLengthSize = Constants.HEADER_LENGTH_BYTE_COUNT;
+        
         byte[] headerData = this.buildHeader();
-        length += headerData.length;
+        //TODO validate header length
 
-        // 3> body data length
-        length += bodyLength;
+        ByteBuffer result = ByteBuffer.allocate(magicCodeSize + totalLengthSize + headerLengthSize + headerData.length);
 
-        ByteBuffer result = ByteBuffer.allocate(4 + length - bodyLength);
+        //put magic code
+        result.putShort(Constants.MAGIC_CODE);
+        // put total length
+        int totalLength = headerLengthSize + headerData.length + bodyLength;
+        //TODO validate total length
+        result.putInt(totalLength);
 
-        // length
-        result.putInt(length);
+        // put header length
+        result.putShort((short)headerData.length);
 
-        // header length
-        result.putInt(headerData.length);
-
-        // header data
+        // put header data
         result.put(headerData);
 
         result.flip();
@@ -102,7 +83,7 @@ public class RemotingCommand {
 
     public static RemotingCommand decode(final ByteBuffer byteBuffer) {
         int length = byteBuffer.limit();
-        int magicCode = byteBuffer.getShort();//magic code
+        short magicCode = byteBuffer.getShort();//magic code
         int packetTotalLength= byteBuffer.getInt();// the total length of the packet
         int headerLength = byteBuffer.getShort();//the header length
 
@@ -124,7 +105,7 @@ public class RemotingCommand {
         byte[] headerData = new byte[headerLength];
         byteBuffer.get(headerData);
 
-        int bodyLength = length - Constants.HEADER_LENGTH_BYTE_COUNT - headerLength;
+        int bodyLength = packetTotalLength - Constants.HEADER_LENGTH_BYTE_COUNT - headerLength;
         byte[] bodyData = null;
         if (bodyLength > 0) {
             bodyData = new byte[bodyLength];

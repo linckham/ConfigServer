@@ -7,7 +7,7 @@ public class Constants {
     /**
      * the magic code of the remoting header
      */
-    public static final int MAGIC_CODE=0xCFEE;
+    public static final short MAGIC_CODE= (short)0xCFEE;
     /**
      * the max length of the packet
      */

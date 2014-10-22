@@ -4,9 +4,12 @@ import java.util.List;
 
 import com.cmbc.configserver.client.ConfigClient;
 import com.cmbc.configserver.client.ResourceListener;
+import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
+import com.cmbc.configserver.remoting.protocol.RemotingCommand;
+import com.cmbc.configserver.remoting.protocol.RemotingSerializable;
 
 public class ConfigClientImpl implements ConfigClient {
 	private final NettyRemotingClient remotingClient;
@@ -22,9 +25,17 @@ public class ConfigClientImpl implements ConfigClient {
 
 	@Override
 	public boolean publish(Configuration config) {
-		// TODO construct command,
-		//remotingClient.invokeSync(addr, request, timeoutMillis);
-		return false;
+		RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PUBLISH_CONFIG);
+		byte[] body = RemotingSerializable.encode(config);
+		request.setBody(body);
+		try {
+			remotingClient.invokeSync(null, request, 3000);
+		} catch (Exception e) {
+			// TODO 
+			return false;
+		} 
+		
+		return true;
 	}
 
 	@Override
