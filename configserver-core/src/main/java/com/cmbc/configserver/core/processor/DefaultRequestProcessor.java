@@ -1,9 +1,9 @@
 package com.cmbc.configserver.core.processor;
 
-import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.common.protocol.RequestCode;
-import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.core.server.ConfigServerController;
+import com.cmbc.configserver.remoting.common.RequestProcessor;
+import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -12,7 +12,6 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DefaultRequestProcessor implements RequestProcessor {
     private final ConfigServerController configServerController;
-
     public DefaultRequestProcessor(ConfigServerController controller) {
         this.configServerController = controller;
     }

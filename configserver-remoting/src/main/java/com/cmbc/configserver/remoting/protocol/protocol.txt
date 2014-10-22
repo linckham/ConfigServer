@@ -10,3 +10,22 @@
 //     3、大端4个字节整数，等于4的长度
 //     4、二进制数据
 //     5、应用自定义二进制序列化数据
+
+//the structure of communication packet
+  2byte      4byte  2byte        1byte    1byte   1byte  2byte               4byte       4bit           1bit           3bit
+----------------------------------------------------------------------------------------------------------------------------------------
+|magic code|length|header length|version|language|type|request/response code|request id|serialize type|compress flag|compress type|body|
+----------------------------------------------------------------------------------------------------------------------------------------
+//the details of the field in the above communication packet
+//magic code is 0xCFEE
+//the length is 4 byte, it equals the header's length plus the body's length.
+//the header length is 2 byte.
+//the version represents the communication protocol's version.
+//the language represents the client's SDK uses which program language to communicate with the configServer.
+//the type has two values:request and response. It means which type of this network communication.
+//the request/response code means the specified code of this remote communication.
+//the request id means the request sequence.It can maintain the transaction's order between server and client.
+//the serialize type means which serialization algorithm is used to serialize the binary data in the body of communication packet.
+//the compress flag means the binary data in the body of communication packet whether compressed.
+//the compress type means which compress algorithm is used to compress the binary data in the body of communication packet.
+//the body stores the binary data in the body of communication packet.

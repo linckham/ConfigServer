@@ -1,10 +1,10 @@
 package com.cmbc.configserver.core.server;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
-import com.cmbc.configserver.remoting.netty.NettyServerConfig;
-import com.cmbc.configserver.remoting.netty.NettyRemotingServer;
-import com.cmbc.configserver.remoting.RemotingServer;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
+import com.cmbc.configserver.remoting.RemotingServer;
+import com.cmbc.configserver.remoting.netty.NettyRemotingServer;
+import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,7 +18,6 @@ public class ConfigServerController {
     private final NettyServerConfig nettyServerConfig;
     private RemotingServer remotingServer;
     private ExecutorService remotingExecutor;
-
     public ConfigServerController(NettyServerConfig nettyServerConfig) {
         this.nettyServerConfig = nettyServerConfig;
     }

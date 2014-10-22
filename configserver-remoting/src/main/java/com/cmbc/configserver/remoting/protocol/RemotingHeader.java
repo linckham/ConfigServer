@@ -24,6 +24,32 @@ public class RemotingHeader implements Serializable {
     private int flag;
 
     private int languageCode;
+    /**
+     * the remote communication type.It is a request or a response.
+     */
+    private int remotingType;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public int getRemotingType() {
+        return remotingType;
+    }
+
+    public void setRemotingType(int remotingType) {
+        this.remotingType = remotingType;
+    }
+
+    /**
+     * the request/response code.
+     */
+    private int code;
+
     //TODO:the extend attribute
 
     public int getHeaderLength() {
