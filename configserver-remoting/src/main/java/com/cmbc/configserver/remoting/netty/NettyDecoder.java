@@ -27,7 +27,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
 
 
     public NettyDecoder() {
-        super(FRAME_MAX_LENGTH, 0, 4, 0, 4);
+        super(FRAME_MAX_LENGTH, 2, 4, 0, 0);
     }
 
 
