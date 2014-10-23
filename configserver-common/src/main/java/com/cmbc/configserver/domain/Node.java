@@ -41,4 +41,13 @@ public class Node extends RemotingSerializable {
     public void setData(String data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "port='" + port + '\'' +
+                ", ip='" + ip + '\'' +
+                ", data='" + data + '\'' +
+                '}';
+    }
 }

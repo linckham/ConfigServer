@@ -66,17 +66,14 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 	private final Lock lockChannelTables = new ReentrantLock();
 	private final ConcurrentHashMap<String /* addr */, ChannelWrapper> channelTables = new ConcurrentHashMap<String, ChannelWrapper>();
 
-	// 定时器
 	private final Timer timer = new Timer("ClientHouseKeepingService", true);
 
-	// Name server相关
 	private final AtomicReference<List<String>> namesrvAddrList = new AtomicReference<List<String>>();
 	private final AtomicReference<String> namesrvAddrChoosed = new AtomicReference<String>();
 	private final AtomicInteger namesrvIndex = new AtomicInteger(
 			initValueIndex());
 	private final Lock lockNamesrvChannel = new ReentrantLock();
 
-	// 处理Callback应答器
 	private final ExecutorService publicExecutor;
 
 	private final ChannelEventListener channelEventListener;
@@ -285,7 +282,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 					}
 				});
 
-		// 每隔1秒扫描下异步调用超时情况
+        // schedule the timeout of async call per second
 		this.timer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override
@@ -359,7 +356,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 		}
 
 		final List<String> addrList = this.namesrvAddrList.get();
-		// 加锁，尝试创建连接
+		// add lock and try to create new connection
 		if (this.lockNamesrvChannel.tryLock(LockTimeoutMillis,
 				TimeUnit.MILLISECONDS)) {
 			try {
@@ -407,28 +404,25 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 			return cw.getChannel();
 		}
 
-		// 进入临界区后，不能有阻塞操作，网络连接采用异步方式
 		if (this.lockChannelTables.tryLock(LockTimeoutMillis,
 				TimeUnit.MILLISECONDS)) {
 			try {
 				boolean createNewConnection = false;
 				cw = this.channelTables.get(addr);
 				if (cw != null) {
-					// channel正常
 					if (cw.isOK()) {
 						return cw.getChannel();
 					}
-					// 正在连接，退出锁等待
+					// the connection is doing
 					else if (!cw.getChannelFuture().isDone()) {
 						createNewConnection = false;
 					}
-					// 说明连接不成功
+					// the connection is not successful
 					else {
 						this.channelTables.remove(addr);
 						createNewConnection = true;
 					}
 				}
-				// ChannelWrapper不存在
 				else {
 					createNewConnection = true;
 				}
@@ -623,8 +617,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 				log.warn(
 						"invokeSync: wait response timeout exception, the channel[{}]",
 						addr);
-				// 超时异常如果关闭连接可能会产生连锁反应
-				// this.closeChannel(addr, channel);
+				this.closeChannel(addr, channel);
 				throw e;
 			}
 		} else {

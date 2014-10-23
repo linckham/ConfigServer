@@ -112,8 +112,10 @@ public class RemotingCommand {
             byteBuffer.get(bodyData);
         }
 
-        RemotingCommand cmd = RemotingSerializable.decode(headerData,RemotingCommand.class);
+        RemotingCommand cmd = new RemotingCommand();
+        cmd.header=RemotingSerializable.decode(headerData,RemotingHeader.class);
         cmd.body = bodyData;
+
         return cmd;
     }
 
@@ -160,5 +162,36 @@ public class RemotingCommand {
 
     public void setBody(byte[] body){
         this.body = body;
+    }
+
+    public static RemotingCommand createResponseCommand(int code,int requestId){
+
+        RemotingHeader hdr = new RemotingHeader();
+        hdr.setCode(code);
+        hdr.setRemotingType(RemotingCommandType.RESPONSE_COMMAND.getType());
+        hdr.setRequestId(requestId);
+        hdr.setLanguageCode(LanguageCode.JAVA.getCode());
+
+        RemotingCommand cmd = new RemotingCommand();
+        cmd.header = hdr;
+        return cmd;
+    }
+
+    public RemotingHeader getHeader(){
+        return this.header;
+    }
+
+    public void setHeader(RemotingHeader header){
+        this.header = header;
+    }
+
+    public int getRequestId(){
+        return this.header == null?0:this.header.getRequestId();
+    }
+
+    public void setRequestId(int requestId){
+        if(null !=  this.header){
+            this.header.setRequestId(requestId);
+        }
     }
 }

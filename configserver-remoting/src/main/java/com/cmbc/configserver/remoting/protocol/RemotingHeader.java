@@ -21,7 +21,7 @@ public class RemotingHeader {
      * the identifier of the request.
      * When the server response this request,the server should use the requestId to fill up this field.
      */
-    private long requestId;
+    private int requestId;
 
     private int version;
     /**
@@ -66,11 +66,11 @@ public class RemotingHeader {
         this.headerLength = headerLength;
     }
 
-    public long getRequestId() {
+    public int getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(long requestId) {
+    public void setRequestId(int requestId) {
         this.requestId = requestId;
     }
 

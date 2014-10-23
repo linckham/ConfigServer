@@ -2,11 +2,10 @@ package com.cmbc.configserver.core.processor;
 
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
-import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.core.server.ConfigServerController;
+import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -38,8 +37,8 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        final RemotingCommand responseCommand = new RemotingCommand();
-        //TODO:builder the response header
+        //TODO: default response code
+        final RemotingCommand responseCommand = RemotingCommand.createResponseCommand(ResponseCode.PUBLISH_CONFIG_OK,request.getRequestId());
         Configuration config=null;
         if(null != request.getBody()){
             config = Configuration.decode(request.getBody(),Configuration.class);
