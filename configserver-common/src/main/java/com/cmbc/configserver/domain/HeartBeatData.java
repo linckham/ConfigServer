@@ -4,7 +4,7 @@ package com.cmbc.configserver.domain;
  * the meta information of the heart beat between client and server.
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午4:42:51
+ * @since 2014/10/17 3:01:22PM
  */
 public class HeartBeatData {
 	/**

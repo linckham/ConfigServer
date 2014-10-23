@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午4:59:51
+ * @since 2014/10/17 3:01:22PM
  */
 public class SemaphoreReleaseOnlyOnce {
 	private final AtomicBoolean released = new AtomicBoolean(false);

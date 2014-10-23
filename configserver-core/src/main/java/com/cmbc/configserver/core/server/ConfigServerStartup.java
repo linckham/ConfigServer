@@ -1,15 +1,12 @@
 package com.cmbc.configserver.core.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.cmbc.configserver.core.service.ConfigServerService;
+import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.core.storage.impl.LocalMemoryConfigStorageImpl;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
-import com.cmbc.configserver.core.service.ConfigServerService;
-import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigServerStartup {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigServerStartup.class);

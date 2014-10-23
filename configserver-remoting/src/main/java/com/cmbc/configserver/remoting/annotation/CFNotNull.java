@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * the field cann't be Null if using this annotation
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午3:48:17
+ * @since 2014/10/17 3:01:22PM
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

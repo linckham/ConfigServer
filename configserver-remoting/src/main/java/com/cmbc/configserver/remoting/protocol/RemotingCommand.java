@@ -1,21 +1,24 @@
 package com.cmbc.configserver.remoting.protocol;
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.alibaba.fastjson.annotation.JSONField;
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.common.Version;
+
+import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * the base communicating unit between client and server
  *
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午3:01:22
+ * @since 2014/10/17 3:01:22PM
  */
 public class RemotingCommand {
     private static AtomicInteger requestId = new AtomicInteger(0);
     private RemotingHeader header;
+    private int packetLength;
+    private int headerLength;
     /**
      * the body of the remote command
      */
@@ -25,15 +28,19 @@ public class RemotingCommand {
     }
     
     public static RemotingCommand createRequestCommand(int code){
-    	
-    	RemotingHeader hdr = new RemotingHeader();
+
+    	/*RemotingHeader hdr = new RemotingHeader();
     	hdr.setCode(code);
     	hdr.setRemotingType(RemotingCommandType.REQUEST_COMMAND.getType());
     	hdr.setRequestId(requestId.getAndIncrement());
-    	
+
     	RemotingCommand cmd = new RemotingCommand();
     	cmd.header = hdr;
-    	return cmd;
+    	return cmd;*/
+        RemotingHeader hdr = RemotingCommand.createRemotingHeader(code, requestId.incrementAndGet(), RemotingCommandType.REQUEST_COMMAND.getType());
+        RemotingCommand cmd = new RemotingCommand();
+        cmd.header = hdr;
+        return cmd;
     }
     
     private byte[] buildHeader() {
@@ -167,14 +174,10 @@ public class RemotingCommand {
 
     public static RemotingCommand createResponseCommand(int code,int requestId){
 
-        RemotingHeader hdr = new RemotingHeader();
-        hdr.setCode(code);
-        hdr.setRemotingType(RemotingCommandType.RESPONSE_COMMAND.getType());
-        hdr.setRequestId(requestId);
-        hdr.setLanguageCode(LanguageCode.JAVA.getCode());
-
+        RemotingHeader hdr = RemotingCommand.createRemotingHeader(code, requestId, RemotingCommandType.RESPONSE_COMMAND.getType());
         RemotingCommand cmd = new RemotingCommand();
         cmd.header = hdr;
+        cmd.markResponseType();
         return cmd;
     }
 
@@ -194,5 +197,47 @@ public class RemotingCommand {
         if(null !=  this.header){
             this.header.setRequestId(requestId);
         }
+    }
+
+    /**
+     * create the remote header
+     */
+    private static RemotingHeader createRemotingHeader(int code, int requestId, int commandType) {
+        RemotingHeader hdr = new RemotingHeader();
+        hdr.setCode(code);
+        hdr.setRemotingType(commandType);
+        hdr.setRequestId(requestId);
+        hdr.setLanguageCode(LanguageCode.JAVA.getCode());
+        hdr.setVersion(Version.V1.getVersion());
+        return hdr;
+    }
+
+    /**
+     * create the response command
+     * @param code the response code
+     * @param requestId the request id of this response
+     * @return the response command
+     */
+    public static RemotingCommand createResponseCommand(int code,byte[] body,int requestId){
+
+        RemotingCommand command = RemotingCommand.createResponseCommand(code,requestId);
+        command.body = body;
+        return command;
+    }
+
+    public int getPacketLength() {
+        return packetLength;
+    }
+
+    public void setPacketLength(int packetLength) {
+        this.packetLength = packetLength;
+    }
+
+    public int getHeaderLength() {
+        return headerLength;
+    }
+
+    public void setHeaderLength(int headerLength) {
+        this.headerLength = headerLength;
     }
 }

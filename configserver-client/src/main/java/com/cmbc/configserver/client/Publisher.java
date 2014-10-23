@@ -6,7 +6,7 @@ import com.cmbc.configserver.domain.HeartBeatData;
  * configuration to the ConfigServer.
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午4:13:35
+ * @since 2014/10/17 3:01:22PM
  */
 public interface Publisher {
 	/**

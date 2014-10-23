@@ -6,7 +6,7 @@ import com.cmbc.configserver.remoting.RPCHook;
  * the base interface of remote communicating
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午3:00:07
+ * @since 2014/10/17 3:01:22PM
  */
 public interface RemotingService {
 	public void start();

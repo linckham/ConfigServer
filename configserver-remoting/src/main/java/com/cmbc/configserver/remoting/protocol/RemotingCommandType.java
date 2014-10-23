@@ -19,7 +19,7 @@ package com.cmbc.configserver.remoting.protocol;
  * the types of all remote command
  *
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午3:30:18
+ * @since 2014/10/17 3:01:22PM
  */
 public enum RemotingCommandType {
     REQUEST_COMMAND(0, "request"),

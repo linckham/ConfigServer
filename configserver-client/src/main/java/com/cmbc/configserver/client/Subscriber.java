@@ -5,7 +5,7 @@ import com.cmbc.configserver.domain.HeartBeatData;
  * configuration from the ConfigServer.
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午4:14:57
+ * @since 2014/10/17 3:01:22PM
  */
 public interface Subscriber {
 	public boolean subscribe(String group);

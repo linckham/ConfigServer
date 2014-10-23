@@ -13,7 +13,7 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
  * the client of remote communicating
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午3:00:00
+ * @since 2014/10/17 3:01:22PM
  */
 public interface RemotingClient extends RemotingService {
 	public RemotingCommand invokeSync(final String addr,

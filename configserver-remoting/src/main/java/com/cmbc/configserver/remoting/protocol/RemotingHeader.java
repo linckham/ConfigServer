@@ -6,18 +6,6 @@ package com.cmbc.configserver.remoting.protocol;
  */
 public class RemotingHeader {
     /**
-     * the packet length,which contains the header and body.
-     */
-    private int length;
-    /**
-     * the magic code of the ConfigServer communication protocol.
-     */
-    private short magicCode;
-    /**
-     * the header length
-     */
-    private int headerLength;
-    /**
      * the identifier of the request.
      * When the server response this request,the server should use the requestId to fill up this field.
      */
@@ -58,14 +46,6 @@ public class RemotingHeader {
 
     //TODO:the extend attribute
 
-    public int getHeaderLength() {
-        return headerLength;
-    }
-
-    public void setHeaderLength(int headerLength) {
-        this.headerLength = headerLength;
-    }
-
     public int getRequestId() {
         return requestId;
     }
@@ -96,22 +76,6 @@ public class RemotingHeader {
 
     public void setLanguageCode(int languageCode) {
         this.languageCode = languageCode;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
-    }
-
-    public short getMagicCode() {
-        return magicCode;
-    }
-
-    public void setMagicCode(short magicCode) {
-        this.magicCode = magicCode;
     }
 
 }

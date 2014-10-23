@@ -9,7 +9,7 @@ import java.net.SocketAddress;
  * the helper class for remote communication
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午6:47:17
+ * @since 2014/10/17 3:01:22PM
  */
 public class RemotingHelper {
 	public static final String RemotingLogName = "configRemoting";

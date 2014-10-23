@@ -9,7 +9,7 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 /**
  * 
  * @author tongchuan.lin<linckham@gmail.com>
- * @since 2014年10月17日 下午4:58:43
+ * @since 2014/10/17 3:01:22PM
  */
 public class ResponseFuture {
     private volatile RemotingCommand responseCommand;

@@ -6,6 +6,7 @@ import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
+import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -13,6 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class DefaultRequestProcessor implements RequestProcessor {
     private final ConfigServerController configServerController;
+
     public DefaultRequestProcessor(ConfigServerController controller) {
         this.configServerController = controller;
     }
@@ -27,8 +29,8 @@ public class DefaultRequestProcessor implements RequestProcessor {
             case RequestCode.SUBSCRIBE_CONFIG:
                 return this.subscribeConfig(ctx, request);
             case RequestCode.UNSUBSCRIBE_CONFIG:
-                return this.unSubscribeConfig(ctx,request);
-            case RequestCode.HEARTBEAT :
+                return this.unSubscribeConfig(ctx, request);
+            case RequestCode.HEARTBEAT:
                 return this.heartBeat(ctx, request);
             default:
                 break;
@@ -37,37 +39,54 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        //TODO: default response code
-        final RemotingCommand responseCommand = RemotingCommand.createResponseCommand(ResponseCode.PUBLISH_CONFIG_OK,request.getRequestId());
-        Configuration config=null;
-        if(null != request.getBody()){
-            config = Configuration.decode(request.getBody(),Configuration.class);
+        String responseBody = "OK";
+        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        try {
+            Configuration config = null;
+            if (null != request.getBody()) {
+                config = Configuration.decode(request.getBody(), Configuration.class);
+            }
+            this.configServerController.getConfigServerService().publish(config);
+            code = ResponseCode.PUBLISH_CONFIG_OK;
+        } catch (Exception e) {
+            code = ResponseCode.PUBLISH_CONFIG_FAILED;
+            responseBody = e.getMessage();
         }
-
-        boolean publishResult = false;
-        //TODO: catch the exception
-        if(null != config){
-            publishResult = this.configServerController.getConfigServerService().publish(config);
-        }
-
-        //builder the response code
-        if(publishResult){
-            responseCommand.setCode(ResponseCode.PUBLISH_CONFIG_OK);
-        }
-        else{
-            //TODO:builder the response body for the publish
-            responseCommand.setCode(ResponseCode.PUBLISH_CONFIG_FAILED);
-            responseCommand.setBody(null);
-        }
-        return responseCommand;
+        return RemotingCommand.createResponseCommand(code, responseBody.getBytes(), request.getRequestId());
     }
 
     private RemotingCommand unPublishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        return null;
+        String responseBody = "OK";
+        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        try {
+            Configuration config = null;
+            if (null != request.getBody()) {
+                config = Configuration.decode(request.getBody(), Configuration.class);
+            }
+            this.configServerController.getConfigServerService().unPublish(config);
+            code = ResponseCode.UNPUBLISH_CONFIG_OK;
+        } catch (Exception e) {
+            code = ResponseCode.UNPUBLISH_CONFIG_FAILED;
+            responseBody = e.getMessage();
+        }
+        return RemotingCommand.createResponseCommand(code, responseBody.getBytes(), request.getRequestId());
     }
 
     private RemotingCommand subscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        return null;
+        String responseBody = "OK";
+        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        try {
+            Configuration config = null;
+            if (null != request.getBody()) {
+                config = Configuration.decode(request.getBody(), Configuration.class);
+            }
+            this.configServerController.getConfigServerService().subscribe(config);
+            code = ResponseCode.SUBSCRIBE_CONFIG_OK;
+        } catch (Exception e) {
+            code = ResponseCode.SUBSCRIBE_CONFIG_FAILED;
+            responseBody = e.getMessage();
+        }
+        return RemotingCommand.createResponseCommand(code, responseBody.getBytes(), request.getRequestId());
     }
 
     private RemotingCommand heartBeat(ChannelHandlerContext ctx, RemotingCommand request) {
@@ -75,6 +94,19 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand unSubscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        return null;
+        String responseBody = "OK";
+        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        try {
+            Configuration config = null;
+            if (null != request.getBody()) {
+                config = Configuration.decode(request.getBody(), Configuration.class);
+            }
+            this.configServerController.getConfigServerService().unSubscribe(config);
+            code = ResponseCode.UNSUBSCRIBE_CONFIG_OK;
+        } catch (Exception e) {
+            code = ResponseCode.UNSUBSCRIBE_CONFIG_FAILED;
+            responseBody = e.getMessage();
+        }
+        return RemotingCommand.createResponseCommand(code, responseBody.getBytes(), request.getRequestId());
     }
 }

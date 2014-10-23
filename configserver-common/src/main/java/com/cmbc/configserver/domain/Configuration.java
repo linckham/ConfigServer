@@ -5,7 +5,7 @@ import com.cmbc.configserver.common.RemotingSerializable;
  * @author tongchuan.lin<linckham@gmail.com>
  * @Modified jiang tao
  * 
- * @since 2014年10月17日 下午4:38:03
+ * @since 2014/10/17 3:01:22PM
  */
 public class Configuration  extends RemotingSerializable{
 	private String cell;
