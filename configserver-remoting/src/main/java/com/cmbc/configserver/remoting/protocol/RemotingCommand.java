@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.utils.Constants;
 
 /**

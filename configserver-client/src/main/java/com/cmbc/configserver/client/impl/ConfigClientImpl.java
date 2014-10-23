@@ -4,12 +4,12 @@ import java.util.List;
 
 import com.cmbc.configserver.client.ConfigClient;
 import com.cmbc.configserver.client.ResourceListener;
+import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-import com.cmbc.configserver.remoting.protocol.RemotingSerializable;
 
 public class ConfigClientImpl implements ConfigClient {
 	private final NettyRemotingClient remotingClient;
