@@ -21,6 +21,8 @@ public class ConfigClientImpl implements ConfigClient {
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		//TODO register processor
 		remotingClient.registerProcessor(0, clientRemotingProcessor, null);
+		
+		remotingClient.start();
 	}
 
 	@Override
