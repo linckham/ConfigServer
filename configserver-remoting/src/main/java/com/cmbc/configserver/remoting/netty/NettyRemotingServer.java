@@ -50,16 +50,16 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 	private final EventLoopGroup eventLoopGroupWorker;
 	private final EventLoopGroup eventLoopGroupBoss;
 	private final NettyServerConfig nettyServerConfig;
-	// 处理Callback应答器
+	// the executor is using to process the callback ACK
 	private final ExecutorService publicExecutor;
 	private final ChannelEventListener channelEventListener;
-	// 定时器
+	// timer
 	private final Timer timer = new Timer("ServerHouseKeepingService", true);
 	private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
 	private RPCHook rpcHook;
 
-	// 本地server绑定的端口
+	// the listening port of the server
 	private int port = 0;
 
 	public NettyRemotingServer(final NettyServerConfig nettyServerConfig) {
@@ -167,12 +167,12 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 					}
 				});
 
-		if (NettySystemConfig.NettyPooledByteBufAllocatorEnable) {
-			// 这个选项有可能会占用大量堆外内存，暂时不使用。
-			childHandler.childOption(ChannelOption.ALLOCATOR,
-					PooledByteBufAllocator.DEFAULT)//
-			;
-		}
+        if (NettySystemConfig.NettyPooledByteBufAllocatorEnable) {
+            //this option may occupy too much no-heap memory.
+            //the option is close in default.
+            childHandler.childOption(ChannelOption.ALLOCATOR,
+                    PooledByteBufAllocator.DEFAULT);
+        }
 
 		try {
 			ChannelFuture sync = this.serverBootstrap.bind().sync();
@@ -189,7 +189,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 			this.nettyEventExecuter.start();
 		}
 
-		// 每隔1秒扫描下异步调用超时情况
+		// schedule the timeout of async call per second
 		this.timer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override

@@ -37,4 +37,14 @@ public class Configuration  extends RemotingSerializable{
 	public void setNode(Node node) {
 		this.node = node;
 	}
+
+    @Override
+    public String toString() {
+        return "Configuration{" +
+                "cell='" + cell + '\'' +
+                ", resource='" + resource + '\'' +
+                ", type='" + type + '\'' +
+                ", node=" + node +
+                '}';
+    }
 }

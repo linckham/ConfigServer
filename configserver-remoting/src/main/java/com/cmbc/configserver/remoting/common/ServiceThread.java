@@ -6,14 +6,14 @@ import org.slf4j.LoggerFactory;
 public abstract class ServiceThread implements Runnable {
 	private static final Logger stlog = LoggerFactory
 			.getLogger(RemotingHelper.RemotingLogName);
-	// 执行线程
+	// the executor thread
 	protected final Thread thread;
-	// 线程回收时间，默认90S
-	private static final long JoinTime = 90 * 1000;
-	// 是否已经被Notify过
+	// the recycle time of the thread.the default value is 90s.
+	private static final long JOIN_TIME = 90 * 1000;
+	// whether is notified
 	protected volatile boolean hasNotified = false;
-	// 线程是否已经停止
-	protected volatile boolean stoped = false;
+	// whether is stopped
+	protected volatile boolean stopped = false;
 
 	public ServiceThread() {
 		this.thread = new Thread(this, this.getServiceName());
@@ -34,12 +34,12 @@ public abstract class ServiceThread implements Runnable {
 	}
 
 	public void makeStop() {
-		this.stoped = true;
+		this.stopped = true;
 		stlog.info("makestop thread " + this.getServiceName());
 	}
 
 	public void stop(final boolean interrupt) {
-		this.stoped = true;
+		this.stopped = true;
 		stlog.info("stop thread " + this.getServiceName() + " interrupt "
 				+ interrupt);
 		synchronized (this) {
@@ -55,7 +55,7 @@ public abstract class ServiceThread implements Runnable {
 	}
 
 	public void shutdown(final boolean interrupt) {
-		this.stoped = true;
+		this.stopped = true;
 		stlog.info("shutdown thread " + this.getServiceName() + " interrupt "
 				+ interrupt);
 		synchronized (this) {
@@ -112,11 +112,11 @@ public abstract class ServiceThread implements Runnable {
 	protected void onWaitEnd() {
 	}
 
-	public boolean isStoped() {
-		return stoped;
+	public boolean isStopped() {
+		return stopped;
 	}
 
 	public long getJointime() {
-		return JoinTime;
+		return JOIN_TIME;
 	}
 }

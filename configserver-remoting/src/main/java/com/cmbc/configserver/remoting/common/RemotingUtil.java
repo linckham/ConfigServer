@@ -50,7 +50,7 @@ public class RemotingUtil {
 
 	public static Selector openSelector() throws IOException {
 		Selector result = null;
-		// 在linux平台，尽量启用epoll实现
+		// the epoll is the first option when the platform is linux
 		if (isLinuxPlatform()) {
 			try {
 				final Class<?> providerClazz = Class
@@ -84,7 +84,6 @@ public class RemotingUtil {
 
 	public static String getLocalAddress() {
 		try {
-			// 遍历网卡，查找一个非回路ip地址并返回
 			Enumeration<NetworkInterface> enumeration = NetworkInterface
 					.getNetworkInterfaces();
 			ArrayList<String> ipv4Result = new ArrayList<String>();
@@ -106,7 +105,7 @@ public class RemotingUtil {
 				}
 			}
 
-			// 优先使用ipv4
+			// the IPV4's priority is higher
 			if (!ipv4Result.isEmpty()) {
 				for (String ip : ipv4Result) {
 					if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
@@ -115,15 +114,13 @@ public class RemotingUtil {
 
 					return ip;
 				}
-
-				// 取最后一个
 				return ipv4Result.get(ipv4Result.size() - 1);
 			}
-			// 然后使用ipv6
+
 			else if (!ipv6Result.isEmpty()) {
 				return ipv6Result.get(0);
 			}
-			// 然后使用本地ip
+
 			final InetAddress localHost = InetAddress.getLocalHost();
 			return normalizeHostAddress(localHost);
 		} catch (SocketException e) {

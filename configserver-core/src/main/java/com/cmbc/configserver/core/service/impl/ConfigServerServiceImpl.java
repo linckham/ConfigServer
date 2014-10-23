@@ -9,6 +9,22 @@ import com.cmbc.configserver.core.storage.ConfigStorage;
  */
 public class ConfigServerServiceImpl implements ConfigServerService {
     private ConfigStorage configStorage;
+    public ConfigServerServiceImpl(){
+
+    }
+
+    public ConfigServerServiceImpl(ConfigStorage configStorage){
+        super();
+        this.configStorage = configStorage;
+    }
+
+    public void setConfigStorage(ConfigStorage configStorage){
+        this.configStorage = configStorage;
+    }
+
+    public ConfigStorage getConfigStorage(){
+        return this.configStorage;
+    }
     /**
      * publish the configuration to the config server
      *
