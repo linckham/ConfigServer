@@ -205,7 +205,6 @@ public abstract class NettyRemotingAbstract {
                                     RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
                     response.setRequestId(cmd.getRequestId());
                     ctx.writeAndFlush(response);
-                    ctx.writeAndFlush(response);
                 }
             }
         }
@@ -222,7 +221,7 @@ public abstract class NettyRemotingAbstract {
                             RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
             response.setRequestId(cmd.getRequestId());
             ctx.writeAndFlush(response);
-            ctx.writeAndFlush(response);
+
             plog.error(RemotingHelper.parseChannelRemoteAddr(ctx.channel()) + error);
         }
     }
