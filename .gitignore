@@ -23,6 +23,7 @@ target/
 *.diff
 *.patch
 *.tmp
+*.bak
 
 # system ignore
 .DS_Store
