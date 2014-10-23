@@ -15,12 +15,17 @@
  */
 package com.cmbc.configserver.client.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelHandlerContext;
 
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 public class ClientRemotingProcessor implements RequestProcessor {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ClientRemotingProcessor.class);
 	
 	private ConfigClientImpl configClientImpl;
 	
@@ -29,8 +34,9 @@ public class ClientRemotingProcessor implements RequestProcessor {
 	}
 	@Override
 	public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request){
-
-		return null;
+		
+		logger.info(request.toString());
+		return request;
 	}
 
 }

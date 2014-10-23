@@ -2,16 +2,21 @@ package com.cmbc.configserver.client.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.cmbc.configserver.client.ConfigClient;
 import com.cmbc.configserver.client.ResourceListener;
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
+import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 public class ConfigClientImpl implements ConfigClient {
+	private static final Logger logger = LoggerFactory.getLogger(ConfigClientImpl.class);
 	private final NettyRemotingClient remotingClient;
 	private final ClientRemotingProcessor clientRemotingProcessor;
 	 
@@ -20,7 +25,7 @@ public class ConfigClientImpl implements ConfigClient {
 		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		//TODO register processor
-		remotingClient.registerProcessor(0, clientRemotingProcessor, null);
+		remotingClient.registerProcessor(RequestCode.PUSH_CONFIG, clientRemotingProcessor, null);
 		
 		remotingClient.start();
 	}
@@ -31,9 +36,14 @@ public class ConfigClientImpl implements ConfigClient {
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
-			remotingClient.invokeSync(null, request, 3000);
+			//TODO timeout
+			RemotingCommand result = remotingClient.invokeSync(null, request, 3000);
+			logger.info(result.toString());
+			if(result.getCode() != ResponseCode.PUBLISH_CONFIG_OK){
+				return false;
+			}
 		} catch (Exception e) {
-			// TODO 
+			logger.info(e.toString());
 			return false;
 		} 
 		
