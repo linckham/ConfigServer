@@ -39,6 +39,49 @@ public class Configuration  extends RemotingSerializable{
 	}
 
     @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cell == null) ? 0 : cell.hashCode());
+		result = prime * result + ((node == null) ? 0 : node.hashCode());
+		result = prime * result
+				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+    
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Configuration other = (Configuration) obj;
+		if (cell == null) {
+			if (other.cell != null)
+				return false;
+		} else if (!cell.equals(other.cell))
+			return false;
+		if (node == null) {
+			if (other.node != null)
+				return false;
+		} else if (!node.equals(other.node))
+			return false;
+		if (resource == null) {
+			if (other.resource != null)
+				return false;
+		} else if (!resource.equals(other.resource))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
+	}
+	@Override
     public String toString() {
         return "Configuration{" +
                 "cell='" + cell + '\'' +

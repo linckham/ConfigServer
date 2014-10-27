@@ -43,6 +43,49 @@ public class Node extends RemotingSerializable {
     }
 
     @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((attr == null) ? 0 : attr.hashCode());
+		result = prime * result + ((data == null) ? 0 : data.hashCode());
+		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
+		result = prime * result + ((port == null) ? 0 : port.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Node other = (Node) obj;
+		if (attr == null) {
+			if (other.attr != null)
+				return false;
+		} else if (!attr.equals(other.attr))
+			return false;
+		if (data == null) {
+			if (other.data != null)
+				return false;
+		} else if (!data.equals(other.data))
+			return false;
+		if (ip == null) {
+			if (other.ip != null)
+				return false;
+		} else if (!ip.equals(other.ip))
+			return false;
+		if (port == null) {
+			if (other.port != null)
+				return false;
+		} else if (!port.equals(other.port))
+			return false;
+		return true;
+	}
+
+	@Override
     public String toString() {
         return "Node{" +
                 "port='" + port + '\'' +
