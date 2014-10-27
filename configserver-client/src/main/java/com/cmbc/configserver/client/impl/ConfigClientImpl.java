@@ -25,7 +25,7 @@ public class ConfigClientImpl implements ConfigClient {
 		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		//TODO register processor
-		remotingClient.registerProcessor(RequestCode.PUSH_CONFIG, clientRemotingProcessor, null);
+		remotingClient.registerProcessor(RequestCode.PUBLISH_CONFIG, clientRemotingProcessor, null);
 		
 		remotingClient.start();
 	}
