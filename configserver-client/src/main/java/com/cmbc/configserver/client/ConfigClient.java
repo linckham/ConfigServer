@@ -20,4 +20,6 @@ public interface ConfigClient {
 	public boolean subscribe(Configuration config, ResourceListener listener);
 
 	public boolean unsubscribe(Configuration config, ResourceListener listener);
+	
+	public void close();
 }

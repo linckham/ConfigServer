@@ -14,4 +14,6 @@ public class ResponseCode {
     public static final int SUBSCRIBE_CONFIG_FAILED = 8;
     public static final int UNSUBSCRIBE_CONFIG_OK = 9;
     public static final int UNSUBSCRIBE_CONFIG_FAILED = 10;
+    public static final int NOTIFY_CONFIG_OK = 11;
+    public static final int NOTIFY_CONFIG_FAILED = 12;
 }

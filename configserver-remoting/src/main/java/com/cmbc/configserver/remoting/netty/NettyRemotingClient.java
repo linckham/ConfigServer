@@ -181,15 +181,17 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 		@Override
 		public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
 				throws Exception {
-			/*
 			if (evt instanceof IdleStateEvent) {
 				IdleStateEvent evnet = (IdleStateEvent) evt;
 				if (evnet.state().equals(IdleState.ALL_IDLE)) {
-					final String remoteAddress = RemotingHelper
-							.parseChannelRemoteAddr(ctx.channel());
+					final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+					
+					/*
 					log.warn("NETTY CLIENT PIPELINE: IDLE exception [{}]",
 							remoteAddress);
 					closeChannel(ctx.channel());
+					*/
+					
 					if (NettyRemotingClient.this.channelEventListener != null) {
 						NettyRemotingClient.this.putNettyEvent(new NettyEvent(
 								NettyEventType.IDLE, remoteAddress.toString(),
@@ -197,7 +199,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 					}
 				}
 			}
-			*/
+			
 			ctx.fireUserEventTriggered(evt);
 		}
 	}
@@ -276,7 +278,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 								defaultEventExecutorGroup,
 								new NettyEncoder(),
 								new NettyDecoder(), 
-								/* new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),*/
+								new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
 								new NettyConnetManageHandler(),
 								new NettyClientHandler());
 					}
@@ -404,8 +406,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 			return cw.getChannel();
 		}
 
-		if (this.lockChannelTables.tryLock(LockTimeoutMillis,
-				TimeUnit.MILLISECONDS)) {
+		if (this.lockChannelTables.tryLock(LockTimeoutMillis, TimeUnit.MILLISECONDS)) {
 			try {
 				boolean createNewConnection = false;
 				cw = this.channelTables.get(addr);
@@ -449,8 +450,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 
 		if (cw != null) {
 			ChannelFuture channelFuture = cw.getChannelFuture();
-			if (channelFuture.awaitUninterruptibly(this.nettyClientConfig
-					.getConnectTimeoutMillis())) {
+			if (channelFuture.awaitUninterruptibly(this.nettyClientConfig.getConnectTimeoutMillis())) {
 				if (cw.isOK()) {
 					log.info(
 							"createChannel: connect remote host[{}] success, {}",

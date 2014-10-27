@@ -10,9 +10,18 @@ public class NettyClientConfig {
 	private long connectTimeoutMillis = 3000;
 	/* 
 	private long channelNotActiveInterval = 1000 * 60;
-
-	private int clientChannelMaxIdleTimeSeconds = 120;
 	*/
+	private int clientChannelMaxIdleTimeSeconds = 10; // in seconds
+	
+
+	public int getClientChannelMaxIdleTimeSeconds() {
+		return clientChannelMaxIdleTimeSeconds;
+	}
+
+	public void setClientChannelMaxIdleTimeSeconds(
+			int clientChannelMaxIdleTimeSeconds) {
+		this.clientChannelMaxIdleTimeSeconds = clientChannelMaxIdleTimeSeconds;
+	}
 
 	public int getClientWorkerThreads() {
 		return clientWorkerThreads;

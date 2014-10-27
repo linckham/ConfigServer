@@ -90,7 +90,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand heartBeat(ChannelHandlerContext ctx, RemotingCommand request) {
-        return null;
+        return RemotingCommand.createResponseCommand(ResponseCode.HEARTBEAT_OK, null, request.getRequestId());
     }
 
     private RemotingCommand unSubscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
