@@ -80,7 +80,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            this.configServerController.getConfigServerService().subscribe(config);
+            this.configServerController.getConfigServerService().subscribe(config,ctx.channel());
             code = ResponseCode.SUBSCRIBE_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.SUBSCRIBE_CONFIG_FAILED;
@@ -101,7 +101,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            this.configServerController.getConfigServerService().unSubscribe(config);
+            this.configServerController.getConfigServerService().unSubscribe(config,ctx.channel());
             code = ResponseCode.UNSUBSCRIBE_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.UNSUBSCRIBE_CONFIG_FAILED;

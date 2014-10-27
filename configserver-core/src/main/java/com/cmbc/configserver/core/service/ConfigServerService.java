@@ -1,7 +1,7 @@
 package com.cmbc.configserver.core.service;
 
 import com.cmbc.configserver.domain.Configuration;
-
+import io.netty.channel.Channel;
 /**
  * the config server's core service.<br/>
  * Created by tongchuan.ling<linckham@gmail.com> on 2014/10/20.
@@ -29,13 +29,14 @@ public interface ConfigServerService {
      * @param config the configuration that will being subscribed
      * @return true if subscribed successfully,else false
      */
-    public boolean subscribe(Configuration config);
+    public boolean subscribe(Configuration config,Channel channel);
 
     /**
      * unSubscribe the specified configuration which is in the config server
      *
      * @param config the configuration that will being unSubscribed
+     * @param channel the subscriber's channel
      * @return true if unSubscribed successfully,else false
      */
-    public boolean unSubscribe(Configuration config);
+    public boolean unSubscribe(Configuration config,Channel channel);
 }

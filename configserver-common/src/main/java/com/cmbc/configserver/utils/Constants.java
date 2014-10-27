@@ -38,4 +38,8 @@ public class Constants {
      */
     public static final int HEADER_LENGTH= HEADER_FIX_DATA_LENGTH;
 
+    /**
+     * the path separator
+     */
+    public static final String PATH_SEPARATOR="/";
 }
