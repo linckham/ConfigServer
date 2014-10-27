@@ -2,8 +2,6 @@ package com.cmbc.configserver.client.impl;
 
 import io.netty.channel.Channel;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,13 +24,14 @@ import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
+import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.PathUtils;
 
 public class ConfigClientImpl implements ConfigClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConfigClientImpl.class);
 	private NettyRemotingClient remotingClient;
 	private ClientRemotingProcessor clientRemotingProcessor;
-	private AtomicInteger heartbeatTimes = new AtomicInteger(0);
+	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
 	//TODO configurable?
 	private static int timeoutMillis = 30000;
 	 
@@ -81,7 +80,7 @@ public class ConfigClientImpl implements ConfigClient {
 		return true;
 	}
 
-	public Map<String,Set<ResourceListener>> subcribeMap = new HashMap<String,Set<ResourceListener>>();
+	public Map<String,Set<ResourceListener>> subcribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
 	private final Lock subcribeMapLock = new ReentrantLock();
 	private static final long LockTimeoutMillis = 3000;
 	
@@ -98,7 +97,7 @@ public class ConfigClientImpl implements ConfigClient {
 						listerners = subcribeMap.get(subKey);
 						if (listerners == null || listerners.size() == 0) {
 							if(listerners == null){
-								listerners = new HashSet<ResourceListener>();
+								listerners = new ConcurrentHashSet<ResourceListener>();
 								subcribeMap.put(subKey,listerners);
 							}
 
@@ -111,13 +110,21 @@ public class ConfigClientImpl implements ConfigClient {
 							if (result.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
 								return false;
 							} else {
-								//TODO
-								listerners.add(listener);
+								if(result.getBody() != null){
+									Notify notify = RemotingSerializable.decode(request.getBody(),Notify.class);;
+									notifyCache.put(subKey,notify);
+									listerners.add(listener);
+									listener.notify(notify.getConfigLists());
+								}else{
+									logger.info("subscribe notify is null!");
+									return false;
+								}
 							}
 
 						} else {
-							//TODO
+							Notify notify = notifyCache.get(subKey);
 							listerners.add(listener);
+							listener.notify(notify.getConfigLists());
 						}
 					} catch (Exception e) {
 						logger.info(e.toString());
@@ -133,8 +140,9 @@ public class ConfigClientImpl implements ConfigClient {
 				return false;
 			}
 		} else {
-			//TODO
+			Notify notify = notifyCache.get(subKey);
 			listerners.add(listener);
+			listener.notify(notify == null? null : notify.getConfigLists());
 		}
 		
 		return true;
@@ -147,6 +155,7 @@ public class ConfigClientImpl implements ConfigClient {
 		if(listerners == null){
 			return true;
 		}
+		
 		listerners.remove(listerners);
 		
 		if(listerners.size() == 0){
@@ -157,13 +166,15 @@ public class ConfigClientImpl implements ConfigClient {
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNSUBSCRIBE_CONFIG);
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
-
 							RemotingCommand result = remotingClient.invokeSync(null, request, timeoutMillis);
 
 							if (result.getCode() != ResponseCode.UNSUBSCRIBE_CONFIG_OK) {
 								return false;
-							} 
-						} 
+							}else{
+								//success unsubscribed,than remove cache
+								notifyCache.remove(subKey);
+							}
+						}
 					} catch (Exception e) {
 						logger.info(e.toString());
 						return false;
@@ -203,11 +214,12 @@ public class ConfigClientImpl implements ConfigClient {
 		}
 		
 		if(!sendSuccessed){
-			int times = heartbeatTimes.incrementAndGet();
+			int times = heartbeatFailedTimes.incrementAndGet();
 			if(times >= 3){
 				remotingClient.closeChannel(channel);
-				heartbeatTimes.set(0);
-				//TODO
+				heartbeatFailedTimes.set(0);
+				//TODO reset works
+				
 			}
 		}
 	}
@@ -218,6 +230,10 @@ public class ConfigClientImpl implements ConfigClient {
 
 	public void setSubcribeMap(Map<String, Set<ResourceListener>> subcribeMap) {
 		this.subcribeMap = subcribeMap;
+	}
+	
+	public Map<String, Notify> getNotifyCache() {
+		return notifyCache;
 	}
 	
 	@Override

@@ -62,16 +62,14 @@ public class ClientRemotingProcessor implements RequestProcessor {
 			if (request.getBody() != null) {
 				notifyConfig = RemotingSerializable.decode(request.getBody(),Notify.class);
 				
-				//TODO notify thread?
+				configClientImpl.getNotifyCache().put(notifyConfig.getPath(),notifyConfig);
+				//TODO use thread pool to notify listeners? if notify listener's time too long,response may timeout
 				Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
 				if(listeners != null){
 					for(ResourceListener listener : listeners){
 						listener.notify(notifyConfig.getConfigLists());
 					}
 				}
-			}else{
-				//TODO
-				
 			}
 			
 			code = ResponseCode.NOTIFY_CONFIG_OK;
