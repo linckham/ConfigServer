@@ -38,7 +38,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
             }
 
             ByteBuffer byteBuffer = frame.nioBuffer();
-
+            //TODO: un-compress the body's bytes stream
             return RemotingCommand.decode(byteBuffer);
         } catch (Exception e) {
             log.error("decode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);

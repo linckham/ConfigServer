@@ -19,6 +19,11 @@ public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
     public void encode(ChannelHandlerContext ctx, RemotingCommand remotingCommand, ByteBuf out)
             throws Exception {
         try {
+            //TODO: compress the body's bytes stream
+            /*
+             * 1. compute the body's length,then determine whether compress the body which a specified algorithm;
+             * 2. meanwhile,we should rewrite the request commanding header.
+             */
             ByteBuffer header = remotingCommand.encodeHeader();
             out.writeBytes(header);
             byte[] body = remotingCommand.getBody();

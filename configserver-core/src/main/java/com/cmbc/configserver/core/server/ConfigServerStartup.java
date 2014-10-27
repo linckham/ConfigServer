@@ -4,6 +4,7 @@ import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.core.storage.impl.LocalMemoryConfigStorageImpl;
+import com.cmbc.configserver.core.notify.NotifyService;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
@@ -11,10 +12,15 @@ public class ConfigServerStartup {
     public static void main(String[] args) {
         try {
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
+            //TODO: get the listen port from the configuration file or the command option
             nettyServerConfig.setListenPort(19999);
+            ConfigNettyServer configNettyServer = new ConfigNettyServer(nettyServerConfig);
+
             final ConfigStorage configStorage = new LocalMemoryConfigStorageImpl();
-            final ConfigServerService configServerService = new ConfigServerServiceImpl(configStorage);
-            final ConfigServerController controller = new ConfigServerController(nettyServerConfig,configServerService);
+            final NotifyService notifyService = new NotifyService(configStorage,configNettyServer);
+            final ConfigServerService configServerService = new ConfigServerServiceImpl(configStorage,notifyService);
+            final ConfigServerController controller = new ConfigServerController(configNettyServer,configServerService);
+
             boolean initialized = controller.intialize();
             if (!initialized) {
                 controller.shutdown();

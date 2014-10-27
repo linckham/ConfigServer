@@ -39,4 +39,7 @@ public interface ConfigServerService {
      * @return true if unSubscribed successfully,else false
      */
     public boolean unSubscribe(Configuration config,Channel channel);
+
+    public void start() throws Exception;
+    public void shutdown();
 }

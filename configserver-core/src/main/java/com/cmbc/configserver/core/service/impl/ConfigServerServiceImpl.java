@@ -21,6 +21,11 @@ public class ConfigServerServiceImpl implements ConfigServerService {
         this.configStorage = configStorage;
     }
 
+    public ConfigServerServiceImpl(ConfigStorage configStorage,NotifyService notifyService){
+        this(configStorage);
+        this.notifyService = notifyService;
+    }
+
     public void setConfigStorage(ConfigStorage configStorage){
         this.configStorage = configStorage;
     }
@@ -108,5 +113,15 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     @Override
     public boolean unSubscribe(Configuration config,Channel channel) {
         return this.configStorage.unSubscribe(config,channel);
+    }
+
+    @Override
+    public void start() throws Exception{
+        this.notifyService.start();
+    }
+
+    @Override
+    public void shutdown(){
+        this.notifyService.stop();
     }
 }

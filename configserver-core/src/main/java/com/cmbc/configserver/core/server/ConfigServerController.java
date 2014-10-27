@@ -3,9 +3,6 @@ package com.cmbc.configserver.core.server;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
 import com.cmbc.configserver.core.service.ConfigServerService;
-import com.cmbc.configserver.remoting.RemotingServer;
-import com.cmbc.configserver.remoting.netty.NettyRemotingServer;
-import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,13 +13,12 @@ import java.util.concurrent.Executors;
  * @author tongchuan.lin<linckham@gmail.com>
  */
 public class ConfigServerController {
-    private final NettyServerConfig nettyServerConfig;
-    private RemotingServer remotingServer;
+    private ConfigNettyServer configNettyServer;
     private ExecutorService remotingExecutor;
     private ConfigServerService configServerService;
 
-    public ConfigServerController(NettyServerConfig nettyServerConfig,ConfigServerService configServerService) {
-        this.nettyServerConfig = nettyServerConfig;
+    public ConfigServerController(ConfigNettyServer configNettyServer,ConfigServerService configServerService) {
+        this.configNettyServer = configNettyServer;
         this.configServerService =configServerService;
     }
 
@@ -34,26 +30,24 @@ public class ConfigServerController {
      * @return true if the controller initialize successfully,else false.
      */
     public boolean intialize() {
-        this.remotingServer = new NettyRemotingServer(this.nettyServerConfig);
-        this.remotingExecutor = Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
+        this.remotingExecutor = Executors.newFixedThreadPool(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
+        this.configNettyServer.initialize();
         this.registerProcessor();
         return true;
     }
 
     private void registerProcessor() {
-        this.remotingServer.registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
-    }
-
-    public NettyServerConfig getNettyServerConfig(){
-        return this.nettyServerConfig;
+        this.configNettyServer.getRemotingServer().registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
     }
 
     public void start() throws Exception{
-        this.remotingServer.start();
+        this.configNettyServer.start();
+        this.configServerService.start();
     }
 
     public void shutdown(){
-        this.remotingServer.shutdown();
+        this.configNettyServer.getRemotingServer().shutdown();
         this.remotingExecutor.shutdown();
+        this.configServerService.shutdown();
     }
 }

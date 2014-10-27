@@ -1,14 +1,18 @@
 package com.cmbc.configserver.core.notify;
 
+import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
+import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
+import com.cmbc.configserver.core.server.ConfigNettyServer;
+import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
-import com.cmbc.configserver.utils.PathUtils;
+import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
-
+import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
 
 import java.util.List;
@@ -24,13 +28,20 @@ import java.util.concurrent.*;
  */
 public class NotifyService {
     private static final int MAX_EVENT_ITEM = 1024 * 1024;
-    private static final int POLL_TIMEOUT = 1000;
+    private static final int POLL_TIMEOUT = 1*1000;
+    private static final int NOTIFY_TIMEOUT = 2*1000;
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
     private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(MAX_EVENT_ITEM);
     private volatile boolean stop = true;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ThreadPoolExecutor notifyExecutor;
     private ConfigStorage configStorage;
+    private ConfigNettyServer configNettyServer;
+
+    public NotifyService(ConfigStorage configStorage,ConfigNettyServer nettyServer){
+        this.configStorage = configStorage;
+        this.configNettyServer =  nettyServer;
+    }
 
     public void setConfigStorage(ConfigStorage configStorage) {
         this.configStorage = configStorage;
@@ -38,6 +49,14 @@ public class NotifyService {
 
     public ConfigStorage getConfigStorage() {
         return this.configStorage;
+    }
+
+    public ConfigNettyServer getConfigNettyServer() {
+        return configNettyServer;
+    }
+
+    public void setConfigNettyServer(ConfigNettyServer configNettyServer) {
+        this.configNettyServer = configNettyServer;
     }
 
     private void initialize() {
@@ -94,18 +113,25 @@ public class NotifyService {
                     if (null != configList && !configList.isEmpty()) {
                         String subscriberPath = PathUtils.getSubscriberPath(config);
                         Notify notify = new Notify(subscriberPath, configList);
+
+                        //create RemotingCommand
+                        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
+                        byte[] body = RemotingSerializable.encode(notify);
+                        if (null != body) {
+                            request.setBody(body);
+                        }
                         //get the subscriber's channels that will being to notify
                         List<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
                         //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
                         if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
                             for (Channel channel : subscriberChannels) {
-                                channel.writeAndFlush(notify);
+                                NotifyService.this.getConfigNettyServer().getRemotingServer().invokeSync(channel, request, NOTIFY_TIMEOUT);
                             }
                         }
                     }
                 } catch (Exception e) {
                     //log the exception
-                    ConfigServerLogger.error("NofityWorker process failed, details is ", e);
+                    ConfigServerLogger.error("NotifyWorker process failed, details is ", e);
                 }
             }
         }
