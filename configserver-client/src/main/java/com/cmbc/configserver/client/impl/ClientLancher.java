@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cmbc.configserver.client.ConnectionStateListener;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Node;
+import com.cmbc.configserver.remoting.ConnectionStateListener;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 
 public class ClientLancher {

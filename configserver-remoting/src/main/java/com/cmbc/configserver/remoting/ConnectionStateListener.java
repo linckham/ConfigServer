@@ -1,4 +1,4 @@
-package com.cmbc.configserver.client;
+package com.cmbc.configserver.remoting;
 
 public interface ConnectionStateListener {
 	public void reconnected();

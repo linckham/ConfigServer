@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cmbc.configserver.client.ConfigClient;
-import com.cmbc.configserver.client.ConnectionStateListener;
 import com.cmbc.configserver.client.ResourceListener;
-import com.cmbc.configserver.client.state.ConnectionState;
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
+import com.cmbc.configserver.remoting.ConnectionStateListener;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
@@ -44,13 +42,15 @@ public class ConfigClientImpl implements ConfigClient {
 	//TODO configurable?
 	private static int timeoutMillis = 30000;
 	
-	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,ConnectionStateListener stateListener){
+	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,
+								ConnectionStateListener stateListener) throws InterruptedException{
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
 		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
 		remotingClient.start();
+		remotingClient.setConnectionStateListener(stateListener);
 		
 		publicExecutor = remotingClient.getCallbackExecutor();
 	}
@@ -61,7 +61,7 @@ public class ConfigClientImpl implements ConfigClient {
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
-			RemotingCommand result = remotingClient.invokeSync(null, request, timeoutMillis);
+			RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
 			if(result.getCode() != ResponseCode.PUBLISH_CONFIG_OK){
 				return false;
 			}
@@ -79,7 +79,7 @@ public class ConfigClientImpl implements ConfigClient {
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
-			RemotingCommand result = remotingClient.invokeSync(null, request, timeoutMillis);
+			RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
 			if(result.getCode() != ResponseCode.UNPUBLISH_CONFIG_OK){
 				return false;
 			}
@@ -110,7 +110,7 @@ public class ConfigClientImpl implements ConfigClient {
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
 
-							RemotingCommand response = remotingClient.invokeSync(null, request, timeoutMillis);
+							RemotingCommand response = remotingClient.invokeSync(request, timeoutMillis);
 
 							if (response.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
 								return false;
@@ -171,7 +171,7 @@ public class ConfigClientImpl implements ConfigClient {
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNSUBSCRIBE_CONFIG);
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
-							RemotingCommand result = remotingClient.invokeSync(null, request, timeoutMillis);
+							RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
 
 							if (result.getCode() != ResponseCode.UNSUBSCRIBE_CONFIG_OK) {
 								return false;

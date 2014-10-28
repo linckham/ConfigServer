@@ -18,15 +18,12 @@ package com.cmbc.configserver.client.impl;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cmbc.configserver.client.ResourceListener;
 import com.cmbc.configserver.common.RemotingSerializable;
-import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.domain.Notify;
