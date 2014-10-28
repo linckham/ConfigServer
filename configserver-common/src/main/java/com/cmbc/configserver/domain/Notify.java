@@ -1,5 +1,7 @@
 package com.cmbc.configserver.domain;
 
+import com.cmbc.configserver.common.RemotingSerializable;
+
 import java.util.List;
 
 /**
@@ -9,14 +11,9 @@ import java.util.List;
  *         Date: 2014/10/27
  *         Time: 10:37
  */
-public class Notify {
+public class Notify extends RemotingSerializable {
     private String path;
     private List<Configuration> configLists;
-
-    public Notify(String path,List<Configuration> configLists){
-        this.path = path;
-        this.configLists = configLists;
-    }
 
     public String getPath() {
         return path;

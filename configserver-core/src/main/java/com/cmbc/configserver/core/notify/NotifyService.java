@@ -105,14 +105,16 @@ public class NotifyService {
 
         @Override
         public void run() {
-            if (EventType.PUBLISH == event.getEventType() || EventType.UNPUBLISH == event.getEventType() || EventType.SUBCRIBE == event.getEventType()) {
+            if (EventType.PUBLISH == event.getEventType() || EventType.UNPUBLISH == event.getEventType()) {
                 try {
                     Configuration config = (Configuration) event.getEventSource();
                     // get the configuration list which is the latest version in the server.
                     List<Configuration> configList = NotifyService.this.configStorage.getConfigurationList(config);
                     if (null != configList && !configList.isEmpty()) {
                         String subscriberPath = PathUtils.getSubscriberPath(config);
-                        Notify notify = new Notify(subscriberPath, configList);
+                        Notify notify = new Notify();
+                        notify.setPath(subscriberPath);
+                        notify.setConfigLists(configList);
 
                         //create RemotingCommand
                         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);

@@ -72,8 +72,6 @@ public class LocalMemoryConfigStorageImpl implements ConfigStorage {
             configurationList.add(config);
             //log the configuration for debug and trace
             String logInfo = String.format("publish configuration successful! %s ", config);
-            //TODO: just for debug,when the logger configuration well,remove it
-            System.out.println(logInfo);
             ConfigServerLogger.info(logInfo);
             return true;
         } catch (InterruptedException e) {

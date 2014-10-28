@@ -89,31 +89,31 @@ public class ConfigClientImpl implements ConfigClient {
 	@Override
 	public boolean subscribe(Configuration config, ResourceListener listener) {
 		String subKey = PathUtils.getSubscriberPath(config);
-		Set<ResourceListener> listerners =  subcribeMap.get(subKey);
-		if (listerners == null || listerners.size() == 0) {
+		Set<ResourceListener> listeners =  subcribeMap.get(subKey);
+		if (listeners == null || listeners.size() == 0) {
 			try {
 				if (subcribeMapLock.tryLock(LockTimeoutMillis,TimeUnit.MILLISECONDS)) {
 					try {
-						listerners = subcribeMap.get(subKey);
-						if (listerners == null || listerners.size() == 0) {
-							if(listerners == null){
-								listerners = new ConcurrentHashSet<ResourceListener>();
-								subcribeMap.put(subKey,listerners);
+						listeners = subcribeMap.get(subKey);
+						if (listeners == null || listeners.size() == 0) {
+							if(listeners == null){
+								listeners = new ConcurrentHashSet<ResourceListener>();
+								subcribeMap.put(subKey,listeners);
 							}
 
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SUBSCRIBE_CONFIG);
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
 
-							RemotingCommand result = remotingClient.invokeSync(null, request, timeoutMillis);
+							RemotingCommand response = remotingClient.invokeSync(null, request, timeoutMillis);
 
-							if (result.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
+							if (response.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
 								return false;
 							} else {
-								if(result.getBody() != null){
-									Notify notify = RemotingSerializable.decode(request.getBody(),Notify.class);;
+								if(response.getBody() != null){
+									Notify notify = RemotingSerializable.decode(response.getBody(),Notify.class);;
 									notifyCache.put(subKey,notify);
-									listerners.add(listener);
+									listeners.add(listener);
 									listener.notify(notify.getConfigLists());
 								}else{
 									logger.info("subscribe notify is null!");
@@ -123,7 +123,7 @@ public class ConfigClientImpl implements ConfigClient {
 
 						} else {
 							Notify notify = notifyCache.get(subKey);
-							listerners.add(listener);
+							listeners.add(listener);
 							listener.notify(notify.getConfigLists());
 						}
 					} catch (Exception e) {
@@ -141,7 +141,7 @@ public class ConfigClientImpl implements ConfigClient {
 			}
 		} else {
 			Notify notify = notifyCache.get(subKey);
-			listerners.add(listener);
+			listeners.add(listener);
 			listener.notify(notify == null? null : notify.getConfigLists());
 		}
 		

@@ -30,6 +30,11 @@ public class ConfigServerServiceImpl implements ConfigServerService {
         this.configStorage = configStorage;
     }
 
+    /**
+     *
+     * @return the configuration storage
+     */
+    @Override
     public ConfigStorage getConfigStorage(){
         return this.configStorage;
     }
@@ -92,14 +97,6 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     @Override
     public boolean subscribe(Configuration config,Channel channel){
         boolean bSuccess = this.configStorage.subscribe(config,channel);
-        if(bSuccess){
-            //publish the subscribe event
-            Event event = new Event();
-            event.setEventType(EventType.SUBCRIBE);
-            event.setEventSource(config);
-            event.setEventCreatedTime(System.currentTimeMillis());
-            this.notifyService.publish(event);
-        }
         return bSuccess;
     }
 

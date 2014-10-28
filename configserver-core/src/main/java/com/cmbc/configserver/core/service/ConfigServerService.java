@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.service;
 
+import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
 import io.netty.channel.Channel;
 /**
@@ -42,4 +43,6 @@ public interface ConfigServerService {
 
     public void start() throws Exception;
     public void shutdown();
+
+    public ConfigStorage getConfigStorage();
 }

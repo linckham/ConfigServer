@@ -1,13 +1,18 @@
 package com.cmbc.configserver.core.processor;
 
+import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.domain.Configuration;
+import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
+import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.ChannelHandlerContext;
+
+import java.util.List;
 
 /**
  * the default request processor of ConfigServer
@@ -73,20 +78,27 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand subscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        String responseBody = "OK";
         int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        byte[]  body = "OK".getBytes();
         try {
             Configuration config = null;
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            this.configServerController.getConfigServerService().subscribe(config,ctx.channel());
-            code = ResponseCode.SUBSCRIBE_CONFIG_OK;
+            boolean bSubscribe = this.configServerController.getConfigServerService().subscribe(config,ctx.channel());
+            if(bSubscribe){
+                code = ResponseCode.SUBSCRIBE_CONFIG_OK;
+                List<Configuration> configs = this.configServerController.getConfigServerService().getConfigStorage().getConfigurationList(config);
+                Notify notify = new Notify();
+                notify.setPath(PathUtils.getSubscriberPath(config));
+                notify.setConfigLists(configs);
+                body = RemotingSerializable.encode(notify);
+            }
         } catch (Exception e) {
             code = ResponseCode.SUBSCRIBE_CONFIG_FAILED;
-            responseBody = e.getMessage();
+            body = e.getMessage().getBytes();
         }
-        return RemotingCommand.createResponseCommand(code, responseBody.getBytes(), request.getRequestId());
+        return RemotingCommand.createResponseCommand(code, body, request.getRequestId());
     }
 
     private RemotingCommand heartBeat(ChannelHandlerContext ctx, RemotingCommand request) {

@@ -8,7 +8,7 @@ public interface ResourceListener {
 	/**
 	 * full config of one resource.
 	 * 
-	 * @param configsss
+	 * @param configs
 	 */
 	void notify(List<Configuration> configs);
 
