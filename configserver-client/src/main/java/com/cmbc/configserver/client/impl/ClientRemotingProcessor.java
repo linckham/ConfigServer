@@ -18,12 +18,15 @@ package com.cmbc.configserver.client.impl;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cmbc.configserver.client.ResourceListener;
 import com.cmbc.configserver.common.RemotingSerializable;
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.domain.Notify;
@@ -34,8 +37,8 @@ import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 public class ClientRemotingProcessor implements RequestProcessor {
 
 	private static final Logger logger = LoggerFactory.getLogger(ClientRemotingProcessor.class);
-
 	private ConfigClientImpl configClientImpl;
+	
 
 	public ClientRemotingProcessor(ConfigClientImpl configClientImpl) {
 		this.configClientImpl = configClientImpl;
@@ -58,20 +61,22 @@ public class ClientRemotingProcessor implements RequestProcessor {
 			RemotingCommand request) {
 		int code = RemotingSysResponseCode.SYSTEM_ERROR;
 		try {
-			Notify notifyConfig = null;
 			if (request.getBody() != null) {
-				notifyConfig = RemotingSerializable.decode(request.getBody(),Notify.class);
-				
+				final Notify notifyConfig = RemotingSerializable.decode(request.getBody(),Notify.class);
 				configClientImpl.getNotifyCache().put(notifyConfig.getPath(),notifyConfig);
-				//TODO use thread pool to notify listeners? if notify listener's time too long,response may timeout
-				Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
-				if(listeners != null){
-					for(ResourceListener listener : listeners){
-						listener.notify(notifyConfig.getConfigLists());
+				configClientImpl.getPublicExecutor().execute(new Runnable(){
+					@Override
+					public void run() {
+						Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
+						if(listeners != null){
+							for(ResourceListener listener : listeners){
+								listener.notify(notifyConfig.getConfigLists());
+							}
+						}
 					}
-				}
+				});
+				
 			}
-			
 			code = ResponseCode.NOTIFY_CONFIG_OK;
 		} catch (Exception e) {
 			logger.info(e.toString());

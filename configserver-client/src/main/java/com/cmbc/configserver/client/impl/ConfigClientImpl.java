@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cmbc.configserver.client.ConfigClient;
+import com.cmbc.configserver.client.ConnectionStateListener;
 import com.cmbc.configserver.client.ResourceListener;
+import com.cmbc.configserver.client.state.ConnectionState;
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
@@ -31,17 +35,24 @@ public class ConfigClientImpl implements ConfigClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConfigClientImpl.class);
 	private NettyRemotingClient remotingClient;
 	private ClientRemotingProcessor clientRemotingProcessor;
+	private ExecutorService publicExecutor;
+	public Map<String,Set<ResourceListener>> subcribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
+	private final Lock subcribeMapLock = new ReentrantLock();
+	private static final long LockTimeoutMillis = 3000;
+	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
 	//TODO configurable?
 	private static int timeoutMillis = 30000;
-	 
-	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs){
+	
+	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,ConnectionStateListener stateListener){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
 		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
 		remotingClient.start();
+		
+		publicExecutor = remotingClient.getCallbackExecutor();
 	}
 
 	@Override
@@ -80,12 +91,6 @@ public class ConfigClientImpl implements ConfigClient {
 		return true;
 	}
 
-	public Map<String,Set<ResourceListener>> subcribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
-	private final Lock subcribeMapLock = new ReentrantLock();
-	private static final long LockTimeoutMillis = 3000;
-	
-	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
-	
 	@Override
 	public boolean subscribe(Configuration config, ResourceListener listener) {
 		String subKey = PathUtils.getSubscriberPath(config);
@@ -142,7 +147,7 @@ public class ConfigClientImpl implements ConfigClient {
 		} else {
 			Notify notify = notifyCache.get(subKey);
 			listeners.add(listener);
-			listener.notify(notify == null? null : notify.getConfigLists());
+			listener.notify(notify.getConfigLists());
 		}
 		
 		return true;
@@ -205,6 +210,7 @@ public class ConfigClientImpl implements ConfigClient {
 				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, timeoutMillis);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
 					sendSuccessed = true;
+					logger.info("heartbeat successed!");
 					break;
 				}
 			} catch (Exception e) {
@@ -216,12 +222,18 @@ public class ConfigClientImpl implements ConfigClient {
 		if(!sendSuccessed){
 			int times = heartbeatFailedTimes.incrementAndGet();
 			if(times >= 3){
-				remotingClient.closeChannel(channel);
-				heartbeatFailedTimes.set(0);
-				//TODO reset works
-				
+				logger.info("heartbeat failed, do reset works");
+				this.clear(channel);
 			}
 		}
+	}
+	
+	public void clear(Channel channel){
+		//TODO reset works
+		remotingClient.closeChannel(channel);
+		this.heartbeatFailedTimes.set(0);
+		this.subcribeMap.clear();
+		this.notifyCache.clear();
 	}
 	
 	public Map<String, Set<ResourceListener>> getSubcribeMap() {
@@ -239,5 +251,17 @@ public class ConfigClientImpl implements ConfigClient {
 	@Override
 	public void close(){
 		remotingClient.shutdown();
+	}
+	
+	public ExecutorService getPublicExecutor() {
+		return publicExecutor;
+	}
+
+	public void setPublicExecutor(ExecutorService publicExecutor) {
+		this.publicExecutor = publicExecutor;
+	}
+	
+	public NettyRemotingClient getRemotingClient() {
+		return remotingClient;
 	}
 }

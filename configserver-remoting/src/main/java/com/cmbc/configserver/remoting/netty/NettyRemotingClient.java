@@ -221,8 +221,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 		this.nettyClientConfig = nettyClientConfig;
 		this.channelEventListener = channelEventListener;
 
-		int publicThreadNums = nettyClientConfig
-				.getClientCallbackExecutorThreads();
+		int publicThreadNums = nettyClientConfig.getClientCallbackExecutorThreads();
 		if (publicThreadNums <= 0) {
 			publicThreadNums = 4;
 		}
@@ -337,6 +336,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 
 	private Channel getAndCreateChannel(final String addr)
 			throws InterruptedException {
+		/*
 		if (null == addr)
 			return getAndCreateNameserverChannel();
 
@@ -346,9 +346,12 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 		}
 
 		return this.createChannel(addr);
+		*/
+		
+		return getAndCreateNameserverChannel();
 	}
 
-	private Channel getAndCreateNameserverChannel() throws InterruptedException {
+	public Channel getAndCreateNameserverChannel() throws InterruptedException {
 		String addr = this.namesrvAddrChoosed.get();
 		if (addr != null) {
 			ChannelWrapper cw = this.channelTables.get(addr);
@@ -677,7 +680,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements
 			throw new RemotingConnectException(addr);
 		}
 	}
-
+	
 	@Override
 	public ExecutorService getCallbackExecutor() {
 		return this.publicExecutor;

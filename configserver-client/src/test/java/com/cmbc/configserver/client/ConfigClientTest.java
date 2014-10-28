@@ -27,11 +27,11 @@ public class ConfigClientTest {
     private NettyClientConfig nettyClientConfig;
 
     @Before
-    public void initialize() {
+    public void initialize() throws InterruptedException {
         nettyClientConfig = new NettyClientConfig();
         List<String> configServerAddress = new ArrayList<String>(1);
         configServerAddress.add("127.0.0.1:19999");
-        this.configClient = new ConfigClientImpl(nettyClientConfig, configServerAddress);
+        this.configClient = new ConfigClientImpl(nettyClientConfig, configServerAddress, null);
         System.out.println("---the config client initialized successfully!---");
     }
 

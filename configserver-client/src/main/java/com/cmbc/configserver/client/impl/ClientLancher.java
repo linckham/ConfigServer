@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cmbc.configserver.client.ConfigClient;
+import com.cmbc.configserver.client.ConnectionStateListener;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Node;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
@@ -14,7 +14,16 @@ public class ClientLancher {
 		
         List<String> configServerAddress = new ArrayList<String>(1);
         configServerAddress.add("127.0.0.1:19999");
-        ConfigClientImpl configClient = new ConfigClientImpl(new NettyClientConfig(), configServerAddress);
+		ConfigClientImpl configClient = new ConfigClientImpl(
+				new NettyClientConfig(), configServerAddress,
+				new ConnectionStateListener() {
+					@Override
+					public void reconnected() {
+						//do recover
+						System.out.println("client reconnected,do recover");
+					}
+
+				});
 		
         Configuration config = new Configuration();
 		Node node = new Node();
@@ -26,8 +35,14 @@ public class ClientLancher {
 		config.setResource("test-dubbo-rpc");
 		config.setType("publisher");
 		
-		boolean publishResult = configClient.publish(config);
-		System.out.println(String.format("the result of publish config is %s",publishResult));
+		for(int i=0 ; i<100 ;i++){
+			boolean publishResult = configClient.publish(config);
+			System.out.println(String.format("the result of publish config is %s",publishResult));
+			
+			
+			Thread.sleep(20*1000);
+		}
+		
 			
 		
 		System.in.read();
