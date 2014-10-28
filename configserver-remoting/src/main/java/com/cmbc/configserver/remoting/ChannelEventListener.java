@@ -12,4 +12,6 @@ public interface ChannelEventListener {
 			final Channel channel);
 
 	public void onChannelIdle(final String remoteAddress, final Channel channel);
+	
+	public void onChannelActive(final Channel channel);
 }

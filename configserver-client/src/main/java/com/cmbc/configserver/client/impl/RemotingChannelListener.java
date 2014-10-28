@@ -31,4 +31,9 @@ public class RemotingChannelListener implements ChannelEventListener{
 		clientImpl.sendHeartbeat(channel);
 	}
 
+	@Override
+	public void onChannelActive(Channel channel) {
+		
+	}
+
 }

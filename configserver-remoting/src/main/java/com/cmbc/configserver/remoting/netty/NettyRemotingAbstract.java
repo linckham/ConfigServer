@@ -101,6 +101,9 @@ public abstract class NettyRemotingAbstract {
                         case EXCEPTION:
                             listener.onChannelException(event.getRemoteAddr(), event.getChannel());
                             break;
+                        case ACTIVE:
+                        	listener.onChannelActive(event.getChannel());
+                        	break;
                         default:
                             break;
 

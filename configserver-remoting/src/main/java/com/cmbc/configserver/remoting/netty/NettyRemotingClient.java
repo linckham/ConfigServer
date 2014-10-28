@@ -128,6 +128,15 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 								.channel()));
 			}
 		}
+		
+		@Override
+		public void channelActive(ChannelHandlerContext ctx) throws Exception {
+			super.channelActive(ctx);
+			if (NettyRemotingClient.this.channelEventListener != null) {
+				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
+						NettyEventType.ACTIVE, null, ctx.channel()));
+			}
+		}
 
 		@Override
 		public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise)
@@ -259,6 +268,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 		this.bootstrap.group(this.eventLoopGroupWorker)
 				.channel(NioSocketChannel.class)//
 				.option(ChannelOption.TCP_NODELAY, true)
+				.option(ChannelOption.SO_KEEPALIVE, true)
 				.option(ChannelOption.SO_SNDBUF,NettySystemConfig.SocketSndbufSize)
 				.option(ChannelOption.SO_RCVBUF,NettySystemConfig.SocketRcvbufSize)
 				.handler(new ChannelInitializer<SocketChannel>() {
@@ -301,7 +311,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 					log.error("reconnect to server failed", e);
 				}
 			}
-		}, 1000 * 30, 1000 * 30);
+		}, 1000 * 10, 1000 * 10);
 
 		if (this.channelEventListener != null) {
 			this.nettyEventExecuter.start();
@@ -367,6 +377,8 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 						this.namesrvAddrChoosed.set(newAddr);
 						Channel channelNew = this.createChannel();
 						if (channelNew != null){
+							
+							//reconnected event,not exactly
 							if(this.connectionStateListener != null){
 								this.publicExecutor.execute(new Runnable(){
 									@Override
