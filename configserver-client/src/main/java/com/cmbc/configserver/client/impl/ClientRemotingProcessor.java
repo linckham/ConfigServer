@@ -61,17 +61,12 @@ public class ClientRemotingProcessor implements RequestProcessor {
 			if (request.getBody() != null) {
 				final Notify notifyConfig = RemotingSerializable.decode(request.getBody(),Notify.class);
 				configClientImpl.getNotifyCache().put(notifyConfig.getPath(),notifyConfig);
-				configClientImpl.getPublicExecutor().execute(new Runnable(){
-					@Override
-					public void run() {
-						Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
-						if(listeners != null){
-							for(ResourceListener listener : listeners){
-								listener.notify(notifyConfig.getConfigLists());
-							}
-						}
+				Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
+				if(listeners != null){
+					for(ResourceListener listener : listeners){
+						configClientImpl.notifyListener(listener, notifyConfig);
 					}
-				});
+				}
 				
 			}
 			code = ResponseCode.NOTIFY_CONFIG_OK;

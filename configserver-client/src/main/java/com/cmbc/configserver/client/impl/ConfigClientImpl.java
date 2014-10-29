@@ -119,7 +119,7 @@ public class ConfigClientImpl implements ConfigClient {
 									Notify notify = RemotingSerializable.decode(response.getBody(),Notify.class);;
 									notifyCache.put(subKey,notify);
 									listeners.add(listener);
-									listener.notify(notify.getConfigLists());
+									this.notifyListener(listener, notify);
 								}else{
 									logger.info("subscribe notify is null!");
 									return false;
@@ -129,7 +129,7 @@ public class ConfigClientImpl implements ConfigClient {
 						} else {
 							Notify notify = notifyCache.get(subKey);
 							listeners.add(listener);
-							listener.notify(notify.getConfigLists());
+							this.notifyListener(listener, notify);
 						}
 					} catch (Exception e) {
 						logger.info(e.toString());
@@ -147,10 +147,23 @@ public class ConfigClientImpl implements ConfigClient {
 		} else {
 			Notify notify = notifyCache.get(subKey);
 			listeners.add(listener);
-			listener.notify(notify.getConfigLists());
+			this.notifyListener(listener, notify);
 		}
 		
 		return true;
+	}
+	
+	public void notifyListener(final ResourceListener listener,final Notify notify){
+		this.publicExecutor.execute(new Runnable(){
+			@Override
+			public void run() {
+				try{
+					listener.notify(notify.getConfigLists());
+				}catch(Exception e){
+					logger.info(e.toString());
+				}
+			}
+		});
 	}
 
 	@Override
