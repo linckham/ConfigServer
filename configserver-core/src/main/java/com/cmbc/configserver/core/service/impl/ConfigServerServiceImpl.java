@@ -54,7 +54,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      * @return true if publish successfully,else false
      */
     @Override
-    public boolean publish(Configuration config){
+    public boolean publish(Configuration config) throws Exception{
         boolean bSuccess = this.configStorage.publish(config);
         if(bSuccess){
             //publish the publish event
@@ -74,7 +74,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      * @return true if unPublish successfully,else false
      */
     @Override
-    public boolean unPublish(Configuration config){
+    public boolean unPublish(Configuration config)  throws Exception{
         boolean bSuccess = this.configStorage.unPublish(config);
         if(bSuccess){
             //publish the unPublish event

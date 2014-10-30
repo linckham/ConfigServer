@@ -6,6 +6,7 @@ import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
+import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
@@ -51,6 +52,11 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
+            //valid the client id
+            if(null == config.getClientId() || config.getClientId().isEmpty()){
+                config.setClientId(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+            }
+
             this.configServerController.getConfigServerService().publish(config);
             code = ResponseCode.PUBLISH_CONFIG_OK;
         } catch (Exception e) {
@@ -68,6 +74,11 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
+            //valid the client id
+            if(null == config.getClientId() || config.getClientId().isEmpty()){
+                config.setClientId(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+            }
+
             this.configServerController.getConfigServerService().unPublish(config);
             code = ResponseCode.UNPUBLISH_CONFIG_OK;
         } catch (Exception e) {

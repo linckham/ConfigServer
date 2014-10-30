@@ -16,7 +16,7 @@ public interface ConfigStorage {
      * @param config the configuration that will being stored in server
      * @return true if publish successfully,else false
      */
-    public boolean publish(Configuration config);
+    public boolean publish(Configuration config) throws Exception;
 
     /**
      * unPublish the configuration to the config server
@@ -24,7 +24,7 @@ public interface ConfigStorage {
      * @param config the configuration that will being removed in server
      * @return true if unPublish successfully,else false
      */
-    public boolean unPublish(Configuration config);
+    public boolean unPublish(Configuration config) throws Exception;
 
     /**
      * subscribe the specified configuration which is in the config server
@@ -49,12 +49,12 @@ public interface ConfigStorage {
      * @param config the specified configuration
      * @return the configuration list
      */
-    public List<Configuration> getConfigurationList(Configuration config);
+    public List<Configuration> getConfigurationList(Configuration config) throws Exception;
 
     /**
      * get the subscriber's channel  list of the specified subscribe path
      * @param subscribePath the subscribe path which the subscriber is interested in.
      * @return the subscriber's channel list
      */
-    public List<Channel> getSubscribeChannel(String subscribePath);
+    public List<Channel> getSubscribeChannel(String subscribePath) throws Exception;
 }
