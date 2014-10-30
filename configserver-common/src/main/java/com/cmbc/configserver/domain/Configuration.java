@@ -12,8 +12,11 @@ public class Configuration  extends RemotingSerializable{
 	private String resource;
 	private String type;
 	private Node node;
-	
-	public String getCell() {
+    private String clientId;
+    private int id;
+    private int categoryId;
+
+    public String getCell() {
 		return cell;
 	}
 	public void setCell(String cell) {
@@ -37,6 +40,30 @@ public class Configuration  extends RemotingSerializable{
 	public void setNode(Node node) {
 		this.node = node;
 	}
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
 
     @Override
 	public int hashCode() {

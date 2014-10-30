@@ -1,5 +1,6 @@
 package com.cmbc.configserver.utils;
 
+import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.Configuration;
 /**
  * the helper class that use to operate the path
@@ -34,5 +35,33 @@ public class PathUtils {
             }
         }
         return pathBuilder.toString();
+    }
+
+    /**
+     * according the path,get the specified category object
+     * @param path the specified path
+     * @return the Category of the path
+     */
+    public static  Category path2Category(String path){
+        if (null == path || path.isEmpty()) {
+            throw new IllegalArgumentException("path can not be null or empty!");
+        }
+
+        if (!path.startsWith("/")) {
+            path = new StringBuilder(path.length() + 1).append("/").append(path).toString();
+        }
+
+        //split the path
+        String[] paths = path.split("/");
+
+        if (paths.length != 4) {
+            throw new IllegalArgumentException(String.format("%s format is invalid. the correct format is /XXX/XXX/XXX", path));
+        }
+
+        Category category = new Category();
+        category.setCell(paths[1]);
+        category.setResource(paths[2]);
+        category.setType(paths[3]);
+        return category;
     }
 }

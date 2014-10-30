@@ -68,4 +68,11 @@ public class ConfigServerLogger {
     public static void error(String msg, Throwable e) {
         errorLog.error(msg, e);
     }
+
+    public static boolean isTraceEnabled() {
+        return infoLog.isTraceEnabled();
+    }
+    public static void trace(String msg) {
+        infoLog.trace(msg);
+    }
 }
