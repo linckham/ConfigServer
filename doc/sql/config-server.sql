@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS `config_category`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `config_category`(
-`id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+`id` SMALLINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
 `cell` VARCHAR(16) NOT NULL,
 `resource` VARCHAR(256) DEFAULT NULL,
 `type` VARCHAR(16) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -17,7 +17,7 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `config_details`(
 `config_id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-`category_id` INT UNSIGNED NOT NULL,
+`category_id` SMALLINT UNSIGNED NOT NULL,
 `content` BLOB  NULL,
 `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 `client_id` VARCHAR(32) NOT NULL,
@@ -28,9 +28,8 @@ DROP TABLE IF EXISTS `config_change_log`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `config_change_log`(
-`category_id` INT UNSIGNED NOT NULL PRIMARY KEY,
-`md5` BLOB   VARCHAR(64) NOT NULL,
-CONSTRAINT ccr_category_id_fk FOREIGN key (category_id) references config_category (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+`path` VARCHAR(256) NOT NULL PRIMARY KEY,
+`md5`  VARCHAR(64) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `config_heart_beat`;
@@ -41,3 +40,11 @@ CREATE TABLE `config_heart_beat`(
 `last_modified_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 SET character_set_client = @saved_cs_client;
 
+DROP TABLE IF EXISTS `config_client_mapping`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `config_client_mapping`(
+`client_id` VARCHAR(64) NOT NULL,
+`config_id` INT UNSIGNED NOT NULL,
+PRIMARY KEY(`client_id`,`config_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
