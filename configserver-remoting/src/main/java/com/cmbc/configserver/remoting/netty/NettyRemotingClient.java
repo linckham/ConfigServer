@@ -190,7 +190,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 				throws Exception {
 			if (evt instanceof IdleStateEvent) {
 				IdleStateEvent evnet = (IdleStateEvent) evt;
-				if (evnet.state().equals(IdleState.ALL_IDLE)) {
+				if (evnet.state().equals(IdleState.READER_IDLE)) {
 					final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
 					
 					if (NettyRemotingClient.this.channelEventListener != null) {
@@ -278,7 +278,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 								defaultEventExecutorGroup,
 								new NettyEncoder(),
 								new NettyDecoder(), 
-								new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
+								new IdleStateHandler(nettyClientConfig.getClientChannelMaxIdleTimeSeconds(),0, 0),
 								new NettyConnetManageHandler(),
 								new NettyClientHandler());
 					}
