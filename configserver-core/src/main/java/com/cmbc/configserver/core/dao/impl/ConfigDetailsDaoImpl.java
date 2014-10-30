@@ -8,8 +8,13 @@ import com.cmbc.configserver.domain.Node;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.PathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -21,7 +26,7 @@ import java.util.List;
  * @Time: 14:20
  */
 public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
-    private static String SQL_CONFIG_INSERT = "insert into config_details(category_id,content,client_id) values(?,?,?,?)";
+    private final static String SQL_CONFIG_INSERT = "insert into config_details(category_id,content,client_id) values(?,?,?)";
     private static String SQL_CONFIG_UPDATE = "update config_details set content=?,client_id=? where config_id=?";
     private static String SQL_CONFIG_DELETE = "delete from config_details where client_id=? and category_id=?";
     private static String SQL_CONFIG_QUERY_BY_CATEGORY_ID = "select * from config_details where category_id=?";
@@ -31,14 +36,21 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean save(Configuration config) throws Exception {
+    public Configuration save(final Configuration config) throws Exception {
         try {
-            this.jdbcTemplate.update(SQL_CONFIG_INSERT, new Object[]{
-                    config.getCategoryId(),
-                    config.getNode().getData(),
-                    config.getClientId(),
-            });
-            return true;
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            this.jdbcTemplate.update(new PreparedStatementCreator() {
+                @Override
+                public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                    PreparedStatement preState =  con.prepareStatement(SQL_CONFIG_INSERT);
+                    preState.setInt(1,config.getCategoryId());
+                    preState.setString(2,config.getNode().getData());
+                    preState.setString(3,config.getClientId());
+                    return preState;
+                }
+            },keyHolder);
+            config.setId(keyHolder.getKey().intValue());
+            return config;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("insert configuration ").append(config.toString()).append("failed. detail is "), ex);
             throw ex;

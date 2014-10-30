@@ -11,7 +11,7 @@ import java.util.List;
  * @Time 15:43
  */
 public interface CategoryDao {
-    public boolean save(Category category) throws Exception;
+    public Category save(Category category) throws Exception;
 
     public boolean update(Category category) throws Exception;
 

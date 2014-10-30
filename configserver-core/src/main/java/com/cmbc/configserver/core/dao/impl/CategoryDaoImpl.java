@@ -5,8 +5,13 @@ import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +23,7 @@ import java.util.List;
  * @Time 15:52
  */
 public class CategoryDaoImpl implements CategoryDao {
-    private static String SQL_CATEGORY_INSERT = "insert into config_category(cell,resource,type) values(?,?,?)";
+    private final static String SQL_CATEGORY_INSERT = "insert into config_category(cell,resource,type) values(?,?,?)";
     private static String SQL_CATEGORY_UPDATE = "update config_category set cell=?,resource=?,type=? where id=?";
     private static String SQL_CATEGORY_DELETE = "delete from config_category where id=?";
     private static String SQL_CATEGORY_QUERY_ALL = "select * from config_category";
@@ -29,14 +34,29 @@ public class CategoryDaoImpl implements CategoryDao {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean save(Category category) throws Exception {
+    public Category save(final Category category) throws Exception {
         try {
+            KeyHolder keyHolder =  new GeneratedKeyHolder();
+            this.jdbcTemplate.update(new PreparedStatementCreator() {
+                @Override
+                public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                    PreparedStatement preState = con.prepareStatement(SQL_CATEGORY_INSERT);
+                    preState.setString(1,category.getCell());
+                    preState.setString(2,category.getResource());
+                    preState.setString(3,category.getType());
+                    return preState;
+                }
+            },keyHolder);
+
             this.jdbcTemplate.update(SQL_CATEGORY_INSERT, new Object[]{
                     category.getCell(),
                     category.getResource(),
                     category.getType()
             });
-            return true;
+
+            category.setId(keyHolder.getKey().intValue());
+
+            return category;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("insert config_category ").append(category).append("failed. Details is "), ex);
             throw ex;

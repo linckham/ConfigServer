@@ -14,7 +14,7 @@ import com.cmbc.configserver.domain.Category;
  * @Time 15:47
  */
 public interface ConfigDetailsDao {
-    public boolean save(Configuration config) throws Exception;
+    public Configuration save(Configuration config) throws Exception;
 
     public boolean update(Configuration config) throws Exception;
 
