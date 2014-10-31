@@ -6,30 +6,28 @@ import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.server.ConfigNettyServer;
-import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
  * the notify service
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
- * @author tongchuan.lin<linckham@gmail.com>.
- *         Date: 2014/10/24
- *         Time: 15:18
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class NotifyService {
     private static final int MAX_EVENT_ITEM = 1024 * 1024;
-    private static final int POLL_TIMEOUT = 1*1000;
-    private static final int NOTIFY_TIMEOUT = 2*1000;
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
     private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(MAX_EVENT_ITEM);
     private volatile boolean stop = true;
@@ -61,7 +59,10 @@ public class NotifyService {
 
     private void initialize() {
         this.scheduler.execute(new EventDispatcher());
-        this.notifyExecutor = new ThreadPoolExecutor(16, 48, 60 * 1000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(MAX_EVENT_ITEM), new ThreadFactoryImpl("config-event-thread-"));
+        this.notifyExecutor = new ThreadPoolExecutor(16, 48, 60 * 1000,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(MAX_EVENT_ITEM),
+                new ThreadFactoryImpl("config-event-thread-"));
     }
 
     public boolean start() {
@@ -123,11 +124,11 @@ public class NotifyService {
                             request.setBody(body);
                         }
                         //get the subscriber's channels that will being to notify
-                        List<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
+                        Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
                         //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
                         if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
                             for (Channel channel : subscriberChannels) {
-                                NotifyService.this.getConfigNettyServer().getRemotingServer().invokeSync(channel, request, NOTIFY_TIMEOUT);
+                                NotifyService.this.getConfigNettyServer().getRemotingServer().invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
                             }
                         }
                     }
@@ -147,7 +148,7 @@ public class NotifyService {
         public void run() {
             while (!stop && !Thread.interrupted()) {
                 try {
-                    Event event = eventQueue.poll(POLL_TIMEOUT, TimeUnit.MILLISECONDS);
+                    Event event = eventQueue.poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (null != event) {
                         long delayTime = System.currentTimeMillis() - event.getEventCreatedTime();
                         if (delayTime <= MAX_DELAY_TIME) {

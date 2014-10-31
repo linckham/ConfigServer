@@ -17,6 +17,10 @@ import java.util.List;
 
 /**
  * the default request processor of ConfigServer
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class DefaultRequestProcessor implements RequestProcessor {
     private final ConfigServerController configServerController;

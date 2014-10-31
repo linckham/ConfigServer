@@ -2,10 +2,8 @@ package com.cmbc.configserver.core.event;
 
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
- *
- * @author tongchuan.lin<linckham@gmail.com>.
- *         Date: 2014/10/24
- *         Time: 15:12
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class Event {
     private EventType eventType;

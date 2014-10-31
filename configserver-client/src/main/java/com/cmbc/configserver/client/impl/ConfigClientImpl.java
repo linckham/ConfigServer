@@ -1,5 +1,6 @@
 package com.cmbc.configserver.client.impl;
 
+import com.cmbc.configserver.utils.Constants;
 import io.netty.channel.Channel;
 
 import java.util.List;
@@ -36,12 +37,9 @@ public class ConfigClientImpl implements ConfigClient {
 	private ExecutorService publicExecutor;
 	public Map<String,Set<ResourceListener>> subcribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
 	private final Lock subcribeMapLock = new ReentrantLock();
-	private static final long LockTimeoutMillis = 3000;
 	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
-	//TODO configurable?
-	private static int timeoutMillis = 30000;
-	
+
 	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,
 								ConnectionStateListener stateListener) throws InterruptedException{
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
@@ -61,7 +59,7 @@ public class ConfigClientImpl implements ConfigClient {
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
-			RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
+			RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 			if(result.getCode() != ResponseCode.PUBLISH_CONFIG_OK){
 				return false;
 			}
@@ -79,7 +77,7 @@ public class ConfigClientImpl implements ConfigClient {
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
-			RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
+			RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 			if(result.getCode() != ResponseCode.UNPUBLISH_CONFIG_OK){
 				return false;
 			}
@@ -97,7 +95,7 @@ public class ConfigClientImpl implements ConfigClient {
 		Set<ResourceListener> listeners =  subcribeMap.get(subKey);
 		if (listeners == null || listeners.size() == 0) {
 			try {
-				if (subcribeMapLock.tryLock(LockTimeoutMillis,TimeUnit.MILLISECONDS)) {
+				if (subcribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
 					try {
 						listeners = subcribeMap.get(subKey);
 						if (listeners == null || listeners.size() == 0) {
@@ -110,7 +108,7 @@ public class ConfigClientImpl implements ConfigClient {
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
 
-							RemotingCommand response = remotingClient.invokeSync(request, timeoutMillis);
+							RemotingCommand response = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 
 							if (response.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
 								return false;
@@ -178,13 +176,13 @@ public class ConfigClientImpl implements ConfigClient {
 		
 		if(listerners.size() == 0){
 			try {
-				if (subcribeMapLock.tryLock(LockTimeoutMillis,TimeUnit.MILLISECONDS)) {
+				if (subcribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
 					try {
 						if (listerners.size() == 0) {
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNSUBSCRIBE_CONFIG);
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
-							RemotingCommand result = remotingClient.invokeSync(request, timeoutMillis);
+							RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 
 							if (result.getCode() != ResponseCode.UNSUBSCRIBE_CONFIG_OK) {
 								return false;
@@ -220,7 +218,7 @@ public class ConfigClientImpl implements ConfigClient {
 			RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEARTBEAT);
 			request.setBody(null);
 			try {
-				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, timeoutMillis);
+				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
 					sendSuccessed = true;
 					logger.info("heartbeat successed!");

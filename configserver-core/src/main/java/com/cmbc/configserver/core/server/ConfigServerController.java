@@ -9,8 +9,10 @@ import java.util.concurrent.Executors;
 
 /**
  * the controller of config server.It is the core class of the configserver-core project
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
- * @author tongchuan.lin<linckham@gmail.com>
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class ConfigServerController {
     private ConfigNettyServer configNettyServer;

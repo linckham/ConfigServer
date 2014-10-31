@@ -42,4 +42,24 @@ public class Constants {
      * the path separator
      */
     public static final String PATH_SEPARATOR="/";
+
+    /**
+     * the default initial capacity of the collection
+     */
+    public static final int DEFAULT_INITIAL_CAPACITY = 32;
+
+    /**
+     * the default timeout of queue
+     */
+    public static final int DEFAULT_QUEUE_TIMEOUT = 3*1000;
+
+    /**
+     * the default timeout of read-write lock
+     */
+    public static final int DEFAULT_READ_WRITE_LOCK_TIMEOUT = 3*1000;
+
+    /**
+     * the default timeout of socket reading timeout.
+     */
+    public static final int DEFAULT_SOCKET_READING_TIMEOUT = 5*1000;
 }

@@ -1,13 +1,21 @@
 package com.cmbc.configserver.core.server;
 
+import com.cmbc.configserver.core.notify.NotifyService;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.core.storage.impl.LocalMemoryConfigStorageImpl;
-import com.cmbc.configserver.core.notify.NotifyService;
+import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
+/**
+ * the bootstrap class of the config-server process.<br/>
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
+ */
 public class ConfigServerStartup {
     public static void main(String[] args) {
         try {
@@ -16,7 +24,9 @@ public class ConfigServerStartup {
             nettyServerConfig.setListenPort(19999);
             ConfigNettyServer configNettyServer = new ConfigNettyServer(nettyServerConfig);
 
+            SubscriberService subscriberService = new SubscriberService();
             final ConfigStorage configStorage = new LocalMemoryConfigStorageImpl();
+            ((LocalMemoryConfigStorageImpl)configStorage).setSubscriberService(subscriberService);
             final NotifyService notifyService = new NotifyService(configStorage,configNettyServer);
             final ConfigServerService configServerService = new ConfigServerServiceImpl(configStorage,notifyService);
             final ConfigServerController controller = new ConfigServerController(configNettyServer,configServerService);
@@ -51,7 +61,6 @@ public class ConfigServerStartup {
 
             String successInfo = "The Config Server boot success.";
             ConfigServerLogger.info(successInfo);
-            System.out.println(successInfo);
         } catch (Throwable t) {
             t.printStackTrace();
             ConfigServerLogger.error("configServer startup failed.", t);

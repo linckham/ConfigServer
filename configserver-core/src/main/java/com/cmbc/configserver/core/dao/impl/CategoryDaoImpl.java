@@ -29,6 +29,8 @@ public class CategoryDaoImpl implements CategoryDao {
     private static String SQL_CATEGORY_QUERY_ALL = "select * from config_category";
     private static String SQL_CATEGORY_QUERY_RESOURCE = "select * from config_category where cell =?";
     private static String SQL_CATEGORY_QUERY_TYPE = "select * from config_category where cell =? and resource=?";
+    private static String SQL_CATEGORY_QUERY_ID = "select * from config_category where id=?";
+    private static String SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE = "select * from config_category where cell =? and resource=? and type=?";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -125,6 +127,54 @@ public class CategoryDaoImpl implements CategoryDao {
             return types;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get type list of cell=").append(cell).append(",resource=").append(resource).append("failed. Details is "), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * get the category according to the specified cell/resource/type
+     *
+     * @param cell     the category's cell
+     * @param resource the category's resource
+     * @param type     the category's type
+     * @return the category which is applied for the query condition
+     * @throws Exception
+     */
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public Category getCategory(String cell, String resource, String type) throws Exception {
+        try {
+            return (Category) this.jdbcTemplate.queryForObject(SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE, new Object[]{
+                    cell,
+                    resource,
+                    type
+            }, new CategoryRowMapper());
+        } catch (Exception ex) {
+            ConfigServerLogger.error(new StringBuilder(128).append("get category by cell=").append(cell)
+                    .append(",resource=").append(resource)
+                    .append(",type=").append(type)
+                    .append("failed. Details is "), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * get the category by specified id
+     *
+     * @param categoryId the specified id
+     * @return the category which is applied for the query condition
+     * @throws Exception
+     */
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public Category getCategoryById(int categoryId) throws Exception {
+        try {
+            return (Category) this.jdbcTemplate.queryForObject(SQL_CATEGORY_QUERY_ID, new Object[]{
+                    categoryId
+            }, new CategoryRowMapper());
+        } catch (Exception ex) {
+            ConfigServerLogger.error(new StringBuilder(128).append("get category by id=")
+                    .append(categoryId).append("failed. Details is "), ex);
             throw ex;
         }
     }

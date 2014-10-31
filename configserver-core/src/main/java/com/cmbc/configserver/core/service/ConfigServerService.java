@@ -5,7 +5,10 @@ import com.cmbc.configserver.domain.Configuration;
 import io.netty.channel.Channel;
 /**
  * the config server's core service.<br/>
- * Created by tongchuan.ling<linckham@gmail.com> on 2014/10/20.
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public interface ConfigServerService {
     /**

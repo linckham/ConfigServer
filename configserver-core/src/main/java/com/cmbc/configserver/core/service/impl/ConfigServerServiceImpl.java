@@ -10,7 +10,10 @@ import com.cmbc.configserver.core.storage.ConfigStorage;
 import io.netty.channel.Channel;
 /**
  * the implementation of ConfigServerService
- * Created by tongchuan.lin<linckham@gmail.com> on 2014/10/21.
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class ConfigServerServiceImpl implements ConfigServerService {
     private ConfigStorage configStorage;

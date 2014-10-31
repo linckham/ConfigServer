@@ -7,9 +7,10 @@ import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
- * @author tongchuan.lin<linckham@gmail.com>.
- *         Date: 2014/10/27
- *         Time: 16:02
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public class ConfigNettyServer {
     private final NettyServerConfig nettyServerConfig;

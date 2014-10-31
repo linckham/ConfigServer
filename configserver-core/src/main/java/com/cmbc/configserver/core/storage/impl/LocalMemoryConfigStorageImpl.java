@@ -1,9 +1,7 @@
 package com.cmbc.configserver.core.storage.impl;
 
-import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.utils.ConfigServerLogger;
-import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +17,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * the implementation of the ConfigStorage that use the local memory to storage the configuration.<br/>
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
- * @author tongchuan.lin<linckham@gmail.com><br/>
+ * @Date 2014/10/31
+ * @Time 11:12
  */
-public class LocalMemoryConfigStorageImpl implements ConfigStorage {
+public class LocalMemoryConfigStorageImpl extends AbstractConfigStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalMemoryConfigStorageImpl.class);
     private static final int LOCK_TIMEOUT = 1 * 1000;
     //TODO: storage the path as the Map's key
@@ -138,66 +138,6 @@ public class LocalMemoryConfigStorageImpl implements ConfigStorage {
     }
 
     /**
-     * subscribe the specified configuration which is in the config server
-     *
-     * @param config  the configuration that will being subscribed
-     * @param channel the channel of the subscriber
-     * @return true if subscribed successfully,else false
-     */
-    @Override
-    public boolean subscribe(Configuration config, Channel channel) {
-        if (null == config) {
-            return false;
-        }
-        try {
-            writeLock.tryLock(LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
-            String path = PathUtils.getSubscriberPath(config);
-            List<Channel> subscriberChannels = this.subscriberMap.get(path);
-            if (null == subscriberChannels) {
-                subscriberChannels = new ArrayList<Channel>();
-                this.subscriberMap.put(path, subscriberChannels);
-            }
-            subscriberChannels.add(channel);
-            ConfigServerLogger.info(String.format("subscribe configuration successful! %s,subscriber channel=", config, channel));
-            return true;
-        } catch (InterruptedException e) {
-            return false;
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    /**
-     * unSubscribe the specified configuration which is in the config server
-     *
-     * @param config the configuration that will being unSubscribed
-     * @return true if unSubscribed successfully,else false
-     */
-    @Override
-    public boolean unSubscribe(Configuration config, Channel channel) {
-        if (null == config) {
-            return false;
-        }
-        try {
-            writeLock.tryLock(LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
-            String path = PathUtils.getSubscriberPath(config);
-            List<Channel> subscriberChannels = this.subscriberMap.get(path);
-            if (null == subscriberChannels) {
-                return false;
-            }
-            subscriberChannels.remove(channel);
-            if (subscriberChannels.isEmpty()) {
-                this.subscriberMap.remove(path);
-            }
-            return true;
-        } catch (InterruptedException e) {
-            return false;
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    /**
      * get the configuration list by the specified configuration
      *
      * @param config the specified configuration
@@ -226,32 +166,6 @@ public class LocalMemoryConfigStorageImpl implements ConfigStorage {
                 return configList;
             }
             return configList;
-        } catch (InterruptedException e) {
-            return Collections.EMPTY_LIST;
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    /**
-     * get the subscriber's channel  list of the specified subscribe path
-     *
-     * @param subscribePath the subscribe path which the subscriber is interested in.
-     * @return the subscriber's channel list
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Channel> getSubscribeChannel(String subscribePath) {
-        if (null == subscribePath || subscribePath.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-        try {
-            readLock.tryLock(LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
-            List<Channel> channelList = this.subscriberMap.get(subscribePath);
-            if (null == channelList || channelList.isEmpty()) {
-                return Collections.EMPTY_LIST;
-            }
-            return channelList;
         } catch (InterruptedException e) {
             return Collections.EMPTY_LIST;
         } finally {

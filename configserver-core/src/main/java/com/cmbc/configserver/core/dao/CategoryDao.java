@@ -22,4 +22,22 @@ public interface CategoryDao {
     public List<String> getResources(String cell) throws Exception;
 
     public List<String> getTypes(String cell, String resource) throws Exception;
+
+    /**
+     * get the category according to the specified cell/resource/type
+     * @param cell the category's cell
+     * @param resource the category's resource
+     * @param type the category's type
+     * @return the category which is applied for the query condition
+     * @throws Exception
+     */
+    public Category getCategory(String cell,String resource,String type) throws Exception;
+
+    /**
+     * get the category by specified id
+     * @param categoryId the specified id
+     * @return the category which is applied for the query condition
+     * @throws Exception
+     */
+    public Category getCategoryById(int categoryId) throws Exception;
 }

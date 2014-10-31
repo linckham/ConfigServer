@@ -72,8 +72,17 @@ public class ConfigClientMappingDaoImpl implements ConfigClientMappingDao {
      * @throws Exception
      */
     @Override
+    @SuppressWarnings({"unchecked"})
     public List<ConfigClientMapping> getMappingList(String clientId) throws Exception {
-        return null;
+        try {
+            return (List<ConfigClientMapping>) this.jdbcTemplate.query(SQL_MAPPING_QUERY_BY_CLIENT_ID, new Object[]{
+                    clientId
+            }, new MappingRower());
+        } catch (Exception ex) {
+            ConfigServerLogger.error(new StringBuilder(128).append("select config_client_mapping by clientId= ")
+                    .append(clientId).append("failed. Details is "), ex);
+            throw ex;
+        }
     }
 
     private class MappingRower implements RowMapper {

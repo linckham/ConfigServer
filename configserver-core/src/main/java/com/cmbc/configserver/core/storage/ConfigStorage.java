@@ -4,10 +4,14 @@ import com.cmbc.configserver.domain.Configuration;
 import io.netty.channel.Channel;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * the storage interface of the configuration server<br/>
- * @author  tongchuan.lin<linckham@gmail.com><br/>
+ * Created by tongchuan.lin<linckham@gmail.com><br/>
+ *
+ * @Date 2014/10/31
+ * @Time 11:12
  */
 public interface ConfigStorage {
     /**
@@ -56,5 +60,5 @@ public interface ConfigStorage {
      * @param subscribePath the subscribe path which the subscriber is interested in.
      * @return the subscriber's channel list
      */
-    public List<Channel> getSubscribeChannel(String subscribePath) throws Exception;
+    public Set<Channel> getSubscribeChannel(String subscribePath) throws Exception;
 }
