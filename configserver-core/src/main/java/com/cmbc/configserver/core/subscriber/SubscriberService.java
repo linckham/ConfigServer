@@ -3,6 +3,8 @@ package com.cmbc.configserver.core.subscriber;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +15,7 @@ import java.util.concurrent.locks.Lock;
 
 import com.cmbc.configserver.utils.Constants;
 import io.netty.channel.Channel;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * the class manages the subscriber channel between config-client and config-server.<br/>
@@ -38,6 +41,11 @@ public class SubscriberService {
      */
     public boolean subscribe(String path, Channel channel) {
         try {
+            //valid the path and the channel whether is active
+            if(StringUtils.isBlank(path) || (null == channel || !channel.isActive())){
+                return false;
+            }
+
             writeLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
             Set<Channel> channelSet = path2ChannelMap.get(path);
             if (null == channelSet) {
@@ -72,6 +80,10 @@ public class SubscriberService {
      */
     public boolean unSubcribe(String path, Channel channel) {
         try {
+            //valid the path
+            if(StringUtils.isBlank(path)){
+                return false;
+            }
             writeLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
             Set<Channel> channelSet = path2ChannelMap.get(path);
             if (null == channelSet) {
@@ -104,8 +116,14 @@ public class SubscriberService {
      * @param path the specified path
      * @return subscriber's channel list
      */
+    @SuppressWarnings({"unchecked"})
     public Set<Channel> getSubscriberChannels(String path) {
         try {
+            //valid the path
+            if(StringUtils.isBlank(path)){
+                return Collections.EMPTY_SET;
+            }
+
             readLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
             return this.path2ChannelMap.get(path);
         } catch (InterruptedException ex) {
@@ -122,8 +140,14 @@ public class SubscriberService {
      * @param channel the specified channel
      * @return subscriber's path list
      */
+    @SuppressWarnings({"unchecked"})
     public Set<String> getPathByChannel(Channel channel) {
         try {
+
+            if(null == channel){
+                return Collections.EMPTY_SET;
+            }
+
             readLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
             return this.channel2PathMap.get(channel);
         } catch (InterruptedException ex) {

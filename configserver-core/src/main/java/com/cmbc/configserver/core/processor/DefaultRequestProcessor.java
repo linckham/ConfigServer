@@ -49,6 +49,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
+        //TODO: update the publisher's channel heart beat
         String responseBody = "OK";
         int code = RemotingSysResponseCode.SYSTEM_ERROR;
         try {
@@ -71,6 +72,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand unPublishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
+        //TODO: update the publisher's channel heart beat
         String responseBody = "OK";
         int code = RemotingSysResponseCode.SYSTEM_ERROR;
         try {
@@ -101,7 +103,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
             boolean bSubscribe = this.configServerController.getConfigServerService().subscribe(config,ctx.channel());
-            if(bSubscribe){
+            if(bSubscribe && null != ctx.channel() && ctx.channel().isActive()){
                 code = ResponseCode.SUBSCRIBE_CONFIG_OK;
                 List<Configuration> configs = this.configServerController.getConfigServerService().getConfigStorage().getConfigurationList(config);
                 Notify notify = new Notify();

@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -19,7 +20,8 @@ import java.sql.SQLException;
 public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
     private static String SQL_CHANGE_LOG_INSERT = "insert into config_change_log(path,md5) values(?,?)";
     private static String SQL_CHANGE_LOG_UPDATE = "update config_change_log set md5=? where path=?";
-    private static String SQL_CHANGE_LOG_QUERY = "insert into config_change_log(path,md5) values(?,?)";
+    private static String SQL_CHANGE_LOG_QUERY = "select * from config_change_log when path=?";
+    private static String SQL_CHANGE_LOG_QUERY_ALL = "select * from config_change_log";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -62,6 +64,17 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
             return changeLog;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get configuration change log ").append(path).append(" failed. detail is "), ex);
+            throw ex;
+        }
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
+        try {
+            return (List<ConfigChangeLog>) this.jdbcTemplate.query(SQL_CHANGE_LOG_QUERY_ALL, new ConfigChangeLogRowMapper());
+        } catch (Exception ex) {
+            ConfigServerLogger.error(new StringBuilder(128).append("get all config_change_log failed. detail is "), ex);
             throw ex;
         }
     }

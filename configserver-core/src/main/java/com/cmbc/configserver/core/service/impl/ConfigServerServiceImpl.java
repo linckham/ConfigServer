@@ -8,6 +8,8 @@ import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 
 import io.netty.channel.Channel;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * the implementation of ConfigServerService
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -58,6 +60,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      */
     @Override
     public boolean publish(Configuration config) throws Exception{
+        validConfiguration(config);
         boolean bSuccess = this.configStorage.publish(config);
         if(bSuccess){
             //publish the publish event
@@ -78,11 +81,12 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      */
     @Override
     public boolean unPublish(Configuration config)  throws Exception{
+        validConfiguration(config);
         boolean bSuccess = this.configStorage.unPublish(config);
         if(bSuccess){
             //publish the unPublish event
             Event event = new Event();
-            event.setEventType(EventType.UNPUBLISH);
+            event.setEventType(EventType.UN_PUBLISH);
             event.setEventSource(config);
             event.setEventCreatedTime(System.currentTimeMillis());
             this.notifyService.publish(event);
@@ -98,7 +102,8 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      * @return true if subscribed successfully,else false
      */
     @Override
-    public boolean subscribe(Configuration config,Channel channel){
+    public boolean subscribe(Configuration config,Channel channel) throws Exception{
+        validConfiguration(config);
         boolean bSuccess = this.configStorage.subscribe(config,channel);
         return bSuccess;
     }
@@ -111,7 +116,8 @@ public class ConfigServerServiceImpl implements ConfigServerService {
      * @return true if unSubscribed successfully,else false
      */
     @Override
-    public boolean unSubscribe(Configuration config,Channel channel) {
+    public boolean unSubscribe(Configuration config,Channel channel) throws Exception {
+        validConfiguration(config);
         return this.configStorage.unSubscribe(config,channel);
     }
 
@@ -123,5 +129,22 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     @Override
     public void shutdown(){
         this.notifyService.stop();
+    }
+
+    private void validConfiguration(Configuration config) throws Exception{
+        if(null == config){
+            throw new NullPointerException("configuration is null");
+        }
+        if(StringUtils.isBlank(config.getCell())){
+            throw new IllegalArgumentException("config cell is null or empty!");
+        }
+
+        if(StringUtils.isBlank(config.getResource())){
+            throw new IllegalArgumentException("config resource is null or empty!");
+        }
+
+        if(StringUtils.isBlank(config.getType())){
+            throw new IllegalArgumentException("config type is null or empty!");
+        }
     }
 }

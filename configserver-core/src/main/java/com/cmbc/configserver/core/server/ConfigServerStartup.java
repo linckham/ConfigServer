@@ -31,7 +31,7 @@ public class ConfigServerStartup {
             final ConfigServerService configServerService = new ConfigServerServiceImpl(configStorage,notifyService);
             final ConfigServerController controller = new ConfigServerController(configNettyServer,configServerService);
 
-            boolean initialized = controller.intialize();
+            boolean initialized = controller.initialize();
             if (!initialized) {
                 controller.shutdown();
                 System.exit(-3);

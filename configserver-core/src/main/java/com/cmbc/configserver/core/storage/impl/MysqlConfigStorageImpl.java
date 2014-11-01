@@ -64,7 +64,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         //save the configuration success
         if(config.getId() > 0){
             //update the category's md5
-            updateMd5(category,PathUtils.getSubscriberPath(config));
+            updateMd5(category,PathUtils.getSubscriberPath(config),true);
         }
 
         return config.getId() > 0;
@@ -72,10 +72,8 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
 
     /**
      * update the md5 of the specified category
-     *
-     * @param category
      */
-    private void updateMd5(Category category, String path) {
+    private void updateMd5(Category category, String path,boolean isPublish) {
         try{
             //calculate the /cell/resource/type md5
             List<Configuration> configList = this.configDao.getConfigurationList(category);
@@ -83,7 +81,21 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
             ConfigChangeLog changeLog = new ConfigChangeLog();
             changeLog.setMd5(md5);
             changeLog.setPath(path);
-            boolean bChangeLog = this.configChangeLogDao.add(changeLog);
+            boolean bChangeLog;
+            //only in the publish case, we should check the path where exists in config_change_log
+            if(isPublish){
+                ConfigChangeLog dbChangeLog = this.configChangeLogDao.getConfigChangeLog(path);
+                if(null != dbChangeLog){
+                    bChangeLog = this.configChangeLogDao.update(changeLog);
+                }
+                else{
+                    bChangeLog = this.configChangeLogDao.add(changeLog);
+                }
+            }
+            else{
+                bChangeLog = this.configChangeLogDao.update(changeLog);
+            }
+
             if (!bChangeLog) {
                 ConfigServerLogger.warn(String.format("add/update the path %s's md5 %s failed.", path, md5));
                 //TODO:add a event,repair this async in backend thread
@@ -113,7 +125,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
 
         if(bDelConfig){
             //update the change log
-            updateMd5(category,PathUtils.getSubscriberPath(config));
+            updateMd5(category,PathUtils.getSubscriberPath(config),false);
         }
 
         return bDelConfig;

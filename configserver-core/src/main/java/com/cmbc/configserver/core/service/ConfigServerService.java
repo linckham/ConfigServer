@@ -33,7 +33,7 @@ public interface ConfigServerService {
      * @param config the configuration that will being subscribed
      * @return true if subscribed successfully,else false
      */
-    public boolean subscribe(Configuration config,Channel channel);
+    public boolean subscribe(Configuration config,Channel channel) throws Exception;
 
     /**
      * unSubscribe the specified configuration which is in the config server
@@ -42,7 +42,7 @@ public interface ConfigServerService {
      * @param channel the subscriber's channel
      * @return true if unSubscribed successfully,else false
      */
-    public boolean unSubscribe(Configuration config,Channel channel);
+    public boolean unSubscribe(Configuration config,Channel channel) throws Exception;
 
     public void start() throws Exception;
     public void shutdown();

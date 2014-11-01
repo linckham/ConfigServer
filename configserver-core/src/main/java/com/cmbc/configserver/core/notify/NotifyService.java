@@ -20,16 +20,16 @@ import java.util.Set;
 import java.util.concurrent.*;
 
 /**
- * the notify service
+ * the notify service uses to manage change event of the configuration.<br/>
+ * It receive the change event and get the latest configuration from database, eventually push the configuration to subscriber channels.<br/>
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
  * @Date 2014/10/31
  * @Time 11:12
  */
 public class NotifyService {
-    private static final int MAX_EVENT_ITEM = 1024 * 1024;
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
-    private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(MAX_EVENT_ITEM);
+    private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(Constants.DEFAULT_MAX_QUEUE_ITEM);
     private volatile boolean stop = true;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ThreadPoolExecutor notifyExecutor;
@@ -61,7 +61,7 @@ public class NotifyService {
         this.scheduler.execute(new EventDispatcher());
         this.notifyExecutor = new ThreadPoolExecutor(16, 48, 60 * 1000,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(MAX_EVENT_ITEM),
+                new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM),
                 new ThreadFactoryImpl("config-event-thread-"));
     }
 
@@ -90,7 +90,7 @@ public class NotifyService {
         this.notifyExecutor.execute(new NotifyWorker(event));
     }
 
-    private void onSubscribed(Event event) {
+    private void onPathDataChanged(Event event) {
         this.notifyExecutor.execute(new NotifyWorker(event));
     }
 
@@ -106,9 +106,18 @@ public class NotifyService {
 
         @Override
         public void run() {
-            if (EventType.PUBLISH == event.getEventType() || EventType.UNPUBLISH == event.getEventType()) {
+            if (EventType.PUBLISH == event.getEventType() || EventType.UN_PUBLISH == event.getEventType()) {
+                Configuration config = (Configuration) event.getEventSource();
+                this.doNotify(config);
+            } else if (EventType.PATH_DATA_CHANGED == event.getEventType()) {
+                Configuration config = PathUtils.path2Configuration((String) event.getEventSource());
+                this.doNotify(config);
+            }
+        }
+
+        private void doNotify(Configuration config) {
+            if (null != config) {
                 try {
-                    Configuration config = (Configuration) event.getEventSource();
                     // get the configuration list which is the latest version in the server.
                     List<Configuration> configList = NotifyService.this.configStorage.getConfigurationList(config);
                     if (null != configList && !configList.isEmpty()) {
@@ -117,7 +126,7 @@ public class NotifyService {
                         notify.setPath(subscriberPath);
                         notify.setConfigLists(configList);
 
-                        //create RemotingCommand
+                        //create remote command
                         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
                         byte[] body = RemotingSerializable.encode(notify);
                         if (null != body) {
@@ -128,12 +137,15 @@ public class NotifyService {
                         //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
                         if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
                             for (Channel channel : subscriberChannels) {
-                                NotifyService.this.getConfigNettyServer().getRemotingServer().invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+                                if (null != channel && channel.isActive()) {
+                                    NotifyService.this.getConfigNettyServer()
+                                            .getRemotingServer()
+                                            .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+                                }
                             }
                         }
                     }
                 } catch (Exception e) {
-                    //log the exception
                     ConfigServerLogger.error("NotifyWorker process failed, details is ", e);
                 }
             }
@@ -153,10 +165,10 @@ public class NotifyService {
                         long delayTime = System.currentTimeMillis() - event.getEventCreatedTime();
                         if (delayTime <= MAX_DELAY_TIME) {
                             EventType eventType = event.getEventType();
-                            if (EventType.PUBLISH == eventType || EventType.UNPUBLISH == eventType) {
+                            if (EventType.PUBLISH == eventType || EventType.UN_PUBLISH == eventType) {
                                 onConfigChanged(event);
-                            } else if (EventType.SUBCRIBE == eventType) {
-                                onSubscribed(event);
+                            } else if (EventType.PATH_DATA_CHANGED == eventType) {
+                                onPathDataChanged(event);
                             }
                         } else {
                             //log this event and ignore
