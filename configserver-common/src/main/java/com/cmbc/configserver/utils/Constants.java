@@ -62,4 +62,9 @@ public class Constants {
      * the default timeout of socket reading timeout.
      */
     public static final int DEFAULT_SOCKET_READING_TIMEOUT = 5*1000;
+
+    /**
+     * the default max queue item
+     */
+    public static final int DEFAULT_MAX_QUEUE_ITEM = 1024*1024;
 }

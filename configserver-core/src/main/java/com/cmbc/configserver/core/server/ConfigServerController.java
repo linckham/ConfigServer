@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
  */
 public class ConfigServerController {
     private ConfigNettyServer configNettyServer;
-    private ExecutorService remotingExecutor;
+    private ExecutorService remoteExecutor;
     private ConfigServerService configServerService;
 
     public ConfigServerController(ConfigNettyServer configNettyServer,ConfigServerService configServerService) {
@@ -31,15 +31,15 @@ public class ConfigServerController {
      * initialize the ConfigServer Controller
      * @return true if the controller initialize successfully,else false.
      */
-    public boolean intialize() {
-        this.remotingExecutor = Executors.newFixedThreadPool(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
+    public boolean initialize() {
+        this.remoteExecutor = Executors.newFixedThreadPool(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
         this.configNettyServer.initialize(this);
         this.registerProcessor();
         return true;
     }
 
     private void registerProcessor() {
-        this.configNettyServer.getRemotingServer().registerDefaultProcessor(new DefaultRequestProcessor(this), this.remotingExecutor);
+        this.configNettyServer.getRemotingServer().registerDefaultProcessor(new DefaultRequestProcessor(this), this.remoteExecutor);
     }
 
     public void start() throws Exception{
@@ -49,7 +49,7 @@ public class ConfigServerController {
 
     public void shutdown(){
         this.configNettyServer.getRemotingServer().shutdown();
-        this.remotingExecutor.shutdown();
+        this.remoteExecutor.shutdown();
         this.configServerService.shutdown();
     }
 }

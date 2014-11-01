@@ -2,6 +2,8 @@ package com.cmbc.configserver.utils;
 
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.Configuration;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * the helper class that use to operate the path
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -22,15 +24,15 @@ public class PathUtils {
             throw new IllegalArgumentException("configuration can not be null!");
         }
 
-        if(null == config.getCell() || config.getCell().isEmpty()){
+        if(StringUtils.isBlank(config.getCell())){
             throw new IllegalArgumentException("configuration's cell can not be null or empty!");
         }
 
         StringBuilder pathBuilder = new StringBuilder(64);
         pathBuilder.append(Constants.PATH_SEPARATOR).append(config.getCell());
-        if(null != config.getResource() && !config.getResource().isEmpty()){
+        if(StringUtils.isNotBlank(config.getResource())){
             pathBuilder.append(Constants.PATH_SEPARATOR).append(config.getResource());
-            if(null != config.getType() && !config.getType().isEmpty()){
+            if(StringUtils.isNotBlank(config.getType())){
                 pathBuilder.append(Constants.PATH_SEPARATOR).append(config.getType());
             }
         }
@@ -43,7 +45,7 @@ public class PathUtils {
      * @return the Category of the path
      */
     public static  Category path2Category(String path){
-        if (null == path || path.isEmpty()) {
+        if (StringUtils.isBlank(path)) {
             throw new IllegalArgumentException("path can not be null or empty!");
         }
 
@@ -64,4 +66,23 @@ public class PathUtils {
         category.setType(paths[3]);
         return category;
     }
+
+    /**
+     * according the path,get the specified configuration object
+     *
+     * @param path the specified path
+     * @return the Configuration of the path
+     */
+    public static Configuration path2Configuration(String path) {
+        Category category = path2Category(path);
+        if (null != category) {
+            Configuration config = new Configuration();
+            config.setCell(category.getCell());
+            config.setResource(category.getResource());
+            config.setType(category.getType());
+            return config;
+        }
+        return null;
+    }
+
 }

@@ -2,6 +2,8 @@ package com.cmbc.configserver.core.dao;
 
 import com.cmbc.configserver.domain.ConfigChangeLog;
 
+import java.util.List;
+
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
@@ -14,4 +16,6 @@ public interface ConfigChangeLogDao {
     public boolean update(ConfigChangeLog changeLog) throws Exception;
 
     public ConfigChangeLog getConfigChangeLog(String path) throws Exception;
+
+    public List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception;
 }

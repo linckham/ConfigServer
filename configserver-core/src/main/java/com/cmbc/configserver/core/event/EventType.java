@@ -8,6 +8,6 @@ package com.cmbc.configserver.core.event;
  */
 public enum EventType {
     PUBLISH,
-    UNPUBLISH,
-    SUBCRIBE;
+    UN_PUBLISH,
+    PATH_DATA_CHANGED;
 }
