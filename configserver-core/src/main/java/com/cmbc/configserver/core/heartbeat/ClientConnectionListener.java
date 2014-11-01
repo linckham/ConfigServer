@@ -7,6 +7,7 @@ import com.cmbc.configserver.remoting.ChannelEventListener;
 
 public class ClientConnectionListener implements ChannelEventListener{
 	private ConfigServerController configServerController;
+	//TODO
 	private HeartbeatService heartbeatService;
 	
 	public ClientConnectionListener(ConfigServerController configServerController){

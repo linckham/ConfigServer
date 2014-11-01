@@ -330,7 +330,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 
 			if (NettyRemotingServer.this.channelEventListener != null) {
 				NettyRemotingServer.this.putNettyEvent(new NettyEvent(
-						NettyEventType.CONNECT, remoteAddress.toString(), ctx
+						NettyEventType.ACTIVE, remoteAddress.toString(), ctx
 								.channel()));
 			}
 		}
@@ -360,7 +360,6 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 							.parseChannelRemoteAddr(ctx.channel());
 					log.warn("NETTY SERVER PIPELINE: IDLE exception [{}]",
 							remoteAddress);
-					RemotingUtil.closeChannel(ctx.channel());
 					if (NettyRemotingServer.this.channelEventListener != null) {
 						NettyRemotingServer.this.putNettyEvent(new NettyEvent(
 								NettyEventType.IDLE, remoteAddress.toString(),
@@ -385,8 +384,6 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 						NettyEventType.EXCEPTION, remoteAddress.toString(), ctx
 								.channel()));
 			}
-
-			RemotingUtil.closeChannel(ctx.channel());
 		}
 	}
 

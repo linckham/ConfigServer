@@ -144,7 +144,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 			final String remoteAddress = RemotingHelper
 					.parseChannelRemoteAddr(ctx.channel());
 			log.info("NETTY CLIENT PIPELINE: DISCONNECT {}", remoteAddress);
-			closeChannel(ctx.channel());
 			super.disconnect(ctx, promise);
 
 			if (NettyRemotingClient.this.channelEventListener != null) {
@@ -160,7 +159,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 			final String remoteAddress = RemotingHelper
 					.parseChannelRemoteAddr(ctx.channel());
 			log.info("NETTY CLIENT PIPELINE: CLOSE {}", remoteAddress);
-			closeChannel(ctx.channel());
 			super.close(ctx, promise);
 
 			if (NettyRemotingClient.this.channelEventListener != null) {
@@ -177,7 +175,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 					.parseChannelRemoteAddr(ctx.channel());
 			log.warn("NETTY CLIENT PIPELINE: exceptionCaught {}", remoteAddress);
 			log.warn("NETTY CLIENT PIPELINE: exceptionCaught exception.", cause);
-			closeChannel(ctx.channel());
 			if (NettyRemotingClient.this.channelEventListener != null) {
 				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
 						NettyEventType.EXCEPTION, remoteAddress.toString(), ctx
