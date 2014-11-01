@@ -240,7 +240,6 @@ public class ConfigClientImpl implements ConfigClient {
 	}
 	
 	public void clear(Channel channel){
-		//TODO reset works
 		remotingClient.closeChannel(channel);
 		this.heartbeatFailedTimes.set(0);
 		this.subcribeMap.clear();

@@ -1,8 +1,13 @@
 package com.cmbc.configserver.core.processor;
 
+import io.netty.channel.ChannelHandlerContext;
+
+import java.util.List;
+
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
+import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
@@ -11,9 +16,6 @@ import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 import com.cmbc.configserver.utils.PathUtils;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.List;
 
 /**
  * the default request processor of ConfigServer
@@ -24,6 +26,7 @@ import java.util.List;
  */
 public class DefaultRequestProcessor implements RequestProcessor {
     private final ConfigServerController configServerController;
+    private HeartbeatService heartbeatService;
 
     public DefaultRequestProcessor(ConfigServerController controller) {
         this.configServerController = controller;
@@ -31,6 +34,9 @@ public class DefaultRequestProcessor implements RequestProcessor {
 
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
+    	//update channel info
+    	heartbeatService.updateHeartbeat(ctx.channel());
+    	
         switch (request.getCode()) {
             case RequestCode.PUBLISH_CONFIG:
                 return this.publishConfig(ctx, request);

@@ -10,7 +10,15 @@ package com.cmbc.configserver.domain;
 public class ConfigHeartBeat {
     private String clientId;
     private long lastModifiedTime;
+    
+    public ConfigHeartBeat(){
+    }
 
+    public ConfigHeartBeat(String clientId,long lastModifiedTime){
+    	this.clientId = clientId;
+    	this.lastModifiedTime = lastModifiedTime;
+    }
+    
     public long getLastModifiedTime() {
         return lastModifiedTime;
     }

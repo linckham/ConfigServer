@@ -33,7 +33,7 @@ public class ConfigServerController {
      */
     public boolean intialize() {
         this.remotingExecutor = Executors.newFixedThreadPool(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
-        this.configNettyServer.initialize();
+        this.configNettyServer.initialize(this);
         this.registerProcessor();
         return true;
     }

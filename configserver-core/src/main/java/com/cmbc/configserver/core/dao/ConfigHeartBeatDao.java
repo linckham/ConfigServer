@@ -13,6 +13,8 @@ public interface ConfigHeartBeatDao {
 
     public boolean update(ConfigHeartBeat heartBeat) throws Exception;
 
-    public boolean delete(ConfigHeartBeat heartBeat) throws Exception;
+    public boolean delete(String clientId) throws Exception;
+    
+    public ConfigHeartBeat get(String clientId) throws Exception;
 
 }
