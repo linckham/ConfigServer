@@ -65,7 +65,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             }
             //valid the client id
             if(null == config.getClientId() || config.getClientId().isEmpty()){
-                config.setClientId(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
             }
 
             this.configServerController.getConfigServerService().publish(config);
@@ -88,7 +88,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             }
             //valid the client id
             if(null == config.getClientId() || config.getClientId().isEmpty()){
-                config.setClientId(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
             }
 
             this.configServerController.getConfigServerService().unPublish(config);

@@ -8,6 +8,8 @@ package com.cmbc.configserver.domain;
  * @Time 20:32
  */
 public class ConfigHeartBeat {
+	public static long DB_TIMEOUT = 60 * 1000;
+	
     private String clientId;
     private long lastModifiedTime;
     

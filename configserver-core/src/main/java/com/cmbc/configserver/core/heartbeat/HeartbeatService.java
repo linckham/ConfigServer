@@ -3,6 +3,7 @@ package com.cmbc.configserver.core.heartbeat;
 import io.netty.channel.Channel;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +36,7 @@ public class HeartbeatService {
             public void run() {
                 try {
                 	HeartbeatService.this.scanTimeoutChannel();
+                	HeartbeatService.this.scanDBTimeoutClient();
                 }
                 catch (Exception e) {
                 	ConfigServerLogger.warn("timeout scan error", e);
@@ -43,12 +45,16 @@ public class HeartbeatService {
         }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
     }
 	
+	public void shutdown(){
+		this.scheduledExecutorService.shutdown();
+	}
+	
 	public HeartbeatService(){
 		this.heartbeatInfoTable = new ConcurrentHashMap<String, HeartbeatInfo>(256);
 	}
 	
 	public void channelCreated(Channel channel){
-		String clientId = RemotingHelper.parseChannelRemoteAddr(channel);
+		String clientId = RemotingHelper.getChannelId(channel);
 		ConfigHeartBeat configHeartBeat = null;
 		try {
 			configHeartBeat = heartbeatDao.get(clientId);
@@ -79,7 +85,7 @@ public class HeartbeatService {
 	}
 	
 	public void updateHeartbeat(Channel channel){
-		String clientId = RemotingHelper.parseChannelRemoteAddr(channel);
+		String clientId = RemotingHelper.getChannelId(channel);
 		HeartbeatInfo heartbeatInfo = heartbeatInfoTable.get(clientId);
 		if(heartbeatInfo == null){
 			ConfigServerLogger.error("heartbeatInfo is null in updateHeartbeat!");
@@ -108,6 +114,10 @@ public class HeartbeatService {
 		}
 	}
 	
+	/**
+	 * when config server is down,there will left the client configuration of this server,
+	 * so use this method to scan the left configuration.
+	 */
 	public void scanTimeoutChannel(){
 		Iterator<Entry<String, HeartbeatInfo>> i = heartbeatInfoTable.entrySet().iterator();
 		while(i.hasNext()){
@@ -115,13 +125,26 @@ public class HeartbeatService {
 			if(System.currentTimeMillis() - heartbeatInfo.getLastUpdateMillis() > HeartbeatInfo.TIMEOUT){
 				i.remove();
 				this.clearChannel(heartbeatInfo.getChannel());
-				
 			}
 		}
 	}
 	
+	public void scanDBTimeoutClient(){
+		try {
+			List<ConfigHeartBeat> configHeartbeats = heartbeatDao.getTimeout();
+			if(configHeartbeats != null){
+				for(ConfigHeartBeat configHeartBeat:configHeartbeats){
+					heartbeatDao.delete(configHeartBeat.getClientId());
+					//TODO delete configuration
+				}
+			}
+		} catch (Exception e) {
+			ConfigServerLogger.error("scanDBTimeoutClient error", e);
+		}
+	}
+	
 	public void clearChannel(Channel channel){
-		String clientId = RemotingHelper.parseChannelRemoteAddr(channel);
+		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
 		try {
 			heartbeatDao.delete(clientId);

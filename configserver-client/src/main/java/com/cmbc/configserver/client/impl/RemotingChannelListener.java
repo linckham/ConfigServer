@@ -33,7 +33,6 @@ public class RemotingChannelListener implements ChannelEventListener{
 
 	@Override
 	public void onChannelActive(Channel channel) {
-		
 	}
 
 }

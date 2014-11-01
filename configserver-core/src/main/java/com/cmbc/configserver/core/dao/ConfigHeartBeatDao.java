@@ -1,5 +1,7 @@
 package com.cmbc.configserver.core.dao;
 
+import java.util.List;
+
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 
 /**
@@ -16,5 +18,7 @@ public interface ConfigHeartBeatDao {
     public boolean delete(String clientId) throws Exception;
     
     public ConfigHeartBeat get(String clientId) throws Exception;
+    
+    public List<ConfigHeartBeat> getTimeout() throws Exception;
 
 }

@@ -58,6 +58,29 @@ public class RemotingHelper {
 
 		return "";
 	}
+	
+	public static String parseChannelLocalAddr(final Channel channel){
+		if (null == channel) {
+			return "";
+		}
+		final SocketAddress local = channel.localAddress();
+		final String addr = local != null ? local.toString() : "";
+		
+		if (addr.length() > 0) {
+			int index = addr.lastIndexOf("/");
+			if (index >= 0) {
+				return addr.substring(index + 1);
+			}
+
+			return addr;
+		}
+
+		return "";
+	}
+	
+	public static String getChannelId(final Channel channel){
+		return parseChannelRemoteAddr(channel) + "-" + parseChannelLocalAddr(channel);
+	}
 
 	public static String parseChannelRemoteName(final Channel channel) {
 		if (null == channel) {
