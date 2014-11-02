@@ -212,7 +212,7 @@ public class ConfigClientImpl implements ConfigClient {
 	
 	
 	public void sendHeartbeat(Channel channel){
-		int retryTime = 3;
+		int retryTime = 2;
 		boolean sendSuccessed = false;
 		for(int i= 0; i< retryTime; i++){
 			RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEARTBEAT);

@@ -93,6 +93,8 @@ public class HeartbeatService {
 		}else{
 			heartbeatInfo.setLastUpdateMillis(System.currentTimeMillis());
 			if(heartbeatInfo.getLastDBSyncMillis() <= 0){
+				// save heartbeat to db error in channelCreated
+				ConfigServerLogger.warn("heartbeatInfo lastDBSyncMillis <= 0");
 				try {
 					ConfigHeartBeat configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
 					heartbeatDao.save(configHeartBeat);
@@ -134,8 +136,8 @@ public class HeartbeatService {
 			List<ConfigHeartBeat> configHeartbeats = heartbeatDao.getTimeout();
 			if(configHeartbeats != null){
 				for(ConfigHeartBeat configHeartBeat:configHeartbeats){
-					heartbeatDao.delete(configHeartBeat.getClientId());
 					//TODO delete configuration
+					heartbeatDao.delete(configHeartBeat.getClientId());
 				}
 			}
 		} catch (Exception e) {
@@ -146,15 +148,15 @@ public class HeartbeatService {
 	public void clearChannel(Channel channel){
 		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
-		try {
-			heartbeatDao.delete(clientId);
-		} catch (Exception e) {
-			ConfigServerLogger.error("save client heartbeat error", e);
-		}
-		
 		RemotingUtil.closeChannel(channel);
 		//TODO delete subscribe
 		
 		//TODO delete configuration
+		
+		try {
+			heartbeatDao.delete(clientId);
+		} catch (Exception e) {
+			ConfigServerLogger.error("delete client heartbeat error", e);
+		}
 	}
 }

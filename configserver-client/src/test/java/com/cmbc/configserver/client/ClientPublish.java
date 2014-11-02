@@ -28,7 +28,7 @@ public class ClientPublish {
 		
         
 		
-		for(int i=0 ; i<100 ;i++){
+		for(int i=0 ; i<0 ;i++){
 			
 			Configuration config = new Configuration();
 			Node node = new Node();
