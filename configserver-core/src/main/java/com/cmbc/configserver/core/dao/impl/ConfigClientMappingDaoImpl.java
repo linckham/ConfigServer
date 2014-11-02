@@ -26,6 +26,9 @@ public class ConfigClientMappingDaoImpl implements ConfigClientMappingDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public boolean save(ConfigClientMapping ccMapping) throws Exception {

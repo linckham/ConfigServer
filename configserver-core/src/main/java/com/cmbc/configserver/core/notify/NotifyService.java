@@ -36,11 +36,6 @@ public class NotifyService {
     private ConfigStorage configStorage;
     private ConfigNettyServer configNettyServer;
 
-    public NotifyService(ConfigStorage configStorage,ConfigNettyServer nettyServer){
-        this.configStorage = configStorage;
-        this.configNettyServer =  nettyServer;
-    }
-
     public void setConfigStorage(ConfigStorage configStorage) {
         this.configStorage = configStorage;
     }

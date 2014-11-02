@@ -24,9 +24,12 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     private static String SQL_HEARTBEAT_DELETE = "delete from config_heart_beat where client_id=?";
     private static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=?";
     private static String SQL_HEARTBEAT_GET_TIMEOUT = "select * from config_heart_beat where last_modified_time<?";
-    
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public boolean save(ConfigHeartBeat heartBeat) throws Exception {

@@ -9,6 +9,9 @@ import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 /**
  * the bootstrap class of the config-server process.<br/>
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -19,23 +22,16 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 public class ConfigServerStartup {
     public static void main(String[] args) {
         try {
-            final NettyServerConfig nettyServerConfig = new NettyServerConfig();
-            //TODO: get the listen port from the configuration file or the command option
-            nettyServerConfig.setListenPort(19999);
-            ConfigNettyServer configNettyServer = new ConfigNettyServer(nettyServerConfig);
-
-            SubscriberService subscriberService = new SubscriberService();
-            final ConfigStorage configStorage = new LocalMemoryConfigStorageImpl();
-            ((LocalMemoryConfigStorageImpl)configStorage).setSubscriberService(subscriberService);
-            final NotifyService notifyService = new NotifyService(configStorage,configNettyServer);
-            final ConfigServerService configServerService = new ConfigServerServiceImpl(configStorage,notifyService);
-            final ConfigServerController controller = new ConfigServerController(configNettyServer,configServerService);
+            ApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring/config-server.xml");
+            //get the configServerController from the sprint context
+            final ConfigServerController controller = (ConfigServerController) context.getBean("configServerController");
 
             boolean initialized = controller.initialize();
             if (!initialized) {
                 controller.shutdown();
                 System.exit(-3);
             }
+
             //add the shutdown hook for ConfigServer
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                         private volatile boolean hasShutdown = false;
@@ -47,7 +43,7 @@ public class ConfigServerStartup {
                                     long beginTime = System.currentTimeMillis();
                                     controller.shutdown();
                                     long consumingTime = System.currentTimeMillis() - beginTime;
-                                    String tips = String.format("the shutdown action of ConfigServer cost %s ms",consumingTime);
+                                    String tips = String.format("the shutdown action of ConfigServer cost %s ms", consumingTime);
                                     ConfigServerLogger.info(tips);
                                     System.out.println(tips);
                                 }

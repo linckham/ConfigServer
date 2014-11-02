@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    <import resource="config-server-property-holder.xml"/>
+    <import resource="config-server-service.xml"/>
+
+    <bean id="defaultRequestProcessor" class="com.cmbc.configserver.core.processor.DefaultRequestProcessor">
+        <property name="configServerService" ref="configServerService"/>
+        <property name="heartbeatService" ref="heartbeatService"/>
+    </bean>
+
+    <bean id="configServerController" class="com.cmbc.configserver.core.server.ConfigServerController"
+          init-method="initialize" destroy-method="shutdown">
+        <property name="configNettyServer" ref="configNettyServer"/>
+        <property name="configServerService" ref="configServerService"/>
+        <property name="defaultRequestProcessor" ref="defaultRequestProcessor"/>
+    </bean>
+</beans>

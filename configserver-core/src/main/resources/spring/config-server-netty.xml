@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    <bean id="nettyServerConfig" class="com.cmbc.configserver.remoting.netty.NettyServerConfig">
+        <property name="listenPort" value="${configServer.listenPort}"/>
+    </bean>
+
+    <bean id="clientConnectionListener" class="com.cmbc.configserver.core.heartbeat.ClientConnectionListener">
+        <property name="configServerController" ref="configServerController"/>
+        <property name="heartbeatService" ref="heartbeatService"/>
+    </bean>
+
+    <bean id="configNettyServer" class="com.cmbc.configserver.core.server.ConfigNettyServer">
+        <property name="nettyServerConfig" ref="nettyServerConfig"/>
+        <property name="clientConnectionListener" ref="clientConnectionListener"/>
+    </bean>
+</beans>
+

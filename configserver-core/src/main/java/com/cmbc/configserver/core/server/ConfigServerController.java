@@ -3,6 +3,7 @@ package com.cmbc.configserver.core.server;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
 import com.cmbc.configserver.core.service.ConfigServerService;
+import com.cmbc.configserver.remoting.common.RequestProcessor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,13 +17,22 @@ import java.util.concurrent.Executors;
  */
 public class ConfigServerController {
     private ConfigNettyServer configNettyServer;
-    private ExecutorService remoteExecutor;
     private ConfigServerService configServerService;
+    private RequestProcessor defaultRequestProcessor;
+    private ExecutorService remoteExecutor;
 
-    public ConfigServerController(ConfigNettyServer configNettyServer,ConfigServerService configServerService) {
-        this.configNettyServer = configNettyServer;
-        this.configServerService =configServerService;
+    public void setDefaultRequestProcessor(RequestProcessor defaultRequestProcessor) {
+        this.defaultRequestProcessor = defaultRequestProcessor;
     }
+
+    public void setConfigNettyServer(ConfigNettyServer configNettyServer) {
+        this.configNettyServer = configNettyServer;
+    }
+
+    public void setConfigServerService(ConfigServerService configServerService) {
+        this.configServerService = configServerService;
+    }
+
 
     public ConfigServerService getConfigServerService(){
         return this.configServerService;
@@ -39,7 +49,7 @@ public class ConfigServerController {
     }
 
     private void registerProcessor() {
-        this.configNettyServer.getRemotingServer().registerDefaultProcessor(new DefaultRequestProcessor(this), this.remoteExecutor);
+        this.configNettyServer.getRemotingServer().registerDefaultProcessor(this.defaultRequestProcessor, this.remoteExecutor);
     }
 
     public void start() throws Exception{
