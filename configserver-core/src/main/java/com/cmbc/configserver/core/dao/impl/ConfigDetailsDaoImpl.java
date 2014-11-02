@@ -13,10 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 /**
@@ -34,6 +31,9 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Configuration save(final Configuration config) throws Exception {
@@ -42,7 +42,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
             this.jdbcTemplate.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                    PreparedStatement preState =  con.prepareStatement(SQL_CONFIG_INSERT);
+                    PreparedStatement preState =  con.prepareStatement(SQL_CONFIG_INSERT, Statement.RETURN_GENERATED_KEYS);
                     preState.setInt(1,config.getCategoryId());
                     preState.setString(2,config.getNode().getData());
                     preState.setString(3,config.getClientId());

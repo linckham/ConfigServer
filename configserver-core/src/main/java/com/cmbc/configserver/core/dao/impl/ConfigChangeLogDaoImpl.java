@@ -25,6 +25,9 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public boolean add(ConfigChangeLog changeLog) throws Exception {

@@ -10,10 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 /**
@@ -34,6 +31,9 @@ public class CategoryDaoImpl implements CategoryDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public Category save(final Category category) throws Exception {
@@ -42,7 +42,7 @@ public class CategoryDaoImpl implements CategoryDao {
             this.jdbcTemplate.update(new PreparedStatementCreator() {
                 @Override
                 public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                    PreparedStatement preState = con.prepareStatement(SQL_CATEGORY_INSERT);
+                    PreparedStatement preState = con.prepareStatement(SQL_CATEGORY_INSERT, Statement.RETURN_GENERATED_KEYS);
                     preState.setString(1,category.getCell());
                     preState.setString(2,category.getResource());
                     preState.setString(3,category.getType());
@@ -144,11 +144,15 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public Category getCategory(String cell, String resource, String type) throws Exception {
         try {
-            return (Category) this.jdbcTemplate.queryForObject(SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE, new Object[]{
+            List<Category> categories = this.jdbcTemplate.query(SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE, new Object[]{
                     cell,
                     resource,
                     type
             }, new CategoryRowMapper());
+            if( null == categories || categories.isEmpty()){
+                return Category.EMPTY_MESSAGE;
+            }
+            return categories.get(0);
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get category by cell=").append(cell)
                     .append(",resource=").append(resource)

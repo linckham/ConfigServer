@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.processor;
 
+import com.cmbc.configserver.core.service.ConfigServerService;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.List;
@@ -25,11 +26,15 @@ import com.cmbc.configserver.utils.PathUtils;
  * @Time 11:12
  */
 public class DefaultRequestProcessor implements RequestProcessor {
-    private final ConfigServerController configServerController;
+    private ConfigServerService configServerService;
     private HeartbeatService heartbeatService;
 
-    public DefaultRequestProcessor(ConfigServerController controller) {
-        this.configServerController = controller;
+    public void setConfigServerService(ConfigServerService configServerService) {
+        this.configServerService = configServerService;
+    }
+
+    public void setHeartbeatService(HeartbeatService heartbeatService) {
+        this.heartbeatService = heartbeatService;
     }
 
     @Override
@@ -55,7 +60,6 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        //TODO: update the publisher's channel heart beat
         String responseBody = "OK";
         int code = RemotingSysResponseCode.SYSTEM_ERROR;
         try {
@@ -68,7 +72,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
                 config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
             }
 
-            this.configServerController.getConfigServerService().publish(config);
+            this.configServerService.publish(config);
             code = ResponseCode.PUBLISH_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.PUBLISH_CONFIG_FAILED;
@@ -78,7 +82,6 @@ public class DefaultRequestProcessor implements RequestProcessor {
     }
 
     private RemotingCommand unPublishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
-        //TODO: update the publisher's channel heart beat
         String responseBody = "OK";
         int code = RemotingSysResponseCode.SYSTEM_ERROR;
         try {
@@ -91,7 +94,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
                 config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
             }
 
-            this.configServerController.getConfigServerService().unPublish(config);
+            this.configServerService.unPublish(config);
             code = ResponseCode.UNPUBLISH_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.UNPUBLISH_CONFIG_FAILED;
@@ -108,10 +111,10 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            boolean bSubscribe = this.configServerController.getConfigServerService().subscribe(config,ctx.channel());
+            boolean bSubscribe = this.configServerService.subscribe(config,ctx.channel());
             if(bSubscribe && null != ctx.channel() && ctx.channel().isActive()){
                 code = ResponseCode.SUBSCRIBE_CONFIG_OK;
-                List<Configuration> configs = this.configServerController.getConfigServerService().getConfigStorage().getConfigurationList(config);
+                List<Configuration> configs = this.configServerService.getConfigStorage().getConfigurationList(config);
                 Notify notify = new Notify();
                 notify.setPath(PathUtils.getSubscriberPath(config));
                 notify.setConfigLists(configs);
@@ -136,7 +139,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            this.configServerController.getConfigServerService().unSubscribe(config,ctx.channel());
+            this.configServerService.unSubscribe(config,ctx.channel());
             code = ResponseCode.UNSUBSCRIBE_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.UNSUBSCRIBE_CONFIG_FAILED;

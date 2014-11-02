@@ -20,7 +20,7 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 
 public class HeartbeatService {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
-	private ConfigHeartBeatDao heartbeatDao;
+    private ConfigHeartBeatDao heartBeatDao;
 	private ScheduledExecutorService scheduledExecutorService = Executors
 			.newSingleThreadScheduledExecutor(new ThreadFactory() {
 				@Override
@@ -28,7 +28,12 @@ public class HeartbeatService {
 					return new Thread(r, "heartbeat_timeout_scan_thread");
 				}
 			});
-	
+
+
+    public void setHeartBeatDao(ConfigHeartBeatDao heartBeatDao) {
+        this.heartBeatDao = heartBeatDao;
+    }
+
 	public void start() {
         //scan timeout channel
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -57,7 +62,7 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		ConfigHeartBeat configHeartBeat = null;
 		try {
-			configHeartBeat = heartbeatDao.get(clientId);
+			configHeartBeat = heartBeatDao.get(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("get client heartbeat error", e);
 		}
@@ -74,7 +79,7 @@ public class HeartbeatService {
 				//save db
 				configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
 				try {
-					heartbeatDao.save(configHeartBeat);
+					heartBeatDao.save(configHeartBeat);
 					heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
@@ -95,7 +100,7 @@ public class HeartbeatService {
 			if(heartbeatInfo.getLastDBSyncMillis() <= 0){
 				try {
 					ConfigHeartBeat configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
-					heartbeatDao.save(configHeartBeat);
+					heartBeatDao.save(configHeartBeat);
 					heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
@@ -104,7 +109,7 @@ public class HeartbeatService {
 				if(heartbeatInfo.getLastUpdateMillis() - heartbeatInfo.getLastDBSyncMillis() >= HeartbeatInfo.SYNC_DB_INTERVAL){
 					try {
 						ConfigHeartBeat configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
-						heartbeatDao.update(configHeartBeat);
+						heartBeatDao.update(configHeartBeat);
 						heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
 					} catch (Exception e) {
 						ConfigServerLogger.error("update client heartbeat error", e);
@@ -131,10 +136,10 @@ public class HeartbeatService {
 	
 	public void scanDBTimeoutClient(){
 		try {
-			List<ConfigHeartBeat> configHeartbeats = heartbeatDao.getTimeout();
+			List<ConfigHeartBeat> configHeartbeats = heartBeatDao.getTimeout();
 			if(configHeartbeats != null){
 				for(ConfigHeartBeat configHeartBeat:configHeartbeats){
-					heartbeatDao.delete(configHeartBeat.getClientId());
+					heartBeatDao.delete(configHeartBeat.getClientId());
 					//TODO delete configuration
 				}
 			}
@@ -147,7 +152,7 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
 		try {
-			heartbeatDao.delete(clientId);
+			heartBeatDao.delete(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("save client heartbeat error", e);
 		}

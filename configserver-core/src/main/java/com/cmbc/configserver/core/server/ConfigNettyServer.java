@@ -12,24 +12,27 @@ import com.cmbc.configserver.remoting.netty.NettyServerConfig;
  * @Time 11:12
  */
 public class ConfigNettyServer {
-    private final NettyServerConfig nettyServerConfig;
+    private NettyServerConfig nettyServerConfig;
     private RemotingServer remotingServer;
+    private ClientConnectionListener clientConnectionListener;
 
-    public ConfigNettyServer(NettyServerConfig nettyServerConfig){
-        this.nettyServerConfig = nettyServerConfig;
+    public void setClientConnectionListener(ClientConnectionListener clientConnectionListener) {
+        this.clientConnectionListener = clientConnectionListener;
     }
 
-    public RemotingServer getRemotingServer() {
-        return this.remotingServer;
+    public void setNettyServerConfig(NettyServerConfig nettyServerConfig) {
+        this.nettyServerConfig = nettyServerConfig;
     }
 
     public NettyServerConfig getNettyServerConfig(){
         return this.nettyServerConfig;
     }
+    public RemotingServer getRemotingServer() {
+        return this.remotingServer;
+    }
 
     public boolean initialize(ConfigServerController configServerController) {
-    	ClientConnectionListener connectionListener = new ClientConnectionListener(configServerController);
-        this.remotingServer = new NettyRemotingServer(this.nettyServerConfig,connectionListener);
+        this.remotingServer = new NettyRemotingServer(this.nettyServerConfig,this.clientConnectionListener);
         return true;
     }
 

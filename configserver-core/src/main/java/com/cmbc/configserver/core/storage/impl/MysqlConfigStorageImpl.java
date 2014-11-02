@@ -13,6 +13,8 @@ import com.cmbc.configserver.utils.PathUtils;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * the implementation of the ConfigStorage that use mysql to storage the configuration.<br/>
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -21,8 +23,11 @@ import java.util.List;
  * @Time 11:12
  */
 public class MysqlConfigStorageImpl extends AbstractConfigStorage{
+    @Autowired
     private ConfigDetailsDao configDao;
+    @Autowired
     private CategoryDao categoryDao;
+    @Autowired
     private ConfigChangeLogDao configChangeLogDao;
 
     public void setConfigChangeLogDao(ConfigChangeLogDao configChangeLogDao) {
@@ -49,7 +54,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         }
         //check the category where exists
         Category category = this.categoryDao.getCategory(config.getCell(),config.getResource(),config.getType());
-        if(null == category){
+        if(Category.EMPTY_MESSAGE == category){
             Category tmpCategory =  new Category();
             tmpCategory.setCell(config.getCell());
             tmpCategory.setResource(config.getResource());

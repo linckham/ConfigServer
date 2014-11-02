@@ -21,16 +21,6 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     private ConfigStorage configStorage;
     private NotifyService notifyService;
 
-    public ConfigServerServiceImpl(ConfigStorage configStorage){
-        super();
-        this.configStorage = configStorage;
-    }
-
-    public ConfigServerServiceImpl(ConfigStorage configStorage,NotifyService notifyService){
-        this(configStorage);
-        this.notifyService = notifyService;
-    }
-
     public void setConfigStorage(ConfigStorage configStorage){
         this.configStorage = configStorage;
     }
@@ -45,7 +35,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     }
 
     public void setNotifyService(NotifyService notifyService){
-        this.notifyService = this.notifyService;
+        this.notifyService = notifyService;
     }
 
     public NotifyService getNotifyService(){
