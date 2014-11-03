@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,6 +54,15 @@ public class ConfigChangedNotifyService {
         this.scheduler.shutdown();
     }
 
+    /**
+     * update the path's md5
+     * @param path
+     * @param md5
+     */
+    public void updatePathMd5Cache(String path,String md5){
+        this.pathMd5Cache.put(path,md5);
+    }
+
     private List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
         //TODO: if the config_change_log has too many record, this way may be not better. consider an better resolution to fix this problem
         return this.configChangeLogDao.getAllConfigChangeLogs();
@@ -81,6 +91,7 @@ public class ConfigChangedNotifyService {
                             }
                         }
                     }
+                    TimeUnit.MILLISECONDS.sleep(Constants.DEFAULT_THREAD_SLEEP_TIME);
                 } catch (Throwable t) {
                     ConfigServerLogger.warn("error happens when change worker running.", t);
                 }
