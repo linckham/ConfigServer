@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-    <import resource="config-server-dao.xml"/>
     <bean id="subscriberService" class="com.cmbc.configserver.core.subscriber.SubscriberService">
     </bean>
 
@@ -10,5 +9,6 @@
         <property name="categoryDao" ref="categoryDao"/>
         <property name="configChangeLogDao" ref="configChangeLogDao"/>
         <property name="subscriberService" ref="subscriberService"/>
+        <property name="configChangedNotifyService" ref="configChangedNotifyService"/>
     </bean>
 </beans>

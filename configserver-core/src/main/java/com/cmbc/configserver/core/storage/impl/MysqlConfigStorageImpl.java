@@ -3,6 +3,7 @@ package com.cmbc.configserver.core.storage.impl;
 import com.cmbc.configserver.core.dao.CategoryDao;
 import com.cmbc.configserver.core.dao.ConfigChangeLogDao;
 import com.cmbc.configserver.core.dao.ConfigDetailsDao;
+import com.cmbc.configserver.core.notify.ConfigChangedNotifyService;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.domain.Configuration;
@@ -30,6 +31,8 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
     private CategoryDao categoryDao;
     @Autowired
     private ConfigChangeLogDao configChangeLogDao;
+    @Autowired
+    private ConfigChangedNotifyService configChangedNotifyService;
 
     public void setConfigChangeLogDao(ConfigChangeLogDao configChangeLogDao) {
         this.configChangeLogDao = configChangeLogDao;
@@ -41,6 +44,10 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
 
     public void setConfigDao(ConfigDetailsDao configDao){
         this.configDao = configDao;
+    }
+
+    public void setConfigChangedNotifyService(ConfigChangedNotifyService configChangedNotifyService) {
+        this.configChangedNotifyService = configChangedNotifyService;
     }
 
     /**
@@ -106,7 +113,10 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
                 ConfigServerLogger.warn(String.format("add/update the path %s's md5 %s failed.", path, md5));
                 //TODO:add a event,repair this async in backend thread
             }
-            //TODO:send a event to Notify thread,
+            else
+            {
+                this.configChangedNotifyService.updatePathMd5Cache(path,md5);
+            }
         }
         catch(Exception ex){
             ConfigServerLogger.warn(String.format("update the md5 of the path [%]  failed.",path),ex);

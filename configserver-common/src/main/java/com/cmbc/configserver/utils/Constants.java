@@ -67,4 +67,9 @@ public class Constants {
      * the default max queue item
      */
     public static final int DEFAULT_MAX_QUEUE_ITEM = 1024*1024;
+
+    /**
+     * default sleep time of Thread
+     */
+    public static final int DEFAULT_THREAD_SLEEP_TIME = 2*1000;
 }
