@@ -13,6 +13,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
+import com.cmbc.configserver.core.storage.ConfigStorage;
+import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
@@ -21,6 +23,8 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 public class HeartbeatService {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
     private ConfigHeartBeatDao heartBeatDao;
+    private SubscriberService subscriberService;
+    private ConfigStorage configStorage;
 	private ScheduledExecutorService scheduledExecutorService = Executors
 			.newSingleThreadScheduledExecutor(new ThreadFactory() {
 				@Override
@@ -29,11 +33,18 @@ public class HeartbeatService {
 				}
 			});
 
-
+	public void setConfigStorage(ConfigStorage configStorage) {
+        this.configStorage = configStorage;
+    }
+	
     public void setHeartBeatDao(ConfigHeartBeatDao heartBeatDao) {
         this.heartBeatDao = heartBeatDao;
     }
 
+    public void setSubscriberService(SubscriberService subscriberService) {
+		this.subscriberService = subscriberService;
+	}
+    
 	public void start() {
         //scan timeout channel
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -121,10 +132,6 @@ public class HeartbeatService {
 		}
 	}
 	
-	/**
-	 * when config server is down,there will left the client configuration of this server,
-	 * so use this method to scan the left configuration.
-	 */
 	public void scanTimeoutChannel(){
 		Iterator<Entry<String, HeartbeatInfo>> i = heartbeatInfoTable.entrySet().iterator();
 		while(i.hasNext()){
@@ -136,12 +143,17 @@ public class HeartbeatService {
 		}
 	}
 	
+	/**
+	 * when config server is down,there will left the client configuration of this server,
+	 * so use this method to scan the left configuration.
+	 */
 	public void scanDBTimeoutClient(){
 		try {
 			List<ConfigHeartBeat> configHeartbeats = heartBeatDao.getTimeout();
 			if(configHeartbeats != null){
-				for(ConfigHeartBeat configHeartBeat:configHeartbeats){
-					//TODO delete configuration
+				for(ConfigHeartBeat configHeartBeat : configHeartbeats){
+					//delete configuration
+					configStorage.deleteConfigurationByClientId(configHeartBeat.getClientId());
 					heartBeatDao.delete(configHeartBeat.getClientId());
 				}
 			}
@@ -154,11 +166,12 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
 		RemotingUtil.closeChannel(channel);
-		//TODO delete subscribe
-		
-		//TODO delete configuration
+		//delete subscribe
+		subscriberService.clearChannel(channel);
 		
 		try {
+			//delete configuration
+			configStorage.deleteConfigurationByClientId(clientId);
 			heartBeatDao.delete(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);

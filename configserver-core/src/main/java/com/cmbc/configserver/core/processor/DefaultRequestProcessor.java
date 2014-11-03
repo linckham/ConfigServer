@@ -39,8 +39,8 @@ public class DefaultRequestProcessor implements RequestProcessor {
 
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
-    	//TODO update channel info
-    	//heartbeatService.updateHeartbeat(ctx.channel());
+    	//update channel info
+    	heartbeatService.updateHeartbeat(ctx.channel());
     	
         switch (request.getCode()) {
             case RequestCode.PUBLISH_CONFIG:

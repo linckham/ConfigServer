@@ -6,7 +6,6 @@
     </bean>
 
     <bean id="clientConnectionListener" class="com.cmbc.configserver.core.heartbeat.ClientConnectionListener">
-        <property name="configServerController" ref="configServerController"/>
         <property name="heartbeatService" ref="heartbeatService"/>
     </bean>
 

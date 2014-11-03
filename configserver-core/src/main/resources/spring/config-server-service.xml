@@ -16,5 +16,7 @@
 
     <bean id="heartbeatService" class="com.cmbc.configserver.core.heartbeat.HeartbeatService">
         <property name="heartBeatDao" ref="heartBeatDao"/>
+        <property name="subscriberService" ref="subscriberService"/>
+        <property name="configStorage" ref="configStorage"/>
     </bean>
 </beans>

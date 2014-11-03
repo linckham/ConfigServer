@@ -1,6 +1,7 @@
 package com.cmbc.configserver.core.server;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
+import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
@@ -20,7 +21,12 @@ public class ConfigServerController {
     private ConfigServerService configServerService;
     private RequestProcessor defaultRequestProcessor;
     private ExecutorService remoteExecutor;
+    private HeartbeatService heartbeatService;
 
+    public void setHeartbeatService(HeartbeatService heartbeatService) {
+        this.heartbeatService = heartbeatService;
+    }
+    
     public void setDefaultRequestProcessor(RequestProcessor defaultRequestProcessor) {
         this.defaultRequestProcessor = defaultRequestProcessor;
     }
@@ -55,11 +61,13 @@ public class ConfigServerController {
     public void start() throws Exception{
         this.configNettyServer.start();
         this.configServerService.start();
+        this.heartbeatService.start();
     }
 
     public void shutdown(){
         this.configNettyServer.getRemotingServer().shutdown();
         this.remoteExecutor.shutdown();
         this.configServerService.shutdown();
+        this.heartbeatService.shutdown();
     }
 }
