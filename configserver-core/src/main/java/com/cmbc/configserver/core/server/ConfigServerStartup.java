@@ -1,14 +1,6 @@
 package com.cmbc.configserver.core.server;
 
-import com.cmbc.configserver.core.notify.NotifyService;
-import com.cmbc.configserver.core.service.ConfigServerService;
-import com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl;
-import com.cmbc.configserver.core.storage.ConfigStorage;
-import com.cmbc.configserver.core.storage.impl.LocalMemoryConfigStorageImpl;
-import com.cmbc.configserver.core.subscriber.SubscriberService;
-import com.cmbc.configserver.remoting.netty.NettyServerConfig;
 import com.cmbc.configserver.utils.ConfigServerLogger;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

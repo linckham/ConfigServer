@@ -51,12 +51,6 @@ public class CategoryDaoImpl implements CategoryDao {
                 }
             },keyHolder);
 
-            this.jdbcTemplate.update(SQL_CATEGORY_INSERT, new Object[]{
-                    category.getCell(),
-                    category.getResource(),
-                    category.getType()
-            });
-
             category.setId(keyHolder.getKey().intValue());
 
             return category;

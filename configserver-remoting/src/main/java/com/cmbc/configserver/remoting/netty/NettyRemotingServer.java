@@ -45,7 +45,7 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 public class NettyRemotingServer extends NettyRemotingAbstract implements
 		RemotingServer {
 	private static final Logger log = LoggerFactory
-			.getLogger(RemotingHelper.RemotingLogName);
+			.getLogger(NettyRemotingServer.class);
 	private final ServerBootstrap serverBootstrap;
 	private final EventLoopGroup eventLoopGroupWorker;
 	private final EventLoopGroup eventLoopGroupBoss;

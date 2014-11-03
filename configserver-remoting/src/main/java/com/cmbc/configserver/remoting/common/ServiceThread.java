@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class ServiceThread implements Runnable {
 	private static final Logger stlog = LoggerFactory
-			.getLogger(RemotingHelper.RemotingLogName);
+			.getLogger(ServiceThread.class);
 	// the executor thread
 	protected final Thread thread;
 	// the recycle time of the thread.the default value is 90s.

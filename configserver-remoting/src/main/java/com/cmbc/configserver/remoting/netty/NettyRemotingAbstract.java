@@ -34,7 +34,7 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 
 public abstract class NettyRemotingAbstract {
-    private static final Logger plog = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
+    private static final Logger plog = LoggerFactory.getLogger(NettyRemotingAbstract.class);
     protected final Semaphore semaphoreOneway;
     protected final Semaphore semaphoreAsync;
 

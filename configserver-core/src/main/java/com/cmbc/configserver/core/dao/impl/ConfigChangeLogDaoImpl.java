@@ -20,7 +20,7 @@ import java.util.List;
 public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
     private static String SQL_CHANGE_LOG_INSERT = "insert into config_change_log(path,md5) values(?,?)";
     private static String SQL_CHANGE_LOG_UPDATE = "update config_change_log set md5=? where path=?";
-    private static String SQL_CHANGE_LOG_QUERY = "select * from config_change_log when path=?";
+    private static String SQL_CHANGE_LOG_QUERY = "select * from config_change_log where path=?";
     private static String SQL_CHANGE_LOG_QUERY_ALL = "select * from config_change_log";
 
     @Autowired

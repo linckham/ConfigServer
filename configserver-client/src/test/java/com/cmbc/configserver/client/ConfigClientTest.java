@@ -35,11 +35,11 @@ public class ConfigClientTest {
     @Test
     public void testPublish() {
         Configuration config = new Configuration();
-        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}").toString();
         config.setContent(content);
         config.setCell("test-cell");
-        config.setResource("test-dubbo-rpc");
-        config.setType("publisher");
+        config.setResource("test-message-queue");
+        config.setType("producers");
         long start = System.currentTimeMillis();
         boolean publishResult = this.configClient.publish(config);
         System.out.println(String.format("the consuming time of  publish config is %s ms", System.currentTimeMillis() - start));
@@ -50,7 +50,7 @@ public class ConfigClientTest {
     @Test
     public void testPubSub() {
         Configuration config = new Configuration();
-        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}").toString();
         config.setContent(content);
 
         config.setCell("test-cell");

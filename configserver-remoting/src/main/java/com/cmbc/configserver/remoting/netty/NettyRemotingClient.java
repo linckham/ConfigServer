@@ -49,8 +49,7 @@ import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 public class NettyRemotingClient extends NettyRemotingAbstract {
-	private static final Logger log = LoggerFactory
-			.getLogger(RemotingHelper.RemotingLogName);
+	private static final Logger log = LoggerFactory.getLogger(NettyRemotingClient.class);
 
 	private static final long LockTimeoutMillis = 3000;
 

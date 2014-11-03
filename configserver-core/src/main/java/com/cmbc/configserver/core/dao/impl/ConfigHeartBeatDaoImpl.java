@@ -72,6 +72,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     }
 
 	@Override
+    @SuppressWarnings({"unchecked"})
 	public ConfigHeartBeat get(String clientId) throws Exception {
 		try {
 			List<ConfigHeartBeat> heartBeats = (List<ConfigHeartBeat>)this.jdbcTemplate.query(SQL_HEARTBEAT_GET, new Object[] { clientId },

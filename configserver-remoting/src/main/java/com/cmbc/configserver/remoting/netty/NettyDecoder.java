@@ -21,7 +21,7 @@ import com.cmbc.configserver.utils.Constants;
  * @since 2014-10-22
  */
 public class NettyDecoder extends LengthFieldBasedFrameDecoder {
-    private static final Logger log = LoggerFactory.getLogger(RemotingHelper.RemotingLogName);
+    private static final Logger log = LoggerFactory.getLogger(NettyDecoder.class);
 
     public NettyDecoder() {
         super(Constants.MAX_PACKET_LENGTH, 2, 4, 0, 0);
