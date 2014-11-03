@@ -110,23 +110,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 	}
 
 	class NettyConnetManageHandler extends ChannelDuplexHandler {
-		@Override
-		public void connect(ChannelHandlerContext ctx,
-				SocketAddress remoteAddress, SocketAddress localAddress,
-				ChannelPromise promise) throws Exception {
-			final String local = localAddress == null ? "UNKNOW" : localAddress
-					.toString();
-			final String remote = remoteAddress == null ? "UNKNOW"
-					: remoteAddress.toString();
-			log.info("NETTY CLIENT PIPELINE: CONNECT  {} => {}", local, remote);
-			super.connect(ctx, remoteAddress, localAddress, promise);
-
-			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
-						NettyEventType.CONNECT, remoteAddress.toString(), ctx
-								.channel()));
-			}
-		}
 		
 		@Override
 		public void channelActive(ChannelHandlerContext ctx) throws Exception {
