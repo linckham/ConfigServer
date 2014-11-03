@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
+import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
@@ -21,6 +22,7 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 public class HeartbeatService {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
     private ConfigHeartBeatDao heartBeatDao;
+    private SubscriberService subscriberService;
 	private ScheduledExecutorService scheduledExecutorService = Executors
 			.newSingleThreadScheduledExecutor(new ThreadFactory() {
 				@Override
@@ -34,6 +36,10 @@ public class HeartbeatService {
         this.heartBeatDao = heartBeatDao;
     }
 
+    public void setSubscriberService(SubscriberService subscriberService) {
+		this.subscriberService = subscriberService;
+	}
+    
 	public void start() {
         //scan timeout channel
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -154,8 +160,8 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
 		RemotingUtil.closeChannel(channel);
-		//TODO delete subscribe
-		
+		//delete subscribe
+		subscriberService.clearChannel(channel);
 		//TODO delete configuration
 		
 		try {

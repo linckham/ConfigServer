@@ -14,7 +14,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 
 import com.cmbc.configserver.utils.Constants;
+
 import io.netty.channel.Channel;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -155,6 +157,37 @@ public class SubscriberService {
             return null;
         } finally {
             readLock.unlock();
+        }
+    }
+    
+    /**
+     * clear channel's subscribe info 
+     * @param channel
+     */
+    public boolean clearChannel(Channel channel){
+    	
+    	try{
+    		writeLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT, TimeUnit.MILLISECONDS);
+    		Set<String> paths = this.channel2PathMap.get(channel);
+    		if(paths != null){
+    			for(String path : paths){
+    				Set<Channel> channelSet = path2ChannelMap.get(path);
+    				if(channelSet != null){
+    					channelSet.remove(channel);
+    					if (channelSet.isEmpty()) {
+    		                this.path2ChannelMap.remove(path);
+    		            }
+    				}
+    			}
+    		}
+    		
+    		channel2PathMap.remove(channel);
+    		return true;
+    	}catch (InterruptedException ex) {
+            ConfigServerLogger.warn(String.format("clear channel %s failed.", channel), ex);
+            return false;
+        } finally {
+            writeLock.unlock();
         }
     }
 }

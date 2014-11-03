@@ -2,20 +2,13 @@ package com.cmbc.configserver.core.heartbeat;
 
 import io.netty.channel.Channel;
 
-import com.cmbc.configserver.core.server.ConfigServerController;
 import com.cmbc.configserver.remoting.ChannelEventListener;
 
 public class ClientConnectionListener implements ChannelEventListener{
-	private ConfigServerController configServerController;
-
     private HeartbeatService heartbeatService;
 
     public void setHeartbeatService(HeartbeatService heartbeatService) {
         this.heartbeatService = heartbeatService;
-    }
-
-    public void setConfigServerController(ConfigServerController configServerController) {
-        this.configServerController = configServerController;
     }
 
 	@Override

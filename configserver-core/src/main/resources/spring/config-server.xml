@@ -14,5 +14,6 @@
         <property name="configNettyServer" ref="configNettyServer"/>
         <property name="configServerService" ref="configServerService"/>
         <property name="defaultRequestProcessor" ref="defaultRequestProcessor"/>
+        <property name="heartbeatService" ref="heartbeatService"/>
     </bean>
 </beans>
