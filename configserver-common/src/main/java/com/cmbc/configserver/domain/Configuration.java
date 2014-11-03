@@ -11,10 +11,18 @@ public class Configuration  extends RemotingSerializable{
 	private String cell;
 	private String resource;
 	private String type;
-	private Node node;
     private String clientId;
     private int id;
     private int categoryId;
+    private String content;
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     public String getCell() {
 		return cell;
@@ -33,12 +41,6 @@ public class Configuration  extends RemotingSerializable{
 	}
 	public void setType(String type) {
 		this.type = type;
-	}
-	public Node getNode() {
-		return node;
-	}
-	public void setNode(Node node) {
-		this.node = node;
 	}
 
     public String getClientId() {
@@ -66,55 +68,45 @@ public class Configuration  extends RemotingSerializable{
     }
 
     @Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((cell == null) ? 0 : cell.hashCode());
-		result = prime * result + ((node == null) ? 0 : node.hashCode());
-		result = prime * result
-				+ ((resource == null) ? 0 : resource.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
-	}
-    
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Configuration other = (Configuration) obj;
-		if (cell == null) {
-			if (other.cell != null)
-				return false;
-		} else if (!cell.equals(other.cell))
-			return false;
-		if (node == null) {
-			if (other.node != null)
-				return false;
-		} else if (!node.equals(other.node))
-			return false;
-		if (resource == null) {
-			if (other.resource != null)
-				return false;
-		} else if (!resource.equals(other.resource))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
-		return true;
-	}
-	@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Configuration that = (Configuration) o;
+
+        if (categoryId != that.categoryId) return false;
+        if (id != that.id) return false;
+        if (!cell.equals(that.cell)) return false;
+        if (!clientId.equals(that.clientId)) return false;
+        if (!content.equals(that.content)) return false;
+        if (!resource.equals(that.resource)) return false;
+        if (!type.equals(that.type)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = cell.hashCode();
+        result = 31 * result + resource.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + clientId.hashCode();
+        result = 31 * result + id;
+        result = 31 * result + categoryId;
+        result = 31 * result + content.hashCode();
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Configuration{" +
                 "cell='" + cell + '\'' +
                 ", resource='" + resource + '\'' +
                 ", type='" + type + '\'' +
-                ", node=" + node +
+                ", clientId='" + clientId + '\'' +
+                ", id=" + id +
+                ", categoryId=" + categoryId +
+                ", content='" + content + '\'' +
                 '}';
     }
 }

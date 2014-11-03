@@ -61,4 +61,20 @@ public interface ConfigStorage {
      * @return the subscriber's channel list
      */
     public Set<Channel> getSubscribeChannel(String subscribePath) throws Exception;
+
+    /**
+     * delete the configuration list by the specified client id
+     * @param clientId the client id which the configuration items belongs to
+     * @return true if deleted success,else false
+     * @throws Exception
+     */
+    public List<String> deleteConfigurationByClientId(String clientId) throws Exception;
+
+    /**
+     * get the category id list of the specified client id.
+     * @param clientId the client id which the category id belongs to
+     * @return true if query success,else false
+     * @throws Exception
+     */
+    public List<Integer> getCategoryIdsByClientId(String clientId) throws Exception;
 }

@@ -10,6 +10,8 @@ import com.cmbc.configserver.core.storage.ConfigStorage;
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * the implementation of ConfigServerService
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -136,5 +138,31 @@ public class ConfigServerServiceImpl implements ConfigServerService {
         if(StringUtils.isBlank(config.getType())){
             throw new IllegalArgumentException("config type is null or empty!");
         }
+    }
+
+    /**
+     * delete the configuration list by the specified client id
+     *
+     * @param clientId the client id which the configuration items belongs to
+     * @return true if deleted success,else false
+     * @throws Exception
+     */
+    @Override
+    public boolean deleteConfigurationByClientId(String clientId) throws Exception {
+        List<String> paths = this.configStorage.deleteConfigurationByClientId(clientId);
+
+        if(null == paths || paths.isEmpty()){
+            return false;
+        }
+
+        for(String path :paths){
+            //publish the PATH_DATA_CHANGED event
+            Event event = new Event();
+            event.setEventType(EventType.PATH_DATA_CHANGED);
+            event.setEventSource(path);
+            event.setEventCreatedTime(System.currentTimeMillis());
+            this.notifyService.publish(event);
+        }
+        return true;
     }
 }

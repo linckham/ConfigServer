@@ -18,7 +18,7 @@ SET character_set_client = utf8;
 CREATE TABLE `config_details`(
 `config_id` INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
 `category_id` SMALLINT UNSIGNED NOT NULL,
-`content` BLOB  NOT NULL,
+`content` TEXT  NOT NULL,
 `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 `client_id` VARCHAR(32) NOT NULL,
 CONSTRAINT category_id_fk FOREIGN key (category_id) references config_category (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;

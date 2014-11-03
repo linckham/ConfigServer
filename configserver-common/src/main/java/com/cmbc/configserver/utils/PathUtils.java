@@ -85,4 +85,30 @@ public class PathUtils {
         return null;
     }
 
+    /**
+     * according the category,get the specified path
+     *
+     * @param category the specified category
+     * @return the path of the category
+     */
+    public static String category2Path(Category category) {
+        if (null == category) {
+            throw new IllegalArgumentException("category can not be null!");
+        }
+
+        if (StringUtils.isBlank(category.getCell())) {
+            throw new IllegalArgumentException("category's cell can not be null or empty!");
+        }
+
+        StringBuilder pathBuilder = new StringBuilder(64);
+        pathBuilder.append(Constants.PATH_SEPARATOR).append(category.getCell());
+        if (StringUtils.isNotBlank(category.getResource())) {
+            pathBuilder.append(Constants.PATH_SEPARATOR).append(category.getResource());
+            if (StringUtils.isNotBlank(category.getType())) {
+                pathBuilder.append(Constants.PATH_SEPARATOR).append(category.getType());
+            }
+        }
+        return pathBuilder.toString();
+    }
+
 }

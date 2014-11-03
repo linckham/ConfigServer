@@ -17,14 +17,15 @@ public class ClusterSignAlgorithm {
         if (configList != null) {
             SortedSet<String> sortedList = new TreeSet<String>();
             for (Configuration config : configList) {
-                if (null != config.getNode()) {
-                    //TODO: consider which property will being contained in MD5 calculate
-                    if (StringUtils.isNotBlank(config.getNode().getData())) {
-                        sortedList.add(config.getCell() + config.getResource() + config.getType() + config.getNode().getData());
-                    }
-                } else {
-                    sortedList.add(config.getCell() + config.getResource() + config.getType());
+                StringBuilder sBuilder = new StringBuilder(256);
+                sBuilder.append(config.getCell()).append(config.getResource()).append(config.getType());
+                if (StringUtils.isNotBlank(config.getContent())) {
+                    sBuilder.append(config.getContent());
                 }
+                if(StringUtils.isNotBlank(config.getClientId())){
+                    sBuilder.append(config.getClientId());
+                }
+                sortedList.add(sBuilder.toString());
             }
             if (sortedList.size() > 0) {
                 return MD5Utils.md5(sortedList.toString());

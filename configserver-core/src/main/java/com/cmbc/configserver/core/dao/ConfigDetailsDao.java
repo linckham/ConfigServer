@@ -23,4 +23,8 @@ public interface ConfigDetailsDao {
     public List<Configuration> getConfigurationList(Category category) throws Exception;
 
     public List<Configuration> getConfigurationListByClientId(String clientId) throws Exception;
+
+    public boolean deleteConfigurationByClientId(String clientId) throws Exception;
+
+    public List<Integer> getCategoryIdsByClientId(String clientId) throws Exception;
 }

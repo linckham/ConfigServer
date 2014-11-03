@@ -12,6 +12,7 @@ import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
+import java.sql.Timestamp;
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
@@ -36,7 +37,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
         try {
             this.jdbcTemplate.update(SQL_HEARTBEAT_INSERT, new Object[]{
                     heartBeat.getClientId(),
-                    heartBeat.getLastModifiedTime()
+                    new Timestamp(heartBeat.getLastModifiedTime())
             });
             return true;
         } catch (Exception ex) {
@@ -49,7 +50,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     public boolean update(ConfigHeartBeat heartBeat) throws Exception {
         try {
             this.jdbcTemplate.update(SQL_HEARTBEAT_UPDATE, new Object[]{
-                    heartBeat.getLastModifiedTime(),
+                    new Timestamp(heartBeat.getLastModifiedTime()),
                     heartBeat.getClientId()
             });
             return true;
@@ -73,8 +74,13 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
 	@Override
 	public ConfigHeartBeat get(String clientId) throws Exception {
 		try {
-			return (ConfigHeartBeat) this.jdbcTemplate.queryForObject(SQL_HEARTBEAT_GET, new Object[] { clientId },
+			List<ConfigHeartBeat> heartBeats = (List<ConfigHeartBeat>)this.jdbcTemplate.query(SQL_HEARTBEAT_GET, new Object[] { clientId },
 					new HeartBeatMapper());
+            if(null == heartBeats || heartBeats.isEmpty()){
+                return ConfigHeartBeat.EMPTY_MESSAGE;
+            }
+            return heartBeats.get(0);
+
 		} catch (Exception ex) {
 			ConfigServerLogger.error("get client heartbeat error: " + clientId, ex);
 			throw ex;
@@ -88,7 +94,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
             try {
             	heartbeat = new ConfigHeartBeat();
                 heartbeat.setClientId(rs.getString("client_id"));
-                heartbeat.setLastModifiedTime(rs.getLong("last_modified_time"));
+                heartbeat.setLastModifiedTime(rs.getTimestamp("last_modified_time").getTime());
                 return heartbeat;
             } catch (SQLException ex) {
                 ConfigServerLogger.error("error when map row config_category: ", ex);
