@@ -8,6 +8,7 @@ package com.cmbc.configserver.domain;
  * @Time 20:32
  */
 public class ConfigHeartBeat {
+    public final static ConfigHeartBeat EMPTY_MESSAGE = new ConfigHeartBeat();
 	public static long DB_TIMEOUT = 60 * 1000;
 	
     private String clientId;

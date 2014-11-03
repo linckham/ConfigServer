@@ -4,6 +4,7 @@ import com.cmbc.configserver.core.dao.CategoryDao;
 import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.sun.xml.internal.messaging.saaj.packaging.mime.util.LineInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -173,12 +174,42 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public Category getCategoryById(int categoryId) throws Exception {
         try {
-            return (Category) this.jdbcTemplate.queryForObject(SQL_CATEGORY_QUERY_ID, new Object[]{
+            List<Category> categories = this.jdbcTemplate.query(SQL_CATEGORY_QUERY_ID, new Object[]{
                     categoryId
             }, new CategoryRowMapper());
+            if(null == categories || categories.isEmpty()){
+                return Category.EMPTY_MESSAGE;
+            }
+            return categories.get(0);
+
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get category by id=")
                     .append(categoryId).append("failed. Details is "), ex);
+            throw ex;
+        }
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public List<Category> getCategories(Object[] categoryIds) throws Exception {
+        StringBuilder sqlBuilder = new StringBuilder(64).append("select * from config_category");
+        if (null != categoryIds && categoryIds.length > 0) {
+            int length = categoryIds.length;
+            sqlBuilder.append("where id in(");
+            for (int i = 0; i < length; i++) {
+                if (i != (length - 1)) {
+                    sqlBuilder.append("?,");
+                } else {
+                    sqlBuilder.append("?");
+                }
+            }
+            sqlBuilder.append(")");
+        }
+        try {
+            return (List<Category>) this.jdbcTemplate.query(sqlBuilder.toString(), categoryIds, new CategoryRowMapper());
+        } catch (Exception ex) {
+            ConfigServerLogger.error(new StringBuilder(128).append("get category by ids=")
+                    .append(categoryIds).append("failed. Details is "), ex);
             throw ex;
         }
     }

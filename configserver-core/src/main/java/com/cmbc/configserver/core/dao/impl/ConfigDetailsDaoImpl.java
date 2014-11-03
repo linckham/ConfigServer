@@ -4,9 +4,7 @@ import com.cmbc.configserver.core.dao.ConfigDetailsDao;
 import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.Configuration;
-import com.cmbc.configserver.domain.Node;
 import com.cmbc.configserver.utils.ConfigServerLogger;
-import com.cmbc.configserver.utils.PathUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,6 +12,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.*;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +27,9 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     private static String SQL_CONFIG_DELETE = "delete from config_details where client_id=? and category_id=?";
     private static String SQL_CONFIG_QUERY_BY_CATEGORY_ID = "select * from config_details where category_id=?";
     private static String SQL_CONFIG_QUERY_BY_CLIENT_ID = "select * from config_details where client_id=?";
+    private static String SQL_CONFIG_DELETE_BY_CLIENT_ID = "delete  from config_details where client_id=?";
+    private static String SQL_CONFIG_CATEGORY_ID_BY_CLIENT_ID = "select distinct category_id from config_details where client_id=?";
+
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -44,7 +46,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
                 public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                     PreparedStatement preState =  con.prepareStatement(SQL_CONFIG_INSERT, Statement.RETURN_GENERATED_KEYS);
                     preState.setInt(1,config.getCategoryId());
-                    preState.setString(2,config.getNode().getData());
+                    preState.setString(2,config.getContent());
                     preState.setString(3,config.getClientId());
                     return preState;
                 }
@@ -61,7 +63,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     public boolean update(Configuration config) throws Exception {
         try {
             this.jdbcTemplate.update(SQL_CONFIG_UPDATE, new Object[]{
-                    config.getNode().getData(),
+                    config.getContent(),
                     config.getClientId(),
                     config.getId()
             });
@@ -110,6 +112,38 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
         }
     }
 
+    @Override
+    public boolean deleteConfigurationByClientId(String clientId) throws Exception {
+        try{
+            this.jdbcTemplate.update(SQL_CONFIG_DELETE_BY_CLIENT_ID,new Object[]{clientId});
+            return true;
+        }
+        catch(Exception ex){
+            ConfigServerLogger.error(new StringBuilder(128).append("delete configuration items of the client ").append(clientId).append(" failed. detail is "), ex);
+            throw ex;
+        }
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public List<Integer> getCategoryIdsByClientId(String clientId) throws Exception {
+        try{
+            List<Integer> categoryIds = (List<Integer>) this.jdbcTemplate.queryForList(SQL_CONFIG_CATEGORY_ID_BY_CLIENT_ID,new Object[]{
+                    clientId
+            },Integer.class);
+
+            if(null == categoryIds || categoryIds.isEmpty()){
+                return Collections.EMPTY_LIST;
+            }
+
+            return categoryIds;
+        }
+        catch (Exception ex){
+            ConfigServerLogger.error(new StringBuilder(128).append("get category id of the client ").append(clientId).append(" failed. detail is "), ex);
+            throw ex;
+        }
+    }
+
     private class ConfigurationRowMapper implements RowMapper {
         private Category category;
 
@@ -131,9 +165,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
                 config.setId(rs.getInt("config_id"));
                 config.setCategoryId(rs.getInt("category_id"));
                 config.setClientId(rs.getString("client_id"));
-                Node node = new Node();
-                node.setData(rs.getString("content"));
-                config.setNode(node);
+                config.setContent(rs.getString("content"));
 
                 return config;
             } catch (SQLException ex) {

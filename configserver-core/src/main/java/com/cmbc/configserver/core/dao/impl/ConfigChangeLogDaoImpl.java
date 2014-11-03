@@ -61,10 +61,15 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
     @SuppressWarnings({"unchecked"})
     public ConfigChangeLog getConfigChangeLog(String path) throws Exception {
         try {
-            ConfigChangeLog changeLog = (ConfigChangeLog) this.jdbcTemplate.queryForObject(SQL_CHANGE_LOG_QUERY, new Object[]{
+            List<ConfigChangeLog> changeLogs = this.jdbcTemplate.query(SQL_CHANGE_LOG_QUERY, new Object[]{
                     path
             }, new ConfigChangeLogRowMapper());
-            return changeLog;
+
+            if(null == changeLogs || changeLogs.isEmpty()){
+                return ConfigChangeLog.EMPTY_MESSAGE;
+            }
+            return changeLogs.get(0);
+
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get configuration change log ").append(path).append(" failed. detail is "), ex);
             throw ex;

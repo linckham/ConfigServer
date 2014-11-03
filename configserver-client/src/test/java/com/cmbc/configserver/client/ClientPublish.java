@@ -1,14 +1,13 @@
 package com.cmbc.configserver.client;
 
+import com.cmbc.configserver.client.impl.ConfigClientImpl;
+import com.cmbc.configserver.domain.Configuration;
+import com.cmbc.configserver.remoting.ConnectionStateListener;
+import com.cmbc.configserver.remoting.netty.NettyClientConfig;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.cmbc.configserver.client.impl.ConfigClientImpl;
-import com.cmbc.configserver.domain.Configuration;
-import com.cmbc.configserver.domain.Node;
-import com.cmbc.configserver.remoting.ConnectionStateListener;
-import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 
 public class ClientPublish {
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -31,11 +30,8 @@ public class ClientPublish {
 		for(int i=0 ; i<0 ;i++){
 			
 			Configuration config = new Configuration();
-			Node node = new Node();
-			node.setIp("127.0.0.1");
-			node.setPort("21881");
-			node.setData("p-"+i);
-			config.setNode(node);
+            String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+            config.setContent(content);
 
 			config.setCell("test-cell");
 			config.setResource("test-dubbo-rpc");

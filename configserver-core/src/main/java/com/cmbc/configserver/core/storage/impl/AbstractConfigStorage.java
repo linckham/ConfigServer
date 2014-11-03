@@ -6,6 +6,7 @@ import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,5 +53,15 @@ public abstract class AbstractConfigStorage implements ConfigStorage {
      */
     public Set<Channel> getSubscribeChannel(String subscribePath) throws Exception{
         return this.subscriberService.getSubscriberChannels(subscribePath);
+    }
+
+    @Override
+    public List<String> deleteConfigurationByClientId(String clientId) throws Exception {
+        return null;
+    }
+
+    @Override
+    public List<Integer> getCategoryIdsByClientId(String clientId) throws Exception{
+        return null;
     }
 }

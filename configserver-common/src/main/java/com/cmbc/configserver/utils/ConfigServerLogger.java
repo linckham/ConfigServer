@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
  * @author tongchuan.lin<linckham@gmail.com>.
- *         Date: 2014/10/27
- *         Time: 13:39
+ * @Date: 2014/10/27
+ * @Time: 13:39
  */
 public class ConfigServerLogger {
     private static final Logger debug = LoggerFactory.getLogger("debug");

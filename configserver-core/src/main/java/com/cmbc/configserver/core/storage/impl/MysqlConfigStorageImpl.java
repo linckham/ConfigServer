@@ -10,6 +10,7 @@ import com.cmbc.configserver.utils.ClusterSignAlgorithm;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.PathUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
             //only in the publish case, we should check the path where exists in config_change_log
             if(isPublish){
                 ConfigChangeLog dbChangeLog = this.configChangeLogDao.getConfigChangeLog(path);
-                if(null != dbChangeLog){
+                if(ConfigChangeLog.EMPTY_MESSAGE != dbChangeLog){
                     bChangeLog = this.configChangeLogDao.update(changeLog);
                 }
                 else{
@@ -154,5 +155,34 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         }
 
         return this.configDao.getConfigurationList(category);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public List<String> deleteConfigurationByClientId(String clientId) throws Exception {
+        List<Integer> categoryIds = this.getCategoryIdsByClientId(clientId);
+        if(null == categoryIds || categoryIds.isEmpty()){
+            return Collections.EMPTY_LIST;
+        }
+
+        boolean bDeleteConfigs = this.configDao.deleteConfigurationByClientId(clientId);
+        if(bDeleteConfigs){
+            List<Category> categories = this.categoryDao.getCategories(categoryIds.toArray());
+            List<String> paths = new ArrayList<String>();
+            if(null != categories && !categories.isEmpty()){
+                for (Category category : categories){
+                    String path = PathUtils.category2Path(category);
+                    updateMd5(category,path,false);
+                    paths.add(path);
+                }
+            }
+            return paths;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<Integer> getCategoryIdsByClientId(String clientId) throws Exception{
+        return this.configDao.getCategoryIdsByClientId(clientId);
     }
 }

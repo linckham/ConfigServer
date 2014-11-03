@@ -48,4 +48,12 @@ public interface ConfigServerService {
     public void shutdown();
 
     public ConfigStorage getConfigStorage();
+
+    /**
+     * delete the configuration list by the specified client id
+     * @param clientId the client id which the configuration items belongs to
+     * @return true if deleted success,else false
+     * @throws Exception
+     */
+    public boolean deleteConfigurationByClientId(String clientId) throws Exception;
 }

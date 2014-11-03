@@ -2,18 +2,15 @@ package com.cmbc.configserver.client;
 
 import com.cmbc.configserver.client.impl.ConfigClientImpl;
 import com.cmbc.configserver.domain.Configuration;
-import com.cmbc.configserver.domain.Node;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-
 import com.cmbc.configserver.utils.PathUtils;
-import org.junit.Test;
-import org.junit.Before;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -38,11 +35,8 @@ public class ConfigClientTest {
     @Test
     public void testPublish() {
         Configuration config = new Configuration();
-        Node node = new Node();
-        node.setIp("127.0.0.1");
-        node.setPort("21881");
-        config.setNode(node);
-
+        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+        config.setContent(content);
         config.setCell("test-cell");
         config.setResource("test-dubbo-rpc");
         config.setType("publisher");
@@ -56,10 +50,8 @@ public class ConfigClientTest {
     @Test
     public void testPubSub() {
         Configuration config = new Configuration();
-        Node node = new Node();
-        node.setIp("127.0.0.1");
-        node.setPort("21881");
-        config.setNode(node);
+        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+        config.setContent(content);
 
         config.setCell("test-cell");
         config.setResource("test-dubbo-rpc");

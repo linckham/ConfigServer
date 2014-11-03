@@ -40,4 +40,6 @@ public interface CategoryDao {
      * @throws Exception
      */
     public Category getCategoryById(int categoryId) throws Exception;
+
+    public List<Category> getCategories(Object[] categoryIds) throws Exception;
 }
