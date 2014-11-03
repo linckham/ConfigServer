@@ -189,7 +189,7 @@ public class CategoryDaoImpl implements CategoryDao {
         StringBuilder sqlBuilder = new StringBuilder(64).append("select * from config_category");
         if (null != categoryIds && categoryIds.length > 0) {
             int length = categoryIds.length;
-            sqlBuilder.append("where id in(");
+            sqlBuilder.append(" where id in(");
             for (int i = 0; i < length; i++) {
                 if (i != (length - 1)) {
                     sqlBuilder.append("?,");

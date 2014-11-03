@@ -19,4 +19,9 @@
         <property name="subscriberService" ref="subscriberService"/>
         <property name="configStorage" ref="configStorage"/>
     </bean>
+
+    <bean id="configChangedNotifyService" class="com.cmbc.configserver.core.notify.ConfigChangedNotifyService" init-method="start" destroy-method="stop">
+        <property name="configChangeLogDao" ref="configChangeLogDao"/>
+        <property name="notifyService" ref="notifyService"/>
+    </bean>
 </beans>

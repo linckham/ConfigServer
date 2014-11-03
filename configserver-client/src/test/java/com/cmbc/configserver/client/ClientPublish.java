@@ -27,10 +27,12 @@ public class ClientPublish {
 		
         
 		
-		for(int i=0 ; i<0 ;i++){
+		for(int i=0 ; i<10 ;i++){
 			
 			Configuration config = new Configuration();
-            String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"").toString();
+            String content = new StringBuilder(128)
+                    .append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\",\"count\":")
+                    .append(i+1).append("}").toString();
             config.setContent(content);
 
 			config.setCell("test-cell");
@@ -43,12 +45,7 @@ public class ClientPublish {
 			
 			Thread.sleep(20*1000);
 		}
-		
-			
-		
 		System.in.read();
-		
-		
 		configClient.close();
 	}
 }

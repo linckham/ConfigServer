@@ -78,7 +78,7 @@ public class HeartbeatService {
 			ConfigServerLogger.error("get client heartbeat error", e);
 		}
 		
-		if(configHeartBeat != null){
+		if(configHeartBeat !=null){
 			this.clearChannel(channel);
 		}else{
 			if(heartbeatInfoTable.get(clientId) != null){

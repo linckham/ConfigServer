@@ -44,10 +44,7 @@ public class ClientSubscribe {
             }
         });
         System.out.println("the result of subscriber is "+ subscribe);
-		
 		System.in.read();
-		
-		
 		configClient.close();
 	}
 }

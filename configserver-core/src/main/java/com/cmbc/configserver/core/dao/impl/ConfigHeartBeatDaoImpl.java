@@ -24,7 +24,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     private static String SQL_HEARTBEAT_UPDATE = "update config_heart_beat set last_modified_time=? where client_id=?";
     private static String SQL_HEARTBEAT_DELETE = "delete from config_heart_beat where client_id=?";
     private static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=?";
-    private static String SQL_HEARTBEAT_GET_TIMEOUT = "select * from config_heart_beat where last_modified_time<?";
+    private static String SQL_HEARTBEAT_GET_TIMEOUT = " select * from config_heart_beat where last_modified_time < ?";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -37,7 +37,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
         try {
             this.jdbcTemplate.update(SQL_HEARTBEAT_INSERT, new Object[]{
                     heartBeat.getClientId(),
-                    new Timestamp(heartBeat.getLastModifiedTime())
+                    heartBeat.getLastModifiedTime()
             });
             return true;
         } catch (Exception ex) {
@@ -50,7 +50,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     public boolean update(ConfigHeartBeat heartBeat) throws Exception {
         try {
             this.jdbcTemplate.update(SQL_HEARTBEAT_UPDATE, new Object[]{
-                    new Timestamp(heartBeat.getLastModifiedTime()),
+                    heartBeat.getLastModifiedTime(),
                     heartBeat.getClientId()
             });
             return true;
@@ -78,7 +78,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
 			List<ConfigHeartBeat> heartBeats = (List<ConfigHeartBeat>)this.jdbcTemplate.query(SQL_HEARTBEAT_GET, new Object[] { clientId },
 					new HeartBeatMapper());
             if(null == heartBeats || heartBeats.isEmpty()){
-                return ConfigHeartBeat.EMPTY_MESSAGE;
+                return null;
             }
             return heartBeats.get(0);
 
@@ -95,7 +95,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
             try {
             	heartbeat = new ConfigHeartBeat();
                 heartbeat.setClientId(rs.getString("client_id"));
-                heartbeat.setLastModifiedTime(rs.getTimestamp("last_modified_time").getTime());
+                heartbeat.setLastModifiedTime(rs.getLong("last_modified_time"));
                 return heartbeat;
             } catch (SQLException ex) {
                 ConfigServerLogger.error("error when map row config_category: ", ex);
@@ -108,8 +108,8 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
 	@SuppressWarnings({"unchecked"})
 	public List<ConfigHeartBeat> getTimeout() throws Exception {
 		try {
-            List<ConfigHeartBeat> configHeartBeats = this.jdbcTemplate.queryForList(SQL_HEARTBEAT_GET_TIMEOUT, 
-            		new Object[]{System.currentTimeMillis() - ConfigHeartBeat.DB_TIMEOUT});
+            List<ConfigHeartBeat> configHeartBeats = this.jdbcTemplate.query(SQL_HEARTBEAT_GET_TIMEOUT,
+            		new Object[]{System.currentTimeMillis() - ConfigHeartBeat.DB_TIMEOUT},new HeartBeatMapper());
             return configHeartBeats;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get timeout list error "), ex);

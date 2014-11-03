@@ -38,5 +38,5 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `config_heart_beat`(
 `client_id` VARCHAR(64) NOT NULL PRIMARY KEY,
-`last_modified_time` TIMESTAMP ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+`last_modified_time` BIGINT UNSIGNED ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 SET character_set_client = @saved_cs_client;
