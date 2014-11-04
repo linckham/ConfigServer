@@ -1,15 +1,13 @@
 package com.cmbc.configserver.remoting;
 
-import io.netty.channel.Channel;
-
-import java.util.concurrent.ExecutorService;
-
-import com.cmbc.configserver.remoting.InvokeCallback;
-import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
 import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
+import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
+import io.netty.channel.Channel;
+
+import java.util.concurrent.ExecutorService;
 
 public interface RemotingServer extends RemotingService {
 	/**

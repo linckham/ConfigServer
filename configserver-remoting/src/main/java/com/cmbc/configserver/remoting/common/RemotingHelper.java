@@ -12,8 +12,6 @@ import java.net.SocketAddress;
  * @since 2014/10/17 3:01:22PM
  */
 public class RemotingHelper {
-	public static final String RemotingLogName = "configRemoting";
-
 	public static String exceptionSimpleDesc(final Throwable e) {
 		StringBuffer sb = new StringBuffer();
 		if (e != null) {

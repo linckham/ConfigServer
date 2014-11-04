@@ -1,7 +1,5 @@
 package com.cmbc.configserver.remoting;
 
-import com.cmbc.configserver.remoting.RPCHook;
-
 /**
  * the base interface of remote communicating
  * 

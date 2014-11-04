@@ -213,14 +213,14 @@ public class ConfigClientImpl implements ConfigClient {
 	
 	public void sendHeartbeat(Channel channel){
 		int retryTime = 2;
-		boolean sendSuccessed = false;
+		boolean sendSucessed = false;
 		for(int i= 0; i< retryTime; i++){
 			RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEARTBEAT);
 			request.setBody(null);
 			try {
 				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
-					sendSuccessed = true;
+					sendSucessed = true;
 					break;
 				}
 			} catch (Exception e) {
@@ -229,7 +229,7 @@ public class ConfigClientImpl implements ConfigClient {
 			} 
 		}
 		
-		if(!sendSuccessed){
+		if(!sendSucessed){
 			int times = heartbeatFailedTimes.incrementAndGet();
 			if(times >= 3){
 				logger.info("heartbeat failed, do reset works");
