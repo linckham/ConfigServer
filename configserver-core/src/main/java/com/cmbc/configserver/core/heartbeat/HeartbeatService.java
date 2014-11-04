@@ -178,5 +178,7 @@ public class HeartbeatService {
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);
 		}
+		
+		ConfigServerLogger.info("server clear channel:" + channel);
 	}
 }

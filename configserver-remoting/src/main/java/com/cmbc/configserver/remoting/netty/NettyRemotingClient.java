@@ -110,23 +110,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 	}
 
 	class NettyConnetManageHandler extends ChannelDuplexHandler {
-		@Override
-		public void connect(ChannelHandlerContext ctx,
-				SocketAddress remoteAddress, SocketAddress localAddress,
-				ChannelPromise promise) throws Exception {
-			final String local = localAddress == null ? "UNKNOW" : localAddress
-					.toString();
-			final String remote = remoteAddress == null ? "UNKNOW"
-					: remoteAddress.toString();
-			log.info("NETTY CLIENT PIPELINE: CONNECT  {} => {}", local, remote);
-			super.connect(ctx, remoteAddress, localAddress, promise);
-
-			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
-						NettyEventType.CONNECT, remoteAddress.toString(), ctx
-								.channel()));
-			}
-		}
 		
 		@Override
 		public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -138,34 +121,14 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 		}
 
 		@Override
-		public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise)
-				throws Exception {
-			final String remoteAddress = RemotingHelper
-					.parseChannelRemoteAddr(ctx.channel());
-			log.info("NETTY CLIENT PIPELINE: DISCONNECT {}", remoteAddress);
-			super.disconnect(ctx, promise);
-
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			super.channelInactive(ctx);
 			if (NettyRemotingClient.this.channelEventListener != null) {
 				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
-						NettyEventType.CLOSE, remoteAddress.toString(), ctx
-								.channel()));
+						NettyEventType.CLOSE, null, ctx.channel()));
 			}
 		}
 
-		@Override
-		public void close(ChannelHandlerContext ctx, ChannelPromise promise)
-				throws Exception {
-			final String remoteAddress = RemotingHelper
-					.parseChannelRemoteAddr(ctx.channel());
-			log.info("NETTY CLIENT PIPELINE: CLOSE {}", remoteAddress);
-			super.close(ctx, promise);
-
-			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(
-						NettyEventType.CLOSE, remoteAddress.toString(), ctx
-								.channel()));
-			}
-		}
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)

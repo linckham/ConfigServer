@@ -243,6 +243,8 @@ public class ConfigClientImpl implements ConfigClient {
 		this.heartbeatFailedTimes.set(0);
 		this.subcribeMap.clear();
 		this.notifyCache.clear();
+		
+		logger.info("client clear channel: " + channel);
 	}
 	
 	public Map<String, Set<ResourceListener>> getSubcribeMap() {
