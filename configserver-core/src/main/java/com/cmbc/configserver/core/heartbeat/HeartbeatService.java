@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.heartbeat;
 
+import com.cmbc.configserver.core.service.ConfigServerService;
 import io.netty.channel.Channel;
 
 import java.util.Iterator;
@@ -24,7 +25,8 @@ public class HeartbeatService {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
     private ConfigHeartBeatDao heartBeatDao;
     private SubscriberService subscriberService;
-    private ConfigStorage configStorage;
+    private ConfigServerService configServerService;
+
 	private ScheduledExecutorService scheduledExecutorService = Executors
 			.newSingleThreadScheduledExecutor(new ThreadFactory() {
 				@Override
@@ -33,10 +35,6 @@ public class HeartbeatService {
 				}
 			});
 
-	public void setConfigStorage(ConfigStorage configStorage) {
-        this.configStorage = configStorage;
-    }
-	
     public void setHeartBeatDao(ConfigHeartBeatDao heartBeatDao) {
         this.heartBeatDao = heartBeatDao;
     }
@@ -44,6 +42,10 @@ public class HeartbeatService {
     public void setSubscriberService(SubscriberService subscriberService) {
 		this.subscriberService = subscriberService;
 	}
+
+    public void setConfigServerService(ConfigServerService configServerService) {
+        this.configServerService = configServerService;
+    }
     
 	public void start() {
         //scan timeout channel
@@ -153,7 +155,7 @@ public class HeartbeatService {
 			if(configHeartbeats != null){
 				for(ConfigHeartBeat configHeartBeat : configHeartbeats){
 					//delete configuration
-					configStorage.deleteConfigurationByClientId(configHeartBeat.getClientId());
+					configServerService.deleteConfigurationByClientId(configHeartBeat.getClientId());
 					heartBeatDao.delete(configHeartBeat.getClientId());
 				}
 			}
@@ -171,7 +173,7 @@ public class HeartbeatService {
 		
 		try {
 			//delete configuration
-			configStorage.deleteConfigurationByClientId(clientId);
+            configServerService.deleteConfigurationByClientId(clientId);
 			heartBeatDao.delete(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);

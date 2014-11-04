@@ -163,8 +163,11 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         if(null ==  category){
             return Collections.EMPTY_LIST;
         }
-
-        return this.configDao.getConfigurationList(category);
+        List<Configuration> configurationList =  this.configDao.getConfigurationList(category);
+        if(null == configurationList){
+            return Collections.EMPTY_LIST;
+        }
+        return configurationList;
     }
 
     @Override

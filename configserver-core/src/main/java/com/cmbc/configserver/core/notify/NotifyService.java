@@ -115,28 +115,26 @@ public class NotifyService {
                 try {
                     // get the configuration list which is the latest version in the server.
                     List<Configuration> configList = NotifyService.this.configStorage.getConfigurationList(config);
-                    if (null != configList && !configList.isEmpty()) {
-                        String subscriberPath = PathUtils.getSubscriberPath(config);
-                        Notify notify = new Notify();
-                        notify.setPath(subscriberPath);
-                        notify.setConfigLists(configList);
+                    String subscriberPath = PathUtils.getSubscriberPath(config);
+                    Notify notify = new Notify();
+                    notify.setPath(subscriberPath);
+                    notify.setConfigLists(configList);
 
-                        //create remote command
-                        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
-                        byte[] body = RemotingSerializable.encode(notify);
-                        if (null != body) {
-                            request.setBody(body);
-                        }
-                        //get the subscriber's channels that will being to notify
-                        Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
-                        //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
-                        if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
-                            for (Channel channel : subscriberChannels) {
-                                if (null != channel && channel.isActive()) {
-                                    NotifyService.this.getConfigNettyServer()
-                                            .getRemotingServer()
-                                            .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
-                                }
+                    //create remote command
+                    RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
+                    byte[] body = RemotingSerializable.encode(notify);
+                    if (null != body) {
+                        request.setBody(body);
+                    }
+                    //get the subscriber's channels that will being to notify
+                    Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
+                    //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
+                    if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
+                        for (Channel channel : subscriberChannels) {
+                            if (null != channel && channel.isActive()) {
+                                NotifyService.this.getConfigNettyServer()
+                                        .getRemotingServer()
+                                        .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
                             }
                         }
                     }

@@ -3,6 +3,7 @@ package com.cmbc.configserver.client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 import com.cmbc.configserver.client.impl.ConfigClientImpl;
 import com.cmbc.configserver.domain.Configuration;
@@ -32,14 +33,14 @@ public class ClientSubscribe {
         boolean subscribe = configClient.subscribe(subConfig, new ResourceListener() {
             public void notify(List<Configuration> configs) {
                 if (null != configs && !configs.isEmpty()) {
-                    System.out.println(String.format("the subscribe path %s has %s configuration items,", PathUtils.getSubscriberPath(subConfig), configs.size()));
+                    System.out.println(String.format("[%s] the subscribe path %s has %s configuration items,",new Date(), PathUtils.getSubscriberPath(subConfig), configs.size()));
                     for (Configuration item : configs){
                         System.out.println(item);
                     }
                 }
                 else
                 {
-                    System.out.println("the configs is empty.");
+                    System.out.println(String.format("[%s] the subscribe path %s has no configuration items.",new Date(), PathUtils.getSubscriberPath(subConfig)));
                 }
             }
         });

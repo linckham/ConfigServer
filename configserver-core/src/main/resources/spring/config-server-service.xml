@@ -14,7 +14,7 @@
     <bean id="heartbeatService" class="com.cmbc.configserver.core.heartbeat.HeartbeatService">
         <property name="heartBeatDao" ref="heartBeatDao"/>
         <property name="subscriberService" ref="subscriberService"/>
-        <property name="configStorage" ref="configStorage"/>
+        <property name="configServerService" ref="configServerService"/>
     </bean>
 
     <bean id="configChangedNotifyService" class="com.cmbc.configserver.core.notify.ConfigChangedNotifyService" init-method="start" destroy-method="stop">
