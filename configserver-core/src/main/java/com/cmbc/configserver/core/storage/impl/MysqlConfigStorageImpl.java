@@ -111,7 +111,6 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
 
             if (!bChangeLog) {
                 ConfigServerLogger.warn(String.format("add/update the path %s's md5 %s failed.", path, md5));
-                //TODO:add a event,repair this async in backend thread
             }
             else
             {

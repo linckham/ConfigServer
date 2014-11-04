@@ -25,7 +25,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class LocalMemoryConfigStorageImpl extends AbstractConfigStorage {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocalMemoryConfigStorageImpl.class);
     private static final int LOCK_TIMEOUT = 1 * 1000;
-    //TODO: storage the path as the Map's key
     private Map</*cell*/String, Map</*resource*/String, Map</*type*/String, List<Configuration>>>> publisherMap;
     private Map</*subscribe path*/String,/*subscribe channels*/List<Channel>> subscriberMap;
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();

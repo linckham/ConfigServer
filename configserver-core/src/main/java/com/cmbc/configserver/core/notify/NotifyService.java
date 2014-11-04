@@ -32,7 +32,14 @@ public class NotifyService {
     private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(Constants.DEFAULT_MAX_QUEUE_ITEM);
     private volatile boolean stop = true;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private ThreadPoolExecutor notifyExecutor;
+    /**
+     * the executor uses to load the specified path's all configuration items.
+     */
+    private ThreadPoolExecutor configLoadExecutor;
+    /**
+     * the executor uses to notify all the channels that subscribe the specified path
+     */
+    private ThreadPoolExecutor subscriberNotifyExecutor;
     private ConfigStorage configStorage;
     private ConfigNettyServer configNettyServer;
 
@@ -54,10 +61,15 @@ public class NotifyService {
 
     private void initialize() {
         this.scheduler.execute(new EventDispatcher());
-        this.notifyExecutor = new ThreadPoolExecutor(16, 48, 60 * 1000,
+        this.configLoadExecutor = new ThreadPoolExecutor(2, 8, 60 * 1000,
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM),
-                new ThreadFactoryImpl("config-event-thread-"));
+                new ThreadFactoryImpl("config-load-thread-"));
+
+        this.subscriberNotifyExecutor = new ThreadPoolExecutor(8,32,60*1000,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM),
+                new ThreadFactoryImpl("subscriber-notify-thread-"));
     }
 
     public boolean start() {
@@ -69,7 +81,7 @@ public class NotifyService {
     public void stop() {
         this.stop = true;
         this.scheduler.shutdown();
-        ConfigServerLogger.info("ConfigServer's notifyService has been stopped!");
+        ConfigServerLogger.info("NotifyService has been stopped!");
     }
 
     /**
@@ -82,20 +94,20 @@ public class NotifyService {
     }
 
     private void onConfigChanged(Event event) {
-        this.notifyExecutor.execute(new NotifyWorker(event));
+        this.configLoadExecutor.execute(new ConfigurationLoadWorker(event));
     }
 
     private void onPathDataChanged(Event event) {
-        this.notifyExecutor.execute(new NotifyWorker(event));
+        this.configLoadExecutor.execute(new ConfigurationLoadWorker(event));
     }
 
     /**
-     * the worker that using to notify the configuration  when the specified event  happened
+     * the worker that using to load specified path's configuration from database when the specified event happened
      */
-    class NotifyWorker implements Runnable {
+    class ConfigurationLoadWorker implements Runnable {
         private Event event;
 
-        public NotifyWorker(Event event) {
+        public ConfigurationLoadWorker(Event event) {
             this.event = event;
         }
 
@@ -128,20 +140,40 @@ public class NotifyService {
                     }
                     //get the subscriber's channels that will being to notify
                     Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
-                    //TODO: Using a thread pool that  notify the subscriber's channel may be a better choice.
                     if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
                         for (Channel channel : subscriberChannels) {
-                            if (null != channel && channel.isActive()) {
-                                NotifyService.this.getConfigNettyServer()
-                                        .getRemotingServer()
-                                        .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
-                            }
+                            subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel,request));
                         }
                     }
                 } catch (Exception e) {
-                    ConfigServerLogger.error("NotifyWorker process failed, details is ", e);
+                    ConfigServerLogger.error("ConfigurationLoadWorker process failed, details is ", e);
                 }
             }
+        }
+    }
+
+    /**
+     * this worker uses to notify the specified command to the subscriber
+     */
+    class SubscriberNotifyWorker implements Runnable {
+        private Channel channel;
+        private RemotingCommand command;
+        public  SubscriberNotifyWorker(Channel channel,RemotingCommand command){
+            this.channel = channel;
+            this.command = command;
+        }
+        @Override
+        public void run() {
+            notifySubscriber(channel,command);
+        }
+    }
+
+    private void notifySubscriber(Channel channel, RemotingCommand request) {
+        try {
+            this.getConfigNettyServer().getRemotingServer()
+                    .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+        } catch (Exception ex) {
+            ConfigServerLogger.warn(String.format("notify the command %s to subscriber %s failed.", request, channel), ex);
         }
     }
 

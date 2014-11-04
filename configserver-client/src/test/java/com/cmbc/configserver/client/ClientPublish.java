@@ -8,6 +8,7 @@ import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 public class ClientPublish {
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -40,7 +41,7 @@ public class ClientPublish {
 			config.setType("publisher");
 			
 			boolean publishResult = configClient.publish(config);
-			System.out.println(String.format("the result of publish config is %s",publishResult));
+			System.out.println(String.format("[%s] the result of publish config is %s",new Date(),publishResult));
 			
 			
 			Thread.sleep(20*1000);

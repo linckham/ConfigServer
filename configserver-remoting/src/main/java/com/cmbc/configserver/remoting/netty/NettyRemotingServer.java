@@ -1,15 +1,19 @@
 package com.cmbc.configserver.remoting.netty;
 
+import com.cmbc.configserver.remoting.ChannelEventListener;
+import com.cmbc.configserver.remoting.InvokeCallback;
+import com.cmbc.configserver.remoting.RPCHook;
+import com.cmbc.configserver.remoting.RemotingServer;
+import com.cmbc.configserver.remoting.common.Pair;
+import com.cmbc.configserver.remoting.common.RemotingHelper;
+import com.cmbc.configserver.remoting.common.RequestProcessor;
+import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
+import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
+import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
+import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -17,6 +21,8 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Timer;
@@ -25,22 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.cmbc.configserver.remoting.ChannelEventListener;
-import com.cmbc.configserver.remoting.InvokeCallback;
-import com.cmbc.configserver.remoting.RPCHook;
-import com.cmbc.configserver.remoting.RemotingServer;
-import com.cmbc.configserver.remoting.common.Pair;
-import com.cmbc.configserver.remoting.common.RemotingHelper;
-import com.cmbc.configserver.remoting.common.RemotingUtil;
-import com.cmbc.configserver.remoting.common.RequestProcessor;
-import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
-import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
-import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
-import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 public class NettyRemotingServer extends NettyRemotingAbstract implements
 		RemotingServer {
@@ -74,13 +64,13 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 		this.nettyServerConfig = nettyServerConfig;
 		this.channelEventListener = channelEventListener;
 
-		int publicThreadNums = nettyServerConfig
+		int publicThreadNumbers = nettyServerConfig
 				.getServerCallbackExecutorThreads();
-		if (publicThreadNums <= 0) {
-			publicThreadNums = 4;
+		if (publicThreadNumbers <= 0) {
+			publicThreadNumbers = 4;
 		}
 
-		this.publicExecutor = Executors.newFixedThreadPool(publicThreadNums,
+		this.publicExecutor = Executors.newFixedThreadPool(publicThreadNumbers,
 				new ThreadFactory() {
 					private AtomicInteger threadIndex = new AtomicInteger(0);
 
@@ -162,7 +152,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 								new NettyDecoder(), //
 								new IdleStateHandler(0, 0, nettyServerConfig
 										.getServerChannelMaxIdleTimeSeconds()),//
-								new NettyConnetManageHandler(), //
+								new NettyConnectManageHandler(), //
 								new NettyServerHandler());
 					}
 				});
@@ -176,13 +166,13 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 
 		try {
 			ChannelFuture sync = this.serverBootstrap.bind().sync();
-			InetSocketAddress addr = (InetSocketAddress) sync.channel()
+			InetSocketAddress address = (InetSocketAddress) sync.channel()
 					.localAddress();
-			this.port = addr.getPort();
-		} catch (InterruptedException e1) {
+			this.port = address.getPort();
+		} catch (InterruptedException ex) {
 			throw new RuntimeException(
 					"this.serverBootstrap.bind().sync() InterruptedException",
-					e1);
+					ex);
 		}
 
 		if (this.channelEventListener != null) {
@@ -298,7 +288,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 		}
 	}
 
-	class NettyConnetManageHandler extends ChannelDuplexHandler {
+	class NettyConnectManageHandler extends ChannelDuplexHandler {
 		@Override
 		public void channelRegistered(ChannelHandlerContext ctx)
 				throws Exception {
@@ -354,8 +344,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 		public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
 				throws Exception {
 			if (evt instanceof IdleStateEvent) {
-				IdleStateEvent evnet = (IdleStateEvent) evt;
-				if (evnet.state().equals(IdleState.ALL_IDLE)) {
+				IdleStateEvent event = (IdleStateEvent) evt;
+				if (event.state().equals(IdleState.ALL_IDLE)) {
 					final String remoteAddress = RemotingHelper
 							.parseChannelRemoteAddr(ctx.channel());
 					log.warn("NETTY SERVER PIPELINE: IDLE exception [{}]",

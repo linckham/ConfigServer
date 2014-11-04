@@ -44,8 +44,6 @@ public class RemotingHeader {
      */
     private int code;
 
-    //TODO:the extend attribute
-
     public int getRequestId() {
         return requestId;
     }

@@ -13,7 +13,6 @@ import com.cmbc.configserver.utils.PathUtils;
 
 public class ClientSubscribe {
 	public static void main(String[] args) throws IOException, InterruptedException {
-		
         List<String> configServerAddress = new ArrayList<String>(1);
         configServerAddress.add("127.0.0.1:19999");
 		ConfigClientImpl configClient = new ConfigClientImpl(
@@ -44,7 +43,7 @@ public class ClientSubscribe {
                 }
             }
         });
-        System.out.println("the result of subscriber is "+ subscribe);
+        System.out.println(String.format("[%s] the result of subscriber is %s",new Date(),subscribe));
 		System.in.read();
 		configClient.close();
 	}
