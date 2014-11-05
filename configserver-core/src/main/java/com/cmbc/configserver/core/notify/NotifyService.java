@@ -1,10 +1,21 @@
 package com.cmbc.configserver.core.notify;
 
+import io.netty.channel.Channel;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
+import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.server.ConfigNettyServer;
 import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
@@ -13,12 +24,6 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
-import io.netty.channel.Channel;
-import org.omg.CORBA.Request;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.*;
 
 /**
  * the notify service uses to manage change event of the configuration.<br/>
@@ -43,8 +48,17 @@ public class NotifyService {
     private ThreadPoolExecutor subscriberNotifyExecutor;
     private ConfigStorage configStorage;
     private ConfigNettyServer configNettyServer;
+    private HeartbeatService heartbeatService;
 
-    public void setConfigStorage(ConfigStorage configStorage) {
+    public HeartbeatService getHeartbeatService() {
+		return heartbeatService;
+	}
+
+	public void setHeartbeatService(HeartbeatService heartbeatService) {
+		this.heartbeatService = heartbeatService;
+	}
+
+	public void setConfigStorage(ConfigStorage configStorage) {
         this.configStorage = configStorage;
     }
 
@@ -178,6 +192,8 @@ public class NotifyService {
 
                 this.getConfigNettyServer().getRemotingServer()
                         .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+                
+                heartbeatService.updateHeartbeat(channel);
             } catch (Exception ex) {
                 ConfigServerLogger.warn(String.format("notify the configuration to subscriber %s failed.", channel), ex);
             }
