@@ -23,7 +23,7 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     private static String SQL_HEARTBEAT_INSERT = "insert into config_heart_beat(client_id,last_modified_time) values(?,?)";
     private static String SQL_HEARTBEAT_UPDATE = "update config_heart_beat set last_modified_time=? where client_id=?";
     private static String SQL_HEARTBEAT_DELETE = "delete from config_heart_beat where client_id=?";
-    private static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=?";
+    private static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=? for update";
     private static String SQL_HEARTBEAT_GET_TIMEOUT = " select * from config_heart_beat where last_modified_time < ?";
 
     @Autowired

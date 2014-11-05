@@ -92,8 +92,8 @@ public class HeartbeatService {
 				//save db
 				configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
 				try {
-					heartBeatDao.save(configHeartBeat);
 					heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
+					heartBeatDao.save(configHeartBeat);
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
 				}
@@ -111,12 +111,15 @@ public class HeartbeatService {
 		}else{
 			heartbeatInfo.setLastUpdateMillis(System.currentTimeMillis());
 			if(heartbeatInfo.getLastDBSyncMillis() <= 0){
-				// save heartbeat to db error in channelCreated
+				// save heartbeat to db error or in saving to db in channelCreated.
 				ConfigServerLogger.warn("heartbeatInfo lastDBSyncMillis <= 0");
 				try {
-					ConfigHeartBeat configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
-					heartBeatDao.save(configHeartBeat);
-					heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
+					ConfigHeartBeat configHeartBeat = heartBeatDao.get(clientId);
+					if(configHeartBeat == null){
+						configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
+						heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
+						heartBeatDao.save(configHeartBeat);
+					}
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
 				}
@@ -165,6 +168,8 @@ public class HeartbeatService {
 	}
 	
 	public void clearChannel(Channel channel){
+		ConfigServerLogger.info("server clear channel start:" + channel);
+		
 		String clientId = RemotingHelper.getChannelId(channel);
 		heartbeatInfoTable.remove(clientId);
 		RemotingUtil.closeChannel(channel);
@@ -179,6 +184,6 @@ public class HeartbeatService {
 			ConfigServerLogger.error("delete client heartbeat error", e);
 		}
 		
-		ConfigServerLogger.info("server clear channel:" + channel);
+		ConfigServerLogger.info("server clear channel end:" + channel);
 	}
 }
