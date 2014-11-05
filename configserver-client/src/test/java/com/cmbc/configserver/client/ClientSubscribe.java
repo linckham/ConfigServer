@@ -31,19 +31,21 @@ public class ClientSubscribe {
         subConfig.setType("publisher");
         boolean subscribe = configClient.subscribe(subConfig, new ResourceListener() {
             public void notify(List<Configuration> configs) {
+                Date nowDate = new Date();
                 if (null != configs && !configs.isEmpty()) {
-                    System.out.println(String.format("[%s] the subscribe path %s has %s configuration items,",new Date(), PathUtils.getSubscriberPath(subConfig), configs.size()));
+                    System.out.println(String.format(" the subscribe path %s has %s configuration items [%s %s]", PathUtils.getSubscriberPath(subConfig), configs.size(),nowDate,nowDate.getTime()));
                     for (Configuration item : configs){
                         System.out.println(item);
                     }
                 }
                 else
                 {
-                    System.out.println(String.format("[%s] the subscribe path %s has no configuration items.",new Date(), PathUtils.getSubscriberPath(subConfig)));
+                    System.out.println(String.format(" the subscribe path %s has no configuration items [%s %s]", PathUtils.getSubscriberPath(subConfig),nowDate,nowDate.getTime()));
                 }
             }
         });
-        System.out.println(String.format("[%s] the result of subscriber is %s",new Date(),subscribe));
+        Date nowDate = new Date();
+        System.out.println(String.format(" the result of subscriber is %s [%s %s]",subscribe,nowDate,nowDate.getTime()));
 		System.in.read();
 		configClient.close();
 	}

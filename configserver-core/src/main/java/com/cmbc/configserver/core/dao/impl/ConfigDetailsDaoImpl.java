@@ -101,6 +101,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public List<Configuration> getConfigurationListByClientId(String clientId) throws Exception {
         try {
             return (List<Configuration>) this.jdbcTemplate.query(SQL_CONFIG_QUERY_BY_CLIENT_ID, new Object[]{
@@ -166,7 +167,7 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
                 config.setCategoryId(rs.getInt("category_id"));
                 config.setClientId(rs.getString("client_id"));
                 config.setContent(rs.getString("content"));
-
+                config.setCreateTime(rs.getTimestamp("create_time").getTime());
                 return config;
             } catch (SQLException ex) {
                 ConfigServerLogger.error("error when map row config_details: ", ex);

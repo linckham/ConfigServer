@@ -7,7 +7,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -18,7 +17,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
-import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -273,7 +271,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 		}, 1000 * 10, 1000 * 10);
 
 		if (this.channelEventListener != null) {
-			this.nettyEventExecuter.start();
+			this.nettyEventExecutor.start();
 		}
 	}
 
@@ -287,8 +285,8 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 
 			this.eventLoopGroupWorker.shutdownGracefully();
 
-			if (this.nettyEventExecuter != null) {
-				this.nettyEventExecuter.shutdown();
+			if (this.nettyEventExecutor != null) {
+				this.nettyEventExecutor.shutdown();
 			}
 
 			if (this.defaultEventExecutorGroup != null) {

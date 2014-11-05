@@ -240,4 +240,13 @@ public class RemotingCommand {
     public void setHeaderLength(int headerLength) {
         this.headerLength = headerLength;
     }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "requestId='" + this.getRequestId() + "" +
+                ",headerLength=" + this.getHeaderLength() + "" +
+                ",packetLength=" + this.getPacketLength() + "'" +
+                ",type"+this.getType()+"}";
+    }
 }

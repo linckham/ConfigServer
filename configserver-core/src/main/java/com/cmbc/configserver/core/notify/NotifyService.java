@@ -14,6 +14,7 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
+import org.omg.CORBA.Request;
 
 import java.util.List;
 import java.util.Set;
@@ -132,17 +133,15 @@ public class NotifyService {
                     notify.setPath(subscriberPath);
                     notify.setConfigLists(configList);
 
-                    //create remote command
-                    RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
                     byte[] body = RemotingSerializable.encode(notify);
-                    if (null != body) {
-                        request.setBody(body);
-                    }
                     //get the subscriber's channels that will being to notify
                     Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
                     if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
                         for (Channel channel : subscriberChannels) {
-                            subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel,request));
+                            if(null !=channel && channel.isActive()){
+                                //notifySubscriber(channel,body);
+                                subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel, body));
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -157,23 +156,31 @@ public class NotifyService {
      */
     class SubscriberNotifyWorker implements Runnable {
         private Channel channel;
-        private RemotingCommand command;
-        public  SubscriberNotifyWorker(Channel channel,RemotingCommand command){
+        private byte[] body;
+        public  SubscriberNotifyWorker(Channel channel,byte[] body){
             this.channel = channel;
-            this.command = command;
+            this.body = body;
         }
         @Override
         public void run() {
-            notifySubscriber(channel,command);
+            notifySubscriber(channel,body);
         }
     }
 
-    private void notifySubscriber(Channel channel, RemotingCommand request) {
-        try {
-            this.getConfigNettyServer().getRemotingServer()
-                    .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
-        } catch (Exception ex) {
-            ConfigServerLogger.warn(String.format("notify the command %s to subscriber %s failed.", request, channel), ex);
+    private void notifySubscriber(Channel channel, byte[] body) {
+        if(null != channel && channel.isActive()){
+            try {
+                //per request per subscriber channel
+                RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_CONFIG);
+                if(null !=body){
+                    request.setBody(body);
+                }
+
+                this.getConfigNettyServer().getRemotingServer()
+                        .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+            } catch (Exception ex) {
+                ConfigServerLogger.warn(String.format("notify the configuration to subscriber %s failed.", channel), ex);
+            }
         }
     }
 

@@ -176,7 +176,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 		}
 
 		if (this.channelEventListener != null) {
-			this.nettyEventExecuter.start();
+			this.nettyEventExecutor.start();
 		}
 
 		// schedule the timeout of async call per second
@@ -248,8 +248,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements
 
 			this.eventLoopGroupWorker.shutdownGracefully();
 
-			if (this.nettyEventExecuter != null) {
-				this.nettyEventExecuter.shutdown();
+			if (this.nettyEventExecutor != null) {
+				this.nettyEventExecutor.shutdown();
 			}
 
 			if (this.defaultEventExecutorGroup != null) {

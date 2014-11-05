@@ -49,7 +49,7 @@ public abstract class NettyRemotingAbstract {
     protected final HashMap<Integer/* request code */, Pair<RequestProcessor, ExecutorService>> processorTable =
             new HashMap<Integer, Pair<RequestProcessor, ExecutorService>>(64);
 
-    protected final NettyEventExecuter nettyEventExecuter = new NettyEventExecuter();
+    protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
 
 
     public abstract ChannelEventListener getChannelEventListener();
@@ -59,10 +59,10 @@ public abstract class NettyRemotingAbstract {
 
 
     public void putNettyEvent(final NettyEvent event) {
-        this.nettyEventExecuter.putNettyEvent(event);
+        this.nettyEventExecutor.putNettyEvent(event);
     }
 
-    class NettyEventExecuter extends ServiceThread {
+    class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
         private final int MaxSize = 10000;
 
@@ -121,7 +121,7 @@ public abstract class NettyRemotingAbstract {
 
         @Override
         public String getServiceName() {
-            return NettyEventExecuter.class.getSimpleName();
+            return NettyEventExecutor.class.getSimpleName();
         }
     }
 
@@ -249,14 +249,14 @@ public abstract class NettyRemotingAbstract {
                                     responseFuture.executeInvokeCallback();
                                 }
                                 catch (Throwable e) {
-                                    plog.warn("excute callback in executor exception, and callback throw", e);
+                                    plog.warn("execute callback in executor exception, and callback throw", e);
                                 }
                             }
                         });
                     }
                     catch (Exception e) {
                         runInThisThread = true;
-                        plog.warn("excute callback in executor exception, maybe executor busy", e);
+                        plog.warn("execute callback in executor exception, maybe executor busy", e);
                     }
                 }
                 else {
@@ -407,7 +407,7 @@ public abstract class NettyRemotingAbstract {
                             responseFuture.executeInvokeCallback();
                         }
                         catch (Throwable e) {
-                            plog.warn("excute callback in writeAndFlush addListener, and callback throw", e);
+                            plog.warn("execute callback in writeAndFlush addListener, and callback throw", e);
                         }
                         finally {
                             responseFuture.release();
@@ -435,7 +435,7 @@ public abstract class NettyRemotingAbstract {
                 String info =
                         String
                             .format(
-                                "invokeAsyncImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
+                                "invokeAsyncImpl tryAcquire semaphore timeout, %dms, waiting thread numbers: %d semaphoreAsyncValue: %d", //
                                 timeoutMillis,//
                                 this.semaphoreAsync.getQueueLength(),//
                                 this.semaphoreAsync.availablePermits()//
@@ -482,7 +482,7 @@ public abstract class NettyRemotingAbstract {
                 String info =
                         String
                             .format(
-                                "invokeOnewayImpl tryAcquire semaphore timeout, %dms, waiting thread nums: %d semaphoreAsyncValue: %d", //
+                                "invokeOnewayImpl tryAcquire semaphore timeout, %dms, waiting thread numbers: %d semaphoreAsyncValue: %d", //
                                 timeoutMillis,//
                                 this.semaphoreAsync.getQueueLength(),//
                                 this.semaphoreAsync.availablePermits()//

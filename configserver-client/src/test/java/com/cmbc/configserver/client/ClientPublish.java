@@ -41,7 +41,8 @@ public class ClientPublish {
 			config.setType("publisher");
 			
 			boolean publishResult = configClient.publish(config);
-			System.out.println(String.format("[%s] the result of publish config is %s",new Date(),publishResult));
+            Date nowDate = new Date();
+			System.out.println(String.format("the result of publish config is %s  [%s %s]",publishResult,nowDate,nowDate.getTime()));
 			
 			
 			Thread.sleep(20*1000);

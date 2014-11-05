@@ -16,6 +16,8 @@ public class Configuration  extends RemotingSerializable{
     private int categoryId;
     private String content;
 
+    private long createTime;
+
     public String getContent() {
         return content;
     }
@@ -67,6 +69,14 @@ public class Configuration  extends RemotingSerializable{
         this.categoryId = categoryId;
     }
 
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -107,6 +117,7 @@ public class Configuration  extends RemotingSerializable{
                 ", id=" + id +
                 ", categoryId=" + categoryId +
                 ", content='" + content + '\'' +
+                ", createTime='" + createTime + '\'' +
                 '}';
     }
 }
