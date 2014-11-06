@@ -1,6 +1,5 @@
 package com.cmbc.configserver.core.heartbeat;
 
-import com.cmbc.configserver.core.service.ConfigServerService;
 import io.netty.channel.Channel;
 
 import java.util.Iterator;
@@ -14,7 +13,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
-import com.cmbc.configserver.core.storage.ConfigStorage;
+import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
@@ -106,8 +105,7 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		HeartbeatInfo heartbeatInfo = heartbeatInfoTable.get(clientId);
 		if(heartbeatInfo == null){
-			ConfigServerLogger.error("heartbeatInfo is null in updateHeartbeat!");
-			this.clearChannel(channel);
+			ConfigServerLogger.warn("heartbeatInfo is null in updateHeartbeat!");
 		}else{
 			heartbeatInfo.setLastUpdateMillis(System.currentTimeMillis());
 			if(heartbeatInfo.getLastDBSyncMillis() <= 0){
