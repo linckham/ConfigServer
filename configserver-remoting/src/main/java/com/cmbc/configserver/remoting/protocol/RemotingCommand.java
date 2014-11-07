@@ -1,9 +1,11 @@
 package com.cmbc.configserver.remoting.protocol;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.cmbc.configserver.common.RemotingSerializable;
-import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.common.Version;
+import com.cmbc.configserver.common.compress.Compress;
+import com.cmbc.configserver.common.compress.CompressFactory;
+import com.cmbc.configserver.common.compress.CompressType;
+import com.cmbc.configserver.common.serialize.SerializeType;
+import com.cmbc.configserver.utils.Constants;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,49 +30,79 @@ public class RemotingCommand {
     }
     
     public static RemotingCommand createRequestCommand(int code){
-
-    	/*RemotingHeader hdr = new RemotingHeader();
-    	hdr.setCode(code);
-    	hdr.setRemotingType(RemotingCommandType.REQUEST_COMMAND.getType());
-    	hdr.setRequestId(requestId.getAndIncrement());
-
-    	RemotingCommand cmd = new RemotingCommand();
-    	cmd.header = hdr;
-    	return cmd;*/
         RemotingHeader hdr = RemotingCommand.createRemotingHeader(code, requestId.incrementAndGet(), RemotingCommandType.REQUEST_COMMAND.getType());
         RemotingCommand cmd = new RemotingCommand();
         cmd.header = hdr;
+        cmd.setCode(code);
         return cmd;
     }
     
     private byte[] buildHeader() {
-    	//assert header not null 
-        return RemotingSerializable.encode(header);
+        //doesn't use the FAST JSON to serialize the header. FAST JSON cost too many bytes
+        //the detail of header structure,please see protocol.txt
+        ByteBuffer headerBuffer = ByteBuffer.allocate(Constants.HEADER_FIX_DATA_LENGTH);
+        headerBuffer.put((byte)header.getVersion());//version
+        headerBuffer.put((byte)header.getLanguageCode());//language code
+        headerBuffer.put((byte)header.getRemotingType());// type request/response
+        headerBuffer.putShort((short)header.getCode());//request/response code
+        headerBuffer.putInt(header.getRequestId());//request id
+        headerBuffer.put((byte)header.getFlag());//flag
+        headerBuffer.flip();
+        return headerBuffer.array();
     }
 
-    public ByteBuffer encodeHeader() {
+    private static RemotingHeader decodeBuilder(byte[] header) throws Exception{
+        if(null != header && header.length == Constants.HEADER_FIX_DATA_LENGTH){
+            RemotingHeader remoteHeader = new RemotingHeader();
+            ByteBuffer buffer = ByteBuffer.wrap(header);
+            remoteHeader.setVersion(buffer.get());
+            remoteHeader.setLanguageCode(buffer.get());
+            remoteHeader.setRemotingType(buffer.get());
+            remoteHeader.setCode(buffer.getShort());
+            remoteHeader.setRequestId(buffer.getInt());
+            remoteHeader.setFlag(buffer.get());
+            return  remoteHeader;
+        }
+        else{
+            throw new Exception("invalid header format");
+        }
+    }
+
+    public ByteBuffer encodeHeader() throws Exception {
         return encodeHeader(this.body != null ? this.body.length : 0);
     }
 
     /**
-     * 只打包Header，body部分独立传输
+     * only encode the header,the body transport independence
      */
-    public ByteBuffer encodeHeader(final int bodyLength) {
+    public ByteBuffer encodeHeader(final int bodyLength) throws Exception {
     	
     	int magicCodeSize = 2;
         int totalLengthSize = 4;
         int headerLengthSize = Constants.HEADER_LENGTH_BYTE_COUNT;
         
         byte[] headerData = this.buildHeader();
-        //TODO validate header length
+        int headerLength = 0;
+        if(null != headerData){
+            headerLength = headerData.length;
+        }
+        //valid the header's length
+        if(headerLength < Constants.HEADER_FIX_DATA_LENGTH || headerLength > Constants.MAX_PACKET_HEADER_LENGTH ){
+            throw new Exception(String.format("request/response packet's header length is invalid. %s is not in [%s,%s]",headerLength,Constants.HEADER_FIX_DATA_LENGTH,Constants.MAX_PACKET_HEADER_LENGTH));
+        }
 
         ByteBuffer result = ByteBuffer.allocate(magicCodeSize + totalLengthSize + headerLengthSize + headerData.length);
 
         //put magic code
         result.putShort(Constants.MAGIC_CODE);
         // put total length
-        int totalLength = headerLengthSize + headerData.length + bodyLength;
-        //TODO validate total length
+        int totalLength = headerData.length + bodyLength;
+        this.setHeaderLength(headerData.length);
+        this.setPacketLength(totalLength);
+        //valid the body's length
+        if (bodyLength > Constants.MAX_PACKET_LENGTH) {
+            throw new Exception(String.format("request/response packet's body length is invalid.%s is not in[0,%s]", bodyLength, Constants.MAX_PACKET_LENGTH));
+        }
         result.putInt(totalLength);
 
         // put header length
@@ -84,36 +116,20 @@ public class RemotingCommand {
         return result;
     }
 
-    public static RemotingCommand decode(final byte[] array) {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(array);
-        return decode(byteBuffer);
-    }
-
-    public static RemotingCommand decode(final ByteBuffer byteBuffer) {
-        int length = byteBuffer.limit();
+    public static RemotingCommand decode(final ByteBuffer byteBuffer) throws Exception{
         short magicCode = byteBuffer.getShort();//magic code
         int packetTotalLength= byteBuffer.getInt();// the total length of the packet
         int headerLength = byteBuffer.getShort();//the header length
 
         //valid the magic code
-        if(magicCode != Constants.MAGIC_CODE){
-            //TODO: throw an exception to the endpoint
-        }
-
-        //valid the packet's length
-        if(packetTotalLength < Constants.MIN_PACKET_LENGTH || packetTotalLength > Constants.MAX_PACKET_LENGTH){
-            //TODO: throw an exception to the endpoint
-        }
-
-        //valid the header's length
-        if(headerLength <= 0 || headerLength > Constants.MAX_PACKET_HEADER_LENGTH ){
-            //TODO:throw an exception to the endpoint
+        if (magicCode != Constants.MAGIC_CODE) {
+            throw new Exception(String.format("request/response command magic code is invalid. %s is not match the correct code %s", magicCode, Constants.MAGIC_CODE));
         }
 
         byte[] headerData = new byte[headerLength];
         byteBuffer.get(headerData);
 
-        int bodyLength = packetTotalLength - Constants.HEADER_LENGTH_BYTE_COUNT - headerLength;
+        int bodyLength = packetTotalLength - headerLength;
         byte[] bodyData = null;
         if (bodyLength > 0) {
             bodyData = new byte[bodyLength];
@@ -121,9 +137,21 @@ public class RemotingCommand {
         }
 
         RemotingCommand cmd = new RemotingCommand();
-        cmd.header=RemotingSerializable.decode(headerData,RemotingHeader.class);
-        cmd.body = bodyData;
+        cmd.header=decodeBuilder(headerData);
+        cmd.setHeaderLength(headerLength);
+        cmd.setPacketLength(packetTotalLength);
 
+        boolean isCompressed = CommandFlagUtils.isCompressed(cmd.header);
+        if(isCompressed){
+            CompressType type = CommandFlagUtils.getCompressType(cmd.header);
+            Compress compress = CompressFactory.createCompress(type);
+            if( null != compress){
+                cmd.body = compress.decompress(bodyData);
+            }
+        }
+        else{
+            cmd.body = bodyData;
+        }
         return cmd;
     }
 
@@ -131,20 +159,14 @@ public class RemotingCommand {
         this.header.setRemotingType(RemotingCommandType.RESPONSE_COMMAND.getType());
     }
 
-    /*@JSONField(serialize = false)*/
     public boolean isResponseType() {
         return this.header.getRemotingType() == RemotingCommandType.RESPONSE_COMMAND.getType();
     }
 
     public void markOnewayRPC() {
-        /*int bits = 1 << RPC_ONEWAY;
-        this.flag |= bits;*/
     }
 
-    /*@JSONField(serialize = false)*/
     public boolean isOnewayRPC() {
-        /*int bits = 1 << RPC_ONEWAY;
-        return (this.flag & bits) == bits;*/
         return false;
     }
 
@@ -156,7 +178,6 @@ public class RemotingCommand {
         this.header.setCode(code);
     }
 
-    @JSONField(serialize = false)
     public RemotingCommandType getType() {
         if (this.isResponseType()) {
             return RemotingCommandType.RESPONSE_COMMAND;
@@ -169,24 +190,26 @@ public class RemotingCommand {
     }
 
     public void setBody(byte[] body){
-        this.body = body;
+        if(null != body && body.length > Constants.DEFAULT_COMPRESS_LENGTH){
+            CommandFlagUtils.markCompressFlag(this.header);
+            Compress compress = CompressFactory.createCompress(CommandFlagUtils.getCompressType(this.header));
+            if(null != compress){
+                this.body = compress.compress(body);
+            }
+        }
+        else
+        {
+            this.body = body;
+        }
     }
 
     public static RemotingCommand createResponseCommand(int code,int requestId){
-
         RemotingHeader hdr = RemotingCommand.createRemotingHeader(code, requestId, RemotingCommandType.RESPONSE_COMMAND.getType());
         RemotingCommand cmd = new RemotingCommand();
         cmd.header = hdr;
         cmd.markResponseType();
+        cmd.setCode(code);
         return cmd;
-    }
-
-    public RemotingHeader getHeader(){
-        return this.header;
-    }
-
-    public void setHeader(RemotingHeader header){
-        this.header = header;
     }
 
     public int getRequestId(){
@@ -209,6 +232,8 @@ public class RemotingCommand {
         hdr.setRequestId(requestId);
         hdr.setLanguageCode(LanguageCode.JAVA.getCode());
         hdr.setVersion(Version.V1.getVersion());
+        CommandFlagUtils.setCompressType(hdr, CompressType.QUICK_LZ);
+        CommandFlagUtils.setSerializeType(hdr, SerializeType.FAST_JSON);
         return hdr;
     }
 
@@ -219,7 +244,6 @@ public class RemotingCommand {
      * @return the response command
      */
     public static RemotingCommand createResponseCommand(int code,byte[] body,int requestId){
-
         RemotingCommand command = RemotingCommand.createResponseCommand(code,requestId);
         command.body = body;
         return command;

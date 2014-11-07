@@ -1,11 +1,8 @@
 package com.cmbc.configserver.utils;
 
-import org.junit.Before;
-import org.junit.After;
+import com.cmbc.configserver.domain.Category;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.cmbc.configserver.domain.Category;
 
 /**
  * the test class of PathUtils
