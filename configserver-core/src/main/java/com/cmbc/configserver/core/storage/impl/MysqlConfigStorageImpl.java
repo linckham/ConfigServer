@@ -7,7 +7,6 @@ import com.cmbc.configserver.core.notify.ConfigChangedNotifyService;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.domain.Configuration;
-import com.cmbc.configserver.utils.ClusterSignAlgorithm;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.PathUtils;
 
