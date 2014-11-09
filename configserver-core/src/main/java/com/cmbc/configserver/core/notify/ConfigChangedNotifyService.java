@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  * @Time 16:10
  */
 public class ConfigChangedNotifyService {
-    private Map</*path*/String,/*md5*/String> pathMd5Cache = new ConcurrentHashMap<String, String>(Constants.DEFAULT_INITIAL_CAPACITY);
+    private Map</*path*/String,/*md5*/Long> pathMd5Cache = new ConcurrentHashMap<String, Long>(Constants.DEFAULT_INITIAL_CAPACITY);
     private volatile boolean stop = true;
     private ExecutorService scheduler = Executors.newFixedThreadPool(1);
     private ConfigChangeLogDao configChangeLogDao;
@@ -57,10 +57,10 @@ public class ConfigChangedNotifyService {
     /**
      * update the path's md5
      * @param path
-     * @param md5
+     * @param last_modified_time
      */
-    public void updatePathMd5Cache(String path,String md5){
-        this.pathMd5Cache.put(path,md5);
+    public void updatePathMd5Cache(String path,Long last_modified_time){
+        this.pathMd5Cache.put(path,last_modified_time);
     }
 
     private List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
@@ -76,8 +76,8 @@ public class ConfigChangedNotifyService {
                     List<ConfigChangeLog> changeLogList = getAllConfigChangeLogs();
                     if (null != changeLogList && !changeLogList.isEmpty()) {
                         for (ConfigChangeLog changeLog : changeLogList) {
-                            //the md5 in local cache is not equals the md5 in database
-                            if (!StringUtils.equalsIgnoreCase(changeLog.getMd5(), pathMd5Cache.get(changeLog.getPath()))) {
+                            //the last modify time in local cache is not equals the value in database
+                            if (changeLog.getLastModifiedTime() != pathMd5Cache.get(changeLog.getPath())) {
                                 if (null != pathMd5Cache.get(changeLog.getPath())) {
                                     //doesn't send notify event when the JVM is just starting
                                     //send a event to NotifyService
@@ -87,7 +87,7 @@ public class ConfigChangedNotifyService {
                                     event.setEventCreatedTime(System.currentTimeMillis());
                                     ConfigChangedNotifyService.this.notifyService.publish(event);
                                 }
-                                pathMd5Cache.put(changeLog.getPath(), changeLog.getMd5());
+                                pathMd5Cache.put(changeLog.getPath(), changeLog.getLastModifiedTime());
                             }
                         }
                     }

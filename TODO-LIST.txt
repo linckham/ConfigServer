@@ -13,6 +13,7 @@
 4.单元测试,功能测试代码编写
   4.1 通过测试用例发现系统潜在问题
   4.2 提高系统的单元测试覆盖率
+  4.3 性能压测(推送延迟测试,压缩比例压缩耗时)
 5.ConfigServer系统整体设计Review和功能Review
 6.ConfigServer与Dubbo集成
 7.configserver-web工程功能规划和代码开发

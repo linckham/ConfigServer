@@ -76,8 +76,8 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         config = this.configDao.save(config);
         //save the configuration success
         if(config.getId() > 0){
-            //update the category's md5
-            updateMd5(category,PathUtils.getSubscriberPath(config),true);
+            //update the category's last modify time
+            updateLastModifyTime(PathUtils.getSubscriberPath(config), true);
         }
 
         return config.getId() > 0;
@@ -86,13 +86,10 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
     /**
      * update the md5 of the specified category
      */
-    private void updateMd5(Category category, String path,boolean isPublish) {
+    private void updateLastModifyTime(String path, boolean isPublish) {
         try{
-            //calculate the /cell/resource/type md5
-            List<Configuration> configList = this.configDao.getConfigurationList(category);
-            String md5 = ClusterSignAlgorithm.calculate(configList);
             ConfigChangeLog changeLog = new ConfigChangeLog();
-            changeLog.setMd5(md5);
+            changeLog.setLastModifiedTime(System.currentTimeMillis());
             changeLog.setPath(path);
             boolean bChangeLog;
             //only in the publish case, we should check the path where exists in config_change_log
@@ -110,11 +107,11 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
             }
 
             if (!bChangeLog) {
-                ConfigServerLogger.warn(String.format("add/update the path %s's md5 %s failed.", path, md5));
+                ConfigServerLogger.warn(String.format("add/update the path %s's last_modify_time failed.", path));
             }
             else
             {
-                this.configChangedNotifyService.updatePathMd5Cache(path,md5);
+                this.configChangedNotifyService.updatePathMd5Cache(path,changeLog.getLastModifiedTime());
             }
         }
         catch(Exception ex){
@@ -140,7 +137,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
 
         if(bDelConfig){
             //update the change log
-            updateMd5(category,PathUtils.getSubscriberPath(config),false);
+            updateLastModifyTime(PathUtils.getSubscriberPath(config), false);
         }
 
         return bDelConfig;
@@ -184,7 +181,7 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
             if(null != categories && !categories.isEmpty()){
                 for (Category category : categories){
                     String path = PathUtils.category2Path(category);
-                    updateMd5(category,path,false);
+                    updateLastModifyTime(path, false);
                     paths.add(path);
                 }
             }

@@ -11,14 +11,15 @@ package com.cmbc.configserver.domain;
 public class ConfigChangeLog {
     public final static ConfigChangeLog EMPTY_MESSAGE = new ConfigChangeLog();
     private String path;
-    private String md5;
+    private long lastModifiedTime;
 
-    public String getMd5() {
-        return md5;
+
+    public long getLastModifiedTime() {
+        return lastModifiedTime;
     }
 
-    public void setMd5(String md5) {
-        this.md5 = md5;
+    public void setLastModifiedTime(long lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
     }
 
     public String getPath() {
@@ -27,5 +28,13 @@ public class ConfigChangeLog {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigChangeLog{" +
+                "path='" + path + '\'' +
+                ", lastModifiedTime=" + lastModifiedTime +
+                '}';
     }
 }

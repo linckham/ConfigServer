@@ -18,8 +18,8 @@ import java.util.List;
  * @Time 19:51
  */
 public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
-    private static String SQL_CHANGE_LOG_INSERT = "insert into config_change_log(path,md5) values(?,?)";
-    private static String SQL_CHANGE_LOG_UPDATE = "update config_change_log set md5=? where path=?";
+    private static String SQL_CHANGE_LOG_INSERT = "insert into config_change_log(path,last_modified_time) values(?,?)";
+    private static String SQL_CHANGE_LOG_UPDATE = "update config_change_log set last_modified_time=? where path=?";
     private static String SQL_CHANGE_LOG_QUERY = "select * from config_change_log where path=?";
     private static String SQL_CHANGE_LOG_QUERY_ALL = "select * from config_change_log";
 
@@ -34,7 +34,7 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
         try {
             this.jdbcTemplate.update(SQL_CHANGE_LOG_INSERT, new Object[]{
                     changeLog.getPath(),
-                    changeLog.getMd5()
+                    changeLog.getLastModifiedTime()
             });
             return true;
         } catch (Exception ex) {
@@ -47,7 +47,7 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
     public boolean update(ConfigChangeLog changeLog) throws Exception {
         try {
             this.jdbcTemplate.update(SQL_CHANGE_LOG_UPDATE, new Object[]{
-                    changeLog.getMd5(),
+                    changeLog.getLastModifiedTime(),
                     changeLog.getPath()
             });
             return true;
@@ -94,7 +94,7 @@ public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
             try {
                 changeLog = new ConfigChangeLog();
                 changeLog.setPath(rs.getString("path"));
-                changeLog.setMd5(rs.getString("md5"));
+                changeLog.setLastModifiedTime(rs.getLong("last_modified_time"));
                 return changeLog;
             } catch (SQLException ex) {
                 ConfigServerLogger.error("error when map row config_change_log: ", ex);

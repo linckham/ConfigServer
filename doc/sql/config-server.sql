@@ -30,7 +30,7 @@ SET character_set_client = utf8;
 CREATE TABLE `config_change_log`(
 log_id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
 `path` VARCHAR(256) NOT NULL,
-`md5`  VARCHAR(64) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+`last_modified_time`  BIGINT UNSIGNED NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `config_heart_beat`;
