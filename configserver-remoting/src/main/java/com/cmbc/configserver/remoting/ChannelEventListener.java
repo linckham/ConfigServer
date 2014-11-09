@@ -8,7 +8,7 @@ public interface ChannelEventListener {
 
 	public void onChannelClose(final String remoteAddress, final Channel channel);
 
-	public void onChannelException(final String remoteAddres,
+	public void onChannelException(final String remoteAddress,
 			final Channel channel);
 
 	public void onChannelIdle(final String remoteAddress, final Channel channel);

@@ -16,18 +16,18 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
  * @since 2014/10/17 3:01:22PM
  */
 public interface RemotingClient extends RemotingService {
-	public RemotingCommand invokeSync(final String addr,
+	public RemotingCommand invokeSync(final String address,
 			final RemotingCommand request, final long timeoutMillis)
 			throws InterruptedException, RemotingConnectException,
 			RemotingSendRequestException, RemotingTimeoutException;
 
-	public void invokeAsync(final String addr, final RemotingCommand request,
+	public void invokeAsync(final String address, final RemotingCommand request,
 			final long timeoutMillis, final InvokeCallback invokeCallback)
 			throws InterruptedException, RemotingConnectException,
 			RemotingTooMuchRequestException, RemotingTimeoutException,
 			RemotingSendRequestException;
 
-	public void invokeOneway(final String addr, final RemotingCommand request,
+	public void invokeOneway(final String address, final RemotingCommand request,
 			final long timeoutMillis) throws InterruptedException,
 			RemotingConnectException, RemotingTooMuchRequestException,
 			RemotingTimeoutException, RemotingSendRequestException;

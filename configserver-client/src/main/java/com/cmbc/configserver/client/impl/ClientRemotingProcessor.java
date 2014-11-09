@@ -46,7 +46,7 @@ public class ClientRemotingProcessor implements RequestProcessor {
 			RemotingCommand request) {
 		switch (request.getCode()) {
 			case RequestCode.NOTIFY_CONFIG:
-				return resolvePushConfig(ctx, request);
+				return processPushConfig(ctx, request);
 			default:
 				break;
 		}
@@ -54,14 +54,14 @@ public class ClientRemotingProcessor implements RequestProcessor {
 		return null;
 	}
 
-	private RemotingCommand resolvePushConfig(ChannelHandlerContext ctx,
-			RemotingCommand request) {
-		int code = RemotingSysResponseCode.SYSTEM_ERROR;
+	private RemotingCommand processPushConfig(ChannelHandlerContext ctx,
+                                              RemotingCommand request) {
+		int code;
 		try {
 			if (request.getBody() != null) {
 				final Notify notifyConfig = RemotingSerializable.decode(request.getBody(),Notify.class);
 				configClientImpl.getNotifyCache().put(notifyConfig.getPath(),notifyConfig);
-				Set<ResourceListener> listeners = configClientImpl.getSubcribeMap().get(notifyConfig.getPath());
+				Set<ResourceListener> listeners = configClientImpl.getSubscribeMap().get(notifyConfig.getPath());
 				if(listeners != null){
 					for(ResourceListener listener : listeners){
 						configClientImpl.notifyListener(listener, notifyConfig);

@@ -1,7 +1,7 @@
 package com.cmbc.configserver.remoting.protocol;
 
 /**
- * the remoting header of communication between server and client.<br/>
+ * the remote header of communication between server and client.<br/>
  * Created by tongchuan.lin<linckham@gmail.com> on 2014/10/20.
  */
 public class RemotingHeader {

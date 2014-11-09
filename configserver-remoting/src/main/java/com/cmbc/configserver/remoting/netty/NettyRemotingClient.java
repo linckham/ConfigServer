@@ -132,7 +132,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 				throws Exception {
 			final String remoteAddress = RemotingHelper
-					.parseChannelRemoteAddr(ctx.channel());
+					.parseChannelRemoteAddress(ctx.channel());
 			log.warn("NETTY CLIENT PIPELINE: exceptionCaught {}", remoteAddress);
 			log.warn("NETTY CLIENT PIPELINE: exceptionCaught exception.", cause);
 			if (NettyRemotingClient.this.channelEventListener != null) {
@@ -148,7 +148,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 			if (evt instanceof IdleStateEvent) {
 				IdleStateEvent evnet = (IdleStateEvent) evt;
 				if (evnet.state().equals(IdleState.READER_IDLE)) {
-					final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+					final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
 					
 					if (NettyRemotingClient.this.channelEventListener != null) {
 						NettyRemotingClient.this.putNettyEvent(new NettyEvent(

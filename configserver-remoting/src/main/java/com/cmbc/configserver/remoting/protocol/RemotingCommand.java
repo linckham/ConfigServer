@@ -24,7 +24,7 @@ public class RemotingCommand {
     /**
      * the body of the remote command
      */
-    private transient byte[] body;
+    private byte[] body;
 
     public RemotingCommand() {
     }

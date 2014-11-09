@@ -35,8 +35,8 @@ public class ConfigClientImpl implements ConfigClient {
 	private NettyRemotingClient remotingClient;
 	private ClientRemotingProcessor clientRemotingProcessor;
 	private ExecutorService publicExecutor;
-	public Map<String,Set<ResourceListener>> subcribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
-	private final Lock subcribeMapLock = new ReentrantLock();
+	public Map<String,Set<ResourceListener>> subscribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
+	private final Lock subscribeMapLock = new ReentrantLock();
 	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
 
@@ -92,16 +92,16 @@ public class ConfigClientImpl implements ConfigClient {
 	@Override
 	public boolean subscribe(Configuration config, ResourceListener listener) {
 		String subKey = PathUtils.getSubscriberPath(config);
-		Set<ResourceListener> listeners =  subcribeMap.get(subKey);
+		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
 		if (listeners == null || listeners.size() == 0) {
 			try {
-				if (subcribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
+				if (subscribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
 					try {
-						listeners = subcribeMap.get(subKey);
+						listeners = subscribeMap.get(subKey);
 						if (listeners == null || listeners.size() == 0) {
 							if(listeners == null){
 								listeners = new ConcurrentHashSet<ResourceListener>();
-								subcribeMap.put(subKey,listeners);
+								subscribeMap.put(subKey, listeners);
 							}
 
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SUBSCRIBE_CONFIG);
@@ -133,7 +133,7 @@ public class ConfigClientImpl implements ConfigClient {
 						logger.info(e.toString());
 						return false;
 					} finally {
-						subcribeMapLock.unlock();
+						subscribeMapLock.unlock();
 					}
 				}else{
 					return false;
@@ -167,18 +167,18 @@ public class ConfigClientImpl implements ConfigClient {
 	@Override
 	public boolean unsubscribe(Configuration config, ResourceListener listener) {
 		String subKey = PathUtils.getSubscriberPath(config);
-		Set<ResourceListener> listerners =  subcribeMap.get(subKey);
-		if(listerners == null){
+		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
+		if(listeners == null){
 			return true;
 		}
 		
-		listerners.remove(listerners);
+		listeners.remove(listeners);
 		
-		if(listerners.size() == 0){
+		if(listeners.size() == 0){
 			try {
-				if (subcribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
+				if (subscribeMapLock.tryLock(Constants.DEFAULT_READ_WRITE_LOCK_TIMEOUT,TimeUnit.MILLISECONDS)) {
 					try {
-						if (listerners.size() == 0) {
+						if (listeners.size() == 0) {
 							RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNSUBSCRIBE_CONFIG);
 							byte[] body = RemotingSerializable.encode(config);
 							request.setBody(body);
@@ -187,7 +187,7 @@ public class ConfigClientImpl implements ConfigClient {
 							if (result.getCode() != ResponseCode.UNSUBSCRIBE_CONFIG_OK) {
 								return false;
 							}else{
-								//success unsubscribed,than remove cache
+								//success un subscribed,than remove cache
 								notifyCache.remove(subKey);
 							}
 						}
@@ -195,7 +195,7 @@ public class ConfigClientImpl implements ConfigClient {
 						logger.info(e.toString());
 						return false;
 					} finally {
-						subcribeMapLock.unlock();
+						subscribeMapLock.unlock();
 					}
 				}else{
 					return false;
@@ -213,7 +213,7 @@ public class ConfigClientImpl implements ConfigClient {
 	
 	public void sendHeartbeat(Channel channel){
 		int retryTime = 2;
-		boolean sendSucessed = false;
+		boolean sendSuccess = false;
 		for(int i= 0; i< retryTime; i++){
 			RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.HEARTBEAT);
 			request.setBody(null);
@@ -221,7 +221,7 @@ public class ConfigClientImpl implements ConfigClient {
 				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
 					logger.info("send heartbeat ok");
-					sendSucessed = true;
+					sendSuccess = true;
 					break;
 				}
 			} catch (Exception e) {
@@ -230,7 +230,7 @@ public class ConfigClientImpl implements ConfigClient {
 			} 
 		}
 		
-		if(!sendSucessed){
+		if(!sendSuccess){
 			int times = heartbeatFailedTimes.incrementAndGet();
 			if(times >= 3){
 				logger.info("heartbeat failed, do reset works");
@@ -242,18 +242,14 @@ public class ConfigClientImpl implements ConfigClient {
 	public void clear(Channel channel){
 		remotingClient.closeChannel(channel);
 		this.heartbeatFailedTimes.set(0);
-		this.subcribeMap.clear();
+		this.subscribeMap.clear();
 		this.notifyCache.clear();
 		
 		logger.info("client clear channel: " + channel);
 	}
 	
-	public Map<String, Set<ResourceListener>> getSubcribeMap() {
-		return subcribeMap;
-	}
-
-	public void setSubcribeMap(Map<String, Set<ResourceListener>> subcribeMap) {
-		this.subcribeMap = subcribeMap;
+	public Map<String, Set<ResourceListener>> getSubscribeMap() {
+		return subscribeMap;
 	}
 	
 	public Map<String, Notify> getNotifyCache() {

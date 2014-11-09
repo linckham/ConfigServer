@@ -61,7 +61,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
 
     private RemotingCommand publishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
         String responseBody = "OK";
-        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        int code;
         try {
             Configuration config = null;
             if (null != request.getBody()) {
@@ -83,7 +83,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
 
     private RemotingCommand unPublishConfig(ChannelHandlerContext ctx, RemotingCommand request) {
         String responseBody = "OK";
-        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        int code;
         try {
             Configuration config = null;
             if (null != request.getBody()) {
@@ -133,7 +133,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
 
     private RemotingCommand unSubscribeConfig(ChannelHandlerContext ctx, RemotingCommand request) {
         String responseBody = "OK";
-        int code = RemotingSysResponseCode.SYSTEM_ERROR;
+        int code;
         try {
             Configuration config = null;
             if (null != request.getBody()) {

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class ServiceThread implements Runnable {
-	private static final Logger stlog = LoggerFactory
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ServiceThread.class);
 	// the executor thread
 	protected final Thread thread;
@@ -35,13 +35,13 @@ public abstract class ServiceThread implements Runnable {
 
 	public void makeStop() {
 		this.stopped = true;
-		stlog.info("makestop thread " + this.getServiceName());
+		LOGGER.info("make stop thread " + this.getServiceName());
 	}
 
 	public void stop(final boolean interrupt) {
 		this.stopped = true;
-		stlog.info("stop thread " + this.getServiceName() + " interrupt "
-				+ interrupt);
+		LOGGER.info("stop thread " + this.getServiceName() + " interrupt "
+                + interrupt);
 		synchronized (this) {
 			if (!this.hasNotified) {
 				this.hasNotified = true;
@@ -56,8 +56,8 @@ public abstract class ServiceThread implements Runnable {
 
 	public void shutdown(final boolean interrupt) {
 		this.stopped = true;
-		stlog.info("shutdown thread " + this.getServiceName() + " interrupt "
-				+ interrupt);
+		LOGGER.info("shutdown thread " + this.getServiceName() + " interrupt "
+                + interrupt);
 		synchronized (this) {
 			if (!this.hasNotified) {
 				this.hasNotified = true;
@@ -73,9 +73,9 @@ public abstract class ServiceThread implements Runnable {
 			long beginTime = System.currentTimeMillis();
 			this.thread.join(this.getJointime());
 			long eclipseTime = System.currentTimeMillis() - beginTime;
-			stlog.info("join thread " + this.getServiceName()
-					+ " eclipse time(ms) " + eclipseTime + " "
-					+ this.getJointime());
+			LOGGER.info("join thread " + this.getServiceName()
+                    + " eclipse time(ms) " + eclipseTime + " "
+                    + this.getJointime());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

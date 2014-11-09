@@ -145,7 +145,7 @@ public abstract class NettyRemotingAbstract {
                         RPCHook rpcHook = NettyRemotingAbstract.this.getRPCHook();
                         if (rpcHook != null) {
                             rpcHook
-                                .doBeforeRequest(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
+                                .doBeforeRequest(RemotingHelper.parseChannelRemoteAddress(ctx.channel()), cmd);
                         }
 
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
@@ -194,7 +194,7 @@ public abstract class NettyRemotingAbstract {
                 pair.getObject2().submit(run);
             }
             catch (RejectedExecutionException e) {
-                plog.warn(RemotingHelper.parseChannelRemoteAddr(ctx.channel()) //
+                plog.warn(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) //
                         + ", too many requests and system thread pool busy, RejectedExecutionException " //
                         + pair.getObject2().toString() //
                         + " request code: " + cmd.getCode());
@@ -225,7 +225,7 @@ public abstract class NettyRemotingAbstract {
             response.setRequestId(cmd.getRequestId());
             ctx.writeAndFlush(response);
 
-            plog.error(RemotingHelper.parseChannelRemoteAddr(ctx.channel()) + error);
+            plog.error(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) + error);
         }
     }
 
@@ -279,7 +279,7 @@ public abstract class NettyRemotingAbstract {
         }
         else {
             plog.warn("receive response, but not matched any request, "
-                    + RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                    + RemotingHelper.parseChannelRemoteAddress(ctx.channel()));
             plog.warn(cmd.toString());
         }
 
@@ -361,12 +361,12 @@ public abstract class NettyRemotingAbstract {
             if (null == responseCommand) {
                 // successfully sending the remote request,timeout happens when reading the ACK
                 if (responseFuture.isSendRequestOK()) {
-                    throw new RemotingTimeoutException(RemotingHelper.parseChannelRemoteAddr(channel),
+                    throw new RemotingTimeoutException(RemotingHelper.parseChannelRemoteAddress(channel),
                         timeoutMillis, responseFuture.getCause());
                 }
                 // failed in sending the remote request
                 else {
-                    throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddr(channel),
+                    throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddress(channel),
                         responseFuture.getCause());
                 }
             }
@@ -414,7 +414,7 @@ public abstract class NettyRemotingAbstract {
                         }
 
                         plog.warn("send a request command to channel <{}> failed.",
-                            RemotingHelper.parseChannelRemoteAddr(channel));
+                            RemotingHelper.parseChannelRemoteAddress(channel));
                         plog.warn(request.toString());
                     }
                 });
@@ -422,9 +422,9 @@ public abstract class NettyRemotingAbstract {
             catch (Exception e) {
                 responseFuture.release();
                 plog.warn(
-                    "send a request command to channel <" + RemotingHelper.parseChannelRemoteAddr(channel)
+                    "send a request command to channel <" + RemotingHelper.parseChannelRemoteAddress(channel)
                             + "> Exception", e);
-                throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddr(channel), e);
+                throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddress(channel), e);
             }
         }
         else {
@@ -471,7 +471,7 @@ public abstract class NettyRemotingAbstract {
             catch (Exception e) {
                 once.release();
                 plog.warn("write send a request command to channel <" + channel.remoteAddress() + "> failed.");
-                throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddr(channel), e);
+                throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddress(channel), e);
             }
         }
         else {
