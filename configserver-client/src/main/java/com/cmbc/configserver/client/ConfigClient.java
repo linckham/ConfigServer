@@ -2,6 +2,8 @@ package com.cmbc.configserver.client;
 
 import com.cmbc.configserver.domain.Configuration;
 
+import java.util.List;
+
 public interface ConfigClient {
 	/**
 	 * publish the configuration to the remote server
@@ -17,7 +19,7 @@ public interface ConfigClient {
 	 */
 	public boolean unpublish(Configuration config);
 
-	public boolean subscribe(Configuration config, ResourceListener listener);
+	public List<Configuration> subscribe(Configuration config, ResourceListener listener);
 
 	public boolean unsubscribe(Configuration config, ResourceListener listener);
 	

@@ -77,7 +77,9 @@ public class ConfigChangedNotifyService {
                     if (null != changeLogList && !changeLogList.isEmpty()) {
                         for (ConfigChangeLog changeLog : changeLogList) {
                             //the last modify time in local cache is not equals the value in database
-                            if (changeLog.getLastModifiedTime() != pathMd5Cache.get(changeLog.getPath())) {
+                            //fix the bug: change log's modify time is long,and the value of path in Cache is Long,when the value is null,compare the long with
+                            //null,It may be thrown the JNP exception
+                            if ((pathMd5Cache.get(changeLog.getPath()) == null)||(changeLog.getLastModifiedTime() != pathMd5Cache.get(changeLog.getPath()))) {
                                 if (null != pathMd5Cache.get(changeLog.getPath())) {
                                     //doesn't send notify event when the JVM is just starting
                                     //send a event to NotifyService

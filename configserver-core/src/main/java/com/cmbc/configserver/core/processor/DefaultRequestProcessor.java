@@ -1,15 +1,10 @@
 package com.cmbc.configserver.core.processor;
 
-import com.cmbc.configserver.core.service.ConfigServerService;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.List;
-
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.core.heartbeat.HeartbeatService;
-import com.cmbc.configserver.core.server.ConfigServerController;
+import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
@@ -17,6 +12,9 @@ import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 import com.cmbc.configserver.utils.PathUtils;
+import io.netty.channel.ChannelHandlerContext;
+
+import java.util.List;
 
 /**
  * the default request processor of ConfigServer

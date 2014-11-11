@@ -66,7 +66,7 @@ public class ConfigClientTest {
         subConfig.setCell("test-cell");
         subConfig.setResource("test-dubbo-rpc");
         subConfig.setType("publisher");
-        boolean subscribe = this.configClient.subscribe(config, new ResourceListener() {
+        this.configClient.subscribe(config, new ResourceListener() {
             public void notify(List<Configuration> configs) {
                 if (null != configs && !configs.isEmpty()) {
                     System.out.println(String.format("the subscribe path %s has %s configuration items,", PathUtils.getSubscriberPath(subConfig), configs.size()));
@@ -80,8 +80,6 @@ public class ConfigClientTest {
                 }
             }
         });
-        System.out.println("the result of subscriber is "+ subscribe);
-        Assert.assertTrue(subscribe);
     }
 
     @After

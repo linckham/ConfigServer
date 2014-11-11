@@ -29,7 +29,7 @@ public class ClientSubscribe {
         subConfig.setCell("test-cell");
         subConfig.setResource("test-dubbo-rpc");
         subConfig.setType("publisher");
-        boolean subscribe = configClient.subscribe(subConfig, new ResourceListener() {
+        configClient.subscribe(subConfig, new ResourceListener() {
             public void notify(List<Configuration> configs) {
                 Date nowDate = new Date();
                 if (null != configs && !configs.isEmpty()) {
@@ -44,8 +44,6 @@ public class ClientSubscribe {
                 }
             }
         });
-        Date nowDate = new Date();
-        System.out.println(String.format(" the result of subscriber is %s [%s %s]",subscribe,nowDate,nowDate.getTime()));
 		System.in.read();
 		configClient.close();
 	}

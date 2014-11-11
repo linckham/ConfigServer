@@ -41,14 +41,18 @@ public class ConfigClientImpl implements ConfigClient {
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
 
 	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,
-								ConnectionStateListener stateListener) throws InterruptedException{
+								ConnectionStateListener stateListener){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
 		remotingClient.updateNameServerAddressList(addrs);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
-		remotingClient.start();
-		remotingClient.setConnectionStateListener(stateListener);
+        try {
+            remotingClient.start();
+        } catch (InterruptedException e) {
+            logger.error("Failed in starting remote client,cause=",e);
+        }
+        remotingClient.setConnectionStateListener(stateListener);
 		
 		publicExecutor = remotingClient.getCallbackExecutor();
 	}
@@ -90,7 +94,7 @@ public class ConfigClientImpl implements ConfigClient {
 	}
 
 	@Override
-	public boolean subscribe(Configuration config, ResourceListener listener) {
+	public List<Configuration> subscribe(Configuration config, ResourceListener listener){
 		String subKey = PathUtils.getSubscriberPath(config);
 		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
 		if (listeners == null || listeners.size() == 0) {
@@ -111,44 +115,43 @@ public class ConfigClientImpl implements ConfigClient {
 							RemotingCommand response = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 
 							if (response.getCode() != ResponseCode.SUBSCRIBE_CONFIG_OK) {
-								return false;
+								throw new Exception();
 							} else {
 								if(response.getBody() != null){
 									Notify notify = RemotingSerializable.decode(response.getBody(),Notify.class);;
 									notifyCache.put(subKey,notify);
 									listeners.add(listener);
-									this.notifyListener(listener, notify);
+                                    return notify.getConfigLists();
 								}else{
 									logger.info("subscribe notify is null!");
-									return false;
+                                    throw new Exception();
 								}
 							}
 
 						} else {
 							Notify notify = notifyCache.get(subKey);
 							listeners.add(listener);
-							this.notifyListener(listener, notify);
+                            return notify.getConfigLists();
 						}
 					} catch (Exception e) {
 						logger.info(e.toString());
-						return false;
+                        throw new RuntimeException(e);
 					} finally {
 						subscribeMapLock.unlock();
 					}
 				}else{
-					return false;
+                    throw new RuntimeException();
 				}
 			} catch (InterruptedException e) {
 				logger.info(e.toString());
-				return false;
+                throw new RuntimeException(e);
 			}
 		} else {
 			Notify notify = notifyCache.get(subKey);
 			listeners.add(listener);
-			this.notifyListener(listener, notify);
+            return notify.getConfigLists();
 		}
 		
-		return true;
 	}
 	
 	public void notifyListener(final ResourceListener listener,final Notify notify){
