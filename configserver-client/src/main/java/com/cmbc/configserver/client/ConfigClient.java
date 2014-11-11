@@ -24,4 +24,6 @@ public interface ConfigClient {
 	public boolean unsubscribe(Configuration config, ResourceListener listener);
 	
 	public void close();
+
+    public boolean isAvailable();
 }

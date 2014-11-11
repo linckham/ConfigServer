@@ -548,4 +548,8 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 			ConnectionStateListener connectionStateListener) {
 		this.connectionStateListener = connectionStateListener;
 	}
+
+    public boolean isAvailable(){
+        return this.clientChannel.isOK();
+    }
 }

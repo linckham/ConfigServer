@@ -275,4 +275,9 @@ public class ConfigClientImpl implements ConfigClient {
 	public NettyRemotingClient getRemotingClient() {
 		return remotingClient;
 	}
+
+    @Override
+    public boolean isAvailable(){
+        return remotingClient.isAvailable();
+    }
 }

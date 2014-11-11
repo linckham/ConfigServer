@@ -15,7 +15,7 @@ public class ClientPublish {
 		
         List<String> configServerAddress = new ArrayList<String>(1);
         configServerAddress.add("127.0.0.1:19999");
-		ConfigClientImpl configClient = new ConfigClientImpl(
+		ConfigClient configClient = new ConfigClientImpl(
 				new NettyClientConfig(), configServerAddress,
 				new ConnectionStateListener() {
 					@Override

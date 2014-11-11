@@ -1,4 +1,5 @@
 1.现有代码里面的TODO list进行填补和完善
+  1.1 除去changeLogNotifyService,NettyRemotingAbstract两个类没有完成TODO修复之外，其他的TODO都已经修理完毕
 2.现有版本的BUG修复,每次修复一个BUG需要记录BUG的详细信息
    BUG描述 BUG产生的原因 BUG是否修复
 3.系统尚未完成的辅助功能
@@ -16,4 +17,11 @@
   4.3 性能压测(推送延迟测试,压缩比例压缩耗时)
 5.ConfigServer系统整体设计Review和功能Review
 6.ConfigServer与Dubbo集成
+  6.1 完成dubbo-registry-configserver模块代码开发(已经完成)
+  6.2 实现dubbo-demo工程正确运行(已经完成)
+    a)provider将配置信息注册到config server
+    b)consumer从config server获取配置
+    c)provider-consumer正确通信
+  6.3 dubbo-admin工程改造
+
 7.configserver-web工程功能规划和代码开发
