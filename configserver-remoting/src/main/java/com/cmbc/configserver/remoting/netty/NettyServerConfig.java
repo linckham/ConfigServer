@@ -8,6 +8,7 @@ public class NettyServerConfig {
 	private int serverOnewaySemaphoreValue = 32;
 	private int serverAsyncSemaphoreValue = 64;
 	private int serverChannelMaxIdleTimeSeconds = 120;
+    private int serverMaxConnectionNumbers = 5*1000;
 
 	public int getListenPort() {
 		return listenPort;
@@ -66,4 +67,12 @@ public class NettyServerConfig {
 			int serverChannelMaxIdleTimeSeconds) {
 		this.serverChannelMaxIdleTimeSeconds = serverChannelMaxIdleTimeSeconds;
 	}
+
+    public int getServerMaxConnectionNumbers() {
+        return serverMaxConnectionNumbers;
+    }
+
+    public void setServerMaxConnectionNumbers(int serverMaxConnectionNumbers) {
+        this.serverMaxConnectionNumbers = serverMaxConnectionNumbers;
+    }
 }

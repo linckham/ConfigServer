@@ -3,10 +3,12 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
     <bean id="nettyServerConfig" class="com.cmbc.configserver.remoting.netty.NettyServerConfig">
         <property name="listenPort" value="${configServer.listenPort}"/>
+        <property name="serverMaxConnectionNumbers" value="${configServer.maxConnectionNumbers}"/>
     </bean>
 
     <bean id="clientConnectionListener" class="com.cmbc.configserver.core.heartbeat.ClientConnectionListener">
         <property name="heartbeatService" ref="heartbeatService"/>
+        <property name="nettyServerConfig" ref="nettyServerConfig"/>
     </bean>
 
     <bean id="configNettyServer" class="com.cmbc.configserver.core.server.ConfigNettyServer">
