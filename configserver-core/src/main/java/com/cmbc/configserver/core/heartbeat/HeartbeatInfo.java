@@ -4,7 +4,8 @@ import io.netty.channel.Channel;
 
 public class HeartbeatInfo {
 	public static long SYNC_DB_INTERVAL = 10 * 1000;
-	public static long TIMEOUT = 30 * 1000;
+	//a little big than client timeout,let client initial close connection.
+	public static long TIMEOUT = 40 * 1000;
 	
 	private String clientId;
 	private Channel channel;

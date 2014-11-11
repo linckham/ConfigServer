@@ -550,6 +550,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 	}
 
     public boolean isAvailable(){
-        return this.clientChannel.isOK();
+        return clientChannel != null && clientChannel.isOK();
     }
 }

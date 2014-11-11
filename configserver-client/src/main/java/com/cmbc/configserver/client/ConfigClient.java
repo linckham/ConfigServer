@@ -10,18 +10,18 @@ public interface ConfigClient {
 	 * 
 	 * @return true if published success,else false
 	 */
-	public boolean publish(Configuration config);
+	public void publish(Configuration config);
 
 	/**
 	 * unPublish the configuration from the remote server
 	 * 
 	 * @return true if unPublish success,else false
 	 */
-	public boolean unpublish(Configuration config);
+	public void unpublish(Configuration config);
 
 	public List<Configuration> subscribe(Configuration config, ResourceListener listener);
 
-	public boolean unsubscribe(Configuration config, ResourceListener listener);
+	public void unsubscribe(Configuration config, ResourceListener listener);
 	
 	public void close();
 
