@@ -1,6 +1,5 @@
 package com.cmbc.configserver.client.impl;
 
-import com.cmbc.configserver.utils.Constants;
 import io.netty.channel.Channel;
 
 import java.util.List;
@@ -17,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cmbc.configserver.client.ConfigClient;
+import com.cmbc.configserver.client.ConfigClientException;
 import com.cmbc.configserver.client.ResourceListener;
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.protocol.RequestCode;
@@ -28,6 +28,7 @@ import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
+import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
 
 public class ConfigClientImpl implements ConfigClient {
@@ -58,39 +59,37 @@ public class ConfigClientImpl implements ConfigClient {
 	}
 
 	@Override
-	public boolean publish(Configuration config) {
+	public void publish(Configuration config) {
 		RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PUBLISH_CONFIG);
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
 			RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 			if(result.getCode() != ResponseCode.PUBLISH_CONFIG_OK){
-				return false;
+				throw new ConfigClientException("publish config failed");
 			}
 		} catch (Exception e) {
 			logger.info(e.toString());
-			return false;
+			throw new ConfigClientException(e);
 		} 
 		
-		return true;
+		
 	}
 
 	@Override
-	public boolean unpublish(Configuration config) {
+	public void unpublish(Configuration config) {
 		RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UNPUBLISH_CONFIG);
 		byte[] body = RemotingSerializable.encode(config);
 		request.setBody(body);
 		try {
 			RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 			if(result.getCode() != ResponseCode.UNPUBLISH_CONFIG_OK){
-				return false;
+				throw new ConfigClientException("unpublish config failed");
 			}
 		} catch (Exception e) {
 			logger.info(e.toString());
-			return false;
+			throw new ConfigClientException(e);
 		} 
-		
-		return true;
 	}
 
 	@Override
@@ -124,7 +123,7 @@ public class ConfigClientImpl implements ConfigClient {
                                     return notify.getConfigLists();
 								}else{
 									logger.info("subscribe notify is null!");
-                                    throw new Exception();
+									throw new ConfigClientException("subscribe notify is null!");
 								}
 							}
 
@@ -135,16 +134,16 @@ public class ConfigClientImpl implements ConfigClient {
 						}
 					} catch (Exception e) {
 						logger.info(e.toString());
-                        throw new RuntimeException(e);
+						throw new ConfigClientException(e);
 					} finally {
 						subscribeMapLock.unlock();
 					}
 				}else{
-                    throw new RuntimeException();
+					throw new ConfigClientException("get subscribeMapLock timeout");
 				}
 			} catch (InterruptedException e) {
 				logger.info(e.toString());
-                throw new RuntimeException(e);
+				throw new ConfigClientException(e);
 			}
 		} else {
 			Notify notify = notifyCache.get(subKey);
@@ -168,11 +167,11 @@ public class ConfigClientImpl implements ConfigClient {
 	}
 
 	@Override
-	public boolean unsubscribe(Configuration config, ResourceListener listener) {
+	public void unsubscribe(Configuration config, ResourceListener listener) {
 		String subKey = PathUtils.getSubscriberPath(config);
 		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
 		if(listeners == null){
-			return true;
+			throw new ConfigClientException("subscribeMap don't have the listener");
 		}
 		
 		listeners.remove(listeners);
@@ -188,7 +187,7 @@ public class ConfigClientImpl implements ConfigClient {
 							RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 
 							if (result.getCode() != ResponseCode.UNSUBSCRIBE_CONFIG_OK) {
-								return false;
+								throw new ConfigClientException("unsubscribe failed");
 							}else{
 								//success un subscribed,than remove cache
 								notifyCache.remove(subKey);
@@ -196,20 +195,18 @@ public class ConfigClientImpl implements ConfigClient {
 						}
 					} catch (Exception e) {
 						logger.info(e.toString());
-						return false;
+						throw new ConfigClientException(e);
 					} finally {
 						subscribeMapLock.unlock();
 					}
 				}else{
-					return false;
+					throw new ConfigClientException("get subscribeMapLock timeout");
 				}
 			} catch (InterruptedException e) {
 				logger.info(e.toString());
-				return false;
+				throw new ConfigClientException(e);
 			}
 		}
-		
-		return true;
 	}
 	
 	
