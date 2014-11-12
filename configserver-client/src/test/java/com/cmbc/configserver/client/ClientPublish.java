@@ -40,9 +40,9 @@ public class ClientPublish {
 			config.setResource("test-dubbo-rpc");
 			config.setType("publisher");
 			
-			boolean publishResult = configClient.publish(config);
+			configClient.publish(config);
             Date nowDate = new Date();
-			System.out.println(String.format("the result of publish config is %s  [%s %s]",publishResult,nowDate,nowDate.getTime()));
+			System.out.println(String.format("the result of publish config is  [%s %s]",nowDate,nowDate.getTime()));
 			
 			
 			Thread.sleep(20*1000);

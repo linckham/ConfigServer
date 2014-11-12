@@ -475,12 +475,9 @@ public class NettyRemotingClient extends NettyRemotingAbstract {
 				}
 				return response;
 			} catch (RemotingSendRequestException e) {
-				log.warn("invokeSync: send request exception, so close the channel[{}]",namesrvAddrChoosed.get());
-				this.closeChannel(channel);
+				log.warn("invokeSync: send request exception,channel[{}]",namesrvAddrChoosed.get());
 				throw e;
 			} catch (RemotingTimeoutException e) {
-				log.warn("invokeSync: wait response timeout exception, the channel[{}]",namesrvAddrChoosed.get());
-				this.closeChannel(channel);
 				throw e;
 			}
 		} else {

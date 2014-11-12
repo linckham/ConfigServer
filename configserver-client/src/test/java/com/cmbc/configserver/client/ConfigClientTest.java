@@ -41,10 +41,8 @@ public class ConfigClientTest {
         config.setResource("test-message-queue");
         config.setType("producers");
         long start = System.currentTimeMillis();
-        boolean publishResult = this.configClient.publish(config);
+        this.configClient.publish(config);
         System.out.println(String.format("the consuming time of  publish config is %s ms", System.currentTimeMillis() - start));
-       System.out.println(String.format("the result of publish config is %s",publishResult));
-        Assert.assertTrue(publishResult);
     }
 
     @Test
@@ -57,10 +55,8 @@ public class ConfigClientTest {
         config.setResource("test-dubbo-rpc");
         config.setType("publisher");
         long start = System.currentTimeMillis();
-        boolean publishResult = this.configClient.publish(config);
+        this.configClient.publish(config);
         System.out.println(String.format("the consuming time of  publish config is %s ms", System.currentTimeMillis() - start));
-        System.out.println(String.format("the result of publish config is %s",publishResult));
-        Assert.assertTrue(publishResult);
 
         final Configuration subConfig = new Configuration();
         subConfig.setCell("test-cell");
