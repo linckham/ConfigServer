@@ -41,20 +41,15 @@ public class ConfigClientImpl implements ConfigClient {
 	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
 
-	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> addrs,
+	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> serverAddress,
 								ConnectionStateListener stateListener){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
-		remotingClient.updateNameServerAddressList(addrs);
+		remotingClient.updateNameServerAddressList(serverAddress);
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
-        try {
-            remotingClient.start();
-        } catch (InterruptedException e) {
-            logger.error("Failed in starting remote client,cause=",e);
-        }
+        remotingClient.start();
         remotingClient.setConnectionStateListener(stateListener);
-		
 		publicExecutor = remotingClient.getCallbackExecutor();
 	}
 
