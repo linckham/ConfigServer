@@ -1,13 +1,11 @@
 package com.cmbc.configserver.client.impl;
 
+import com.cmbc.configserver.utils.*;
 import io.netty.channel.Channel;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -27,9 +25,6 @@ import com.cmbc.configserver.remoting.ConnectionStateListener;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.remoting.netty.NettyRemotingClient;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-import com.cmbc.configserver.utils.ConcurrentHashSet;
-import com.cmbc.configserver.utils.Constants;
-import com.cmbc.configserver.utils.PathUtils;
 
 public class ConfigClientImpl implements ConfigClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConfigClientImpl.class);
@@ -40,18 +35,103 @@ public class ConfigClientImpl implements ConfigClient {
 	private final Lock subscribeMapLock = new ReentrantLock();
 	public Map<String,Notify> notifyCache = new ConcurrentHashMap<String,Notify>();
 	private AtomicInteger heartbeatFailedTimes = new AtomicInteger(0);
+    /**
+     * the schedule that uses to scan the config server address file with fix rate
+     */
+    private ScheduledExecutorService  scheduleService = Executors.newSingleThreadScheduledExecutor();
+
+    private final String serverAddressFile;
+    private volatile  SnapshotFile snapshotFile;
 
 	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> serverAddress,
 								ConnectionStateListener stateListener){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
-		remotingClient.updateNameServerAddressList(serverAddress);
+
+        serverAddressFile = ConfigUtils.getProperty(Constants.CONFIG_SERVER_ADDRESS_FILE_NAME_KEY,Constants.DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME);
+        File file = new File(serverAddressFile);
+        if (null != file && file.exists()) {
+            String address = ConfigUtils.loadProperties(serverAddressFile).getProperty(Constants.CONFIG_SERVER_ADDRESS_KEY);
+            String[] addressArray = address.split("\\|");
+            List<String> tmpList = Arrays.asList(addressArray);
+            Collections.sort(tmpList);
+            snapshotFile = new SnapshotFile(new File(serverAddressFile).lastModified(), tmpList);
+            remotingClient.updateNameServerAddressList(tmpList);
+        } else {
+            remotingClient.updateNameServerAddressList(serverAddress);
+        }
+
 		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
         remotingClient.start();
         remotingClient.setConnectionStateListener(stateListener);
 		publicExecutor = remotingClient.getCallbackExecutor();
-	}
+
+        //schedule to scan the config server address file
+        scheduleService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    scanConfigServerAddressFile();
+                } catch (Throwable t) {
+                    logger.warn("schedule the config server address file failed.", t);
+                }
+            }
+        }, 10 * 1000, 30 * 1000, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * scan the config server address file. determine the file's content whether has been modified
+     */
+    private void scanConfigServerAddressFile() {
+        File file = new File(this.serverAddressFile);
+        if (null != file && file.exists()) {
+            long lastModifyTime = file.lastModified();
+            if (snapshotFile.getLastModifyTime() != lastModifyTime) {
+                logger.warn(String.format("config server address file %s has been modified at %s", this.serverAddressFile, lastModifyTime));
+                String address = ConfigUtils.loadProperties(serverAddressFile).getProperty(Constants.CONFIG_SERVER_ADDRESS_KEY);
+                String[] addressArray = address.split("\\|");
+                List<String> tmpList = Arrays.asList(addressArray);
+                Collections.sort(tmpList);
+                if (!Arrays.equals(tmpList.toArray(), snapshotFile.getContent().toArray())) {
+                    ConfigServerLogger.warn(String.format("config server address file %s content has been changed. new content is %s ", this.serverAddressFile, tmpList));
+                    snapshotFile.setLastModifyTime(lastModifyTime);
+                    snapshotFile.setContent(tmpList);
+                    getRemotingClient().updateNameServerAddressList(tmpList);
+                }
+            }
+            logger.info(String.format("config server address file %s doesn't change.",serverAddressFile));
+        } else {
+            logger.warn(String.format("config server address file %s has been deleted.Please check it now!!", serverAddressFile));
+        }
+    }
+
+    class SnapshotFile {
+        private long lastModifyTime;
+        private List<String> content;
+
+        public SnapshotFile(long lastModifyTime, List<String> content) {
+            this.lastModifyTime = lastModifyTime;
+            this.content = content;
+        }
+
+        public long getLastModifyTime() {
+            return lastModifyTime;
+        }
+
+        public void setLastModifyTime(long lastModifyTime) {
+            this.lastModifyTime = lastModifyTime;
+        }
+
+        public List<String> getContent() {
+            return content;
+        }
+
+        public void setContent(List<String> content) {
+            this.content = content;
+        }
+
+    }
 
 	@Override
 	public void publish(Configuration config) {
@@ -149,16 +229,16 @@ public class ConfigClientImpl implements ConfigClient {
 	}
 	
 	public void notifyListener(final ResourceListener listener,final Notify notify){
-		this.publicExecutor.execute(new Runnable(){
-			@Override
-			public void run() {
-				try{
-					listener.notify(notify.getConfigLists());
-				}catch(Exception e){
-					logger.info(e.toString());
-				}
-			}
-		});
+		this.getPublicExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    listener.notify(notify.getConfigLists());
+                } catch (Exception e) {
+                    logger.info(e.toString());
+                }
+            }
+        });
 	}
 
 	@Override
@@ -254,14 +334,15 @@ public class ConfigClientImpl implements ConfigClient {
 	@Override
 	public void close(){
 		remotingClient.shutdown();
+
+        if(this.scheduleService != null){
+            this.scheduleService.shutdown();
+        }
+
 	}
 	
 	public ExecutorService getPublicExecutor() {
 		return publicExecutor;
-	}
-
-	public void setPublicExecutor(ExecutorService publicExecutor) {
-		this.publicExecutor = publicExecutor;
 	}
 	
 	public NettyRemotingClient getRemotingClient() {

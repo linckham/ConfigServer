@@ -1,5 +1,7 @@
 package com.cmbc.configserver.utils;
 
+import java.io.File;
+
 /**
  * the constants of the configuration server
  */
@@ -68,4 +70,10 @@ public class Constants {
      * default compress length
      */
     public static final int DEFAULT_COMPRESS_LENGTH = 2*1024;
+    /**
+     * default config server address file name
+     */
+    public static final String DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME=System.getProperty("user.home")+ File.separator+"config_server_address.properties";
+    public static final String CONFIG_SERVER_ADDRESS_FILE_NAME_KEY="configserver.address.file";
+    public static final String CONFIG_SERVER_ADDRESS_KEY="configserver.address";
 }
