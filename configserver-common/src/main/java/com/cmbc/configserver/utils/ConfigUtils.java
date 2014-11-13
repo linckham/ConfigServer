@@ -1,9 +1,13 @@
 package com.cmbc.configserver.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -42,5 +46,20 @@ public class ConfigUtils {
             logger.warn("Failed to load " + fileName + " file from " + fileName + "(ingore this file): " + e.getMessage(), e);
         }
         return properties;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static List<String> getConfigServerAddressList(String file,String key){
+        String address = ConfigUtils.loadProperties(file).getProperty(key);
+        if(StringUtils.isNotBlank(address)){
+            String[] addressArray = address.split(Constants.COMMA_SEPARATOR);
+            List<String> tmpList = Arrays.asList(addressArray);
+            Collections.sort(tmpList);
+            return tmpList;
+        }
+        else
+        {
+          return Collections.EMPTY_LIST;
+        }
     }
 }

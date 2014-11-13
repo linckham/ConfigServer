@@ -46,27 +46,35 @@ public class ConfigClientImpl implements ConfigClient {
 	public ConfigClientImpl(final NettyClientConfig nettyClientConfig,List<String> serverAddress,
 								ConnectionStateListener stateListener){
 		this.remotingClient = new NettyRemotingClient(nettyClientConfig,new RemotingChannelListener(this));
-
         serverAddressFile = ConfigUtils.getProperty(Constants.CONFIG_SERVER_ADDRESS_FILE_NAME_KEY,Constants.DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME);
-        File file = new File(serverAddressFile);
-        if (null != file && file.exists()) {
-            String address = ConfigUtils.loadProperties(serverAddressFile).getProperty(Constants.CONFIG_SERVER_ADDRESS_KEY);
-            String[] addressArray = address.split("\\|");
-            List<String> tmpList = Arrays.asList(addressArray);
-            Collections.sort(tmpList);
-            snapshotFile = new SnapshotFile(new File(serverAddressFile).lastModified(), tmpList);
-            remotingClient.updateNameServerAddressList(tmpList);
-        } else {
+        // the serverAddress priority is higher
+        if (null != serverAddress && !serverAddress.isEmpty()) {
             remotingClient.updateNameServerAddressList(serverAddress);
+        } else {
+            File file = new File(serverAddressFile);
+            //the config server address file priority is higher than the client
+            if (file.exists()) {
+                List<String> tmpList = ConfigUtils.getConfigServerAddressList(serverAddressFile, Constants.CONFIG_SERVER_ADDRESS_KEY);
+                if (null != tmpList && !tmpList.isEmpty()) {
+                    snapshotFile = new SnapshotFile(new File(serverAddressFile).lastModified(), tmpList);
+                    remotingClient.updateNameServerAddressList(tmpList);
+                    schedule();
+                } else {
+                    throw new RuntimeException(String.format("config server address in the file  %s is empty or its format is invalid, please check it", serverAddressFile));
+                }
+            } else {
+                throw new RuntimeException(String.format("config server address file %s doesn't exists, please check it.", serverAddressFile));
+            }
         }
-
-		this.clientRemotingProcessor = new ClientRemotingProcessor(this);
+        this.clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
         remotingClient.start();
         remotingClient.setConnectionStateListener(stateListener);
 		publicExecutor = remotingClient.getCallbackExecutor();
+    }
 
+    private void schedule() {
         //schedule to scan the config server address file
         scheduleService.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -85,15 +93,12 @@ public class ConfigClientImpl implements ConfigClient {
      */
     private void scanConfigServerAddressFile() {
         File file = new File(this.serverAddressFile);
-        if (null != file && file.exists()) {
+        if (file.exists()) {
             long lastModifyTime = file.lastModified();
             if (snapshotFile.getLastModifyTime() != lastModifyTime) {
                 logger.warn(String.format("config server address file %s has been modified at %s", this.serverAddressFile, lastModifyTime));
-                String address = ConfigUtils.loadProperties(serverAddressFile).getProperty(Constants.CONFIG_SERVER_ADDRESS_KEY);
-                String[] addressArray = address.split("\\|");
-                List<String> tmpList = Arrays.asList(addressArray);
-                Collections.sort(tmpList);
-                if (!Arrays.equals(tmpList.toArray(), snapshotFile.getContent().toArray())) {
+                List<String> tmpList = ConfigUtils.getConfigServerAddressList(serverAddressFile, Constants.CONFIG_SERVER_ADDRESS_KEY);
+                if ((null!=tmpList && !tmpList.isEmpty())&& !Arrays.equals(tmpList.toArray(), snapshotFile.getContent().toArray())) {
                     ConfigServerLogger.warn(String.format("config server address file %s content has been changed. new content is %s ", this.serverAddressFile, tmpList));
                     snapshotFile.setLastModifyTime(lastModifyTime);
                     snapshotFile.setContent(tmpList);

@@ -76,4 +76,5 @@ public class Constants {
     public static final String DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME=System.getProperty("user.home")+ File.separator+"config_server_address.properties";
     public static final String CONFIG_SERVER_ADDRESS_FILE_NAME_KEY="configserver.address.file";
     public static final String CONFIG_SERVER_ADDRESS_KEY="configserver.address";
+    public static final String  COMMA_SEPARATOR = ",";
 }
