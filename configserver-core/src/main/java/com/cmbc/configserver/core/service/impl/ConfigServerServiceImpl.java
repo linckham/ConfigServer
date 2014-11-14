@@ -131,13 +131,13 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             throw new IllegalArgumentException("config cell is null or empty!");
         }
 
-        if(StringUtils.isBlank(config.getResource())){
+        /*if(StringUtils.isBlank(config.getResource())){
             throw new IllegalArgumentException("config resource is null or empty!");
         }
 
         if(StringUtils.isBlank(config.getType())){
             throw new IllegalArgumentException("config type is null or empty!");
-        }
+        }*/
     }
 
     /**

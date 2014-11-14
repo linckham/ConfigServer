@@ -24,7 +24,7 @@ public class CategoryDaoImpl implements CategoryDao {
     private static String SQL_CATEGORY_UPDATE = "update config_category set cell=?,resource=?,type=? where id=?";
     private static String SQL_CATEGORY_DELETE = "delete from config_category where id=?";
     private static String SQL_CATEGORY_QUERY_ALL = "select * from config_category";
-    private static String SQL_CATEGORY_QUERY_RESOURCE = "select * from config_category where cell =?";
+    private static String SQL_CATEGORY_QUERY_RESOURCE = "select distinct resource from config_category where cell =?";
     private static String SQL_CATEGORY_QUERY_TYPE = "select * from config_category where cell =? and resource=?";
     private static String SQL_CATEGORY_QUERY_ID = "select * from config_category where id=?";
     private static String SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE = "select * from config_category where cell =? and resource=? and type=?";
@@ -97,7 +97,7 @@ public class CategoryDaoImpl implements CategoryDao {
             List<Category> categories = this.jdbcTemplate.query(SQL_CATEGORY_QUERY_ALL, new CategoryRowMapper());
             return categories;
         } catch (Exception ex) {
-            ConfigServerLogger.error(new StringBuilder(128).append("get category list failed. Details is "), ex);
+            ConfigServerLogger.error(new StringBuilder(128).append("getAllCategory failed. Details is "), ex);
             throw ex;
         }
     }
@@ -109,7 +109,7 @@ public class CategoryDaoImpl implements CategoryDao {
             List<String> resources = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_RESOURCE, new Object[]{cell});
             return resources;
         } catch (Exception ex) {
-            ConfigServerLogger.error(new StringBuilder(128).append("get resource list of ").append(cell).append("failed. Details is "), ex);
+            ConfigServerLogger.error(new StringBuilder(128).append("getResources of ").append(cell).append("failed. Details is "), ex);
             throw ex;
         }
     }
@@ -120,7 +120,7 @@ public class CategoryDaoImpl implements CategoryDao {
             List<String> types = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_TYPE, new Object[]{cell, resource});
             return types;
         } catch (Exception ex) {
-            ConfigServerLogger.error(new StringBuilder(128).append("get type list of cell=").append(cell).append(",resource=").append(resource).append("failed. Details is "), ex);
+            ConfigServerLogger.error(new StringBuilder(128).append("getTypes of cell=").append(cell).append(",resource=").append(resource).append("failed. Details is "), ex);
             throw ex;
         }
     }

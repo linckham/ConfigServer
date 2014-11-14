@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -153,16 +154,37 @@ public class MysqlConfigStorageImpl extends AbstractConfigStorage{
         if(null == config){
             return Collections.EMPTY_LIST;
         }
+        //select the specified category's all configuration
+        if (StringUtils.isNotBlank(config.getResource()) && StringUtils.isNotBlank(config.getType())) {
+            Category category = this.categoryDao.getCategory(config.getCell(), config.getResource(), config.getType());
+            if (null == category) {
+                return Collections.EMPTY_LIST;
+            }
+            List<Configuration> configurationList = this.configDao.getConfigurationList(category);
+            if (null == configurationList) {
+                return Collections.EMPTY_LIST;
+            }
+            return configurationList;
+        }
 
-        Category category = this.categoryDao.getCategory(config.getCell(),config.getResource(),config.getType());
-        if(null ==  category){
+        //select the specified cell's all resources
+        if (StringUtils.isBlank(config.getResource()) && StringUtils.isBlank(config.getType())) {
+            List<String> resources = this.categoryDao.getResources(config.getCell());
+            //build configuration item
+            if (null != resources && !resources.isEmpty()) {
+                List<Configuration> configs = new ArrayList<Configuration>(resources.size());
+                for (String resource : resources) {
+                    Configuration temp = new Configuration();
+                    temp.setCell(config.getCell());
+                    temp.setResource(resource);
+                    configs.add(temp);
+                }
+                return configs;
+            }
             return Collections.EMPTY_LIST;
         }
-        List<Configuration> configurationList =  this.configDao.getConfigurationList(category);
-        if(null == configurationList){
-            return Collections.EMPTY_LIST;
-        }
-        return configurationList;
+
+        return Collections.EMPTY_LIST;
     }
 
     @Override

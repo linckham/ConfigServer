@@ -300,7 +300,7 @@ public class ConfigClientImpl implements ConfigClient {
 			try {
 				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
-					logger.info("send heartbeat ok");
+					//logger.info("send heartbeat ok");
 					sendSuccess = true;
 					break;
 				}
