@@ -70,8 +70,14 @@ public class DefaultRequestProcessor implements RequestProcessor {
                 config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
             }
 
-            this.configServerService.publish(config);
-            code = ResponseCode.PUBLISH_CONFIG_OK;
+            //validate channel
+            if(ctx.channel() != null && ctx.channel().isActive()){
+            	this.configServerService.publish(config);
+                code = ResponseCode.PUBLISH_CONFIG_OK;
+            }else{
+            	code = ResponseCode.PUBLISH_CONFIG_FAILED;
+            }
+            
         } catch (Exception e) {
             code = ResponseCode.PUBLISH_CONFIG_FAILED;
             responseBody = e.getMessage();
