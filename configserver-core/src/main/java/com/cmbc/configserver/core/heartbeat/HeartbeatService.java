@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.heartbeat;
 
+import com.cmbc.configserver.core.service.ConfigHeartBeatService;
 import io.netty.channel.Channel;
 
 import java.util.Iterator;
@@ -19,11 +20,17 @@ import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service("heartbeatService")
 public class HeartbeatService {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
-    private ConfigHeartBeatDao heartBeatDao;
+    @Autowired
+    private ConfigHeartBeatService configHeartBeatService;
+    @Autowired
     private SubscriberService subscriberService;
+    @Autowired
     private ConfigServerService configServerService;
 
 	private ScheduledExecutorService scheduledExecutorService = Executors
@@ -34,16 +41,16 @@ public class HeartbeatService {
 				}
 			});
 
-    public void setHeartBeatDao(ConfigHeartBeatDao heartBeatDao) {
-        this.heartBeatDao = heartBeatDao;
-    }
-
     public void setSubscriberService(SubscriberService subscriberService) {
 		this.subscriberService = subscriberService;
 	}
 
     public void setConfigServerService(ConfigServerService configServerService) {
         this.configServerService = configServerService;
+    }
+
+    public void setConfigHeartBeatService(ConfigHeartBeatService configHeartBeatService) {
+        this.configHeartBeatService = configHeartBeatService;
     }
     
 	public void start() {
@@ -74,7 +81,7 @@ public class HeartbeatService {
 		String clientId = RemotingHelper.getChannelId(channel);
 		ConfigHeartBeat configHeartBeat = null;
 		try {
-			configHeartBeat = heartBeatDao.get(clientId);
+			configHeartBeat = configHeartBeatService.get(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("get client heartbeat error", e);
 		}
@@ -92,7 +99,7 @@ public class HeartbeatService {
 				configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
 				try {
 					heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
-					heartBeatDao.save(configHeartBeat);
+                    configHeartBeatService.save(configHeartBeat);
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
 				}
@@ -112,11 +119,11 @@ public class HeartbeatService {
 				// save heartbeat to db error or in saving to db in channelCreated.
 				ConfigServerLogger.warn("heartbeatInfo lastDBSyncMillis <= 0");
 				try {
-					ConfigHeartBeat configHeartBeat = heartBeatDao.get(clientId);
+					ConfigHeartBeat configHeartBeat = configHeartBeatService.get(clientId);
 					if(configHeartBeat == null){
 						configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
 						heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
-						heartBeatDao.save(configHeartBeat);
+                        configHeartBeatService.save(configHeartBeat);
 					}
 				} catch (Exception e) {
 					ConfigServerLogger.error("save client heartbeat error", e);
@@ -125,7 +132,7 @@ public class HeartbeatService {
 				if(heartbeatInfo.getLastUpdateMillis() - heartbeatInfo.getLastDBSyncMillis() >= HeartbeatInfo.SYNC_DB_INTERVAL){
 					try {
 						ConfigHeartBeat configHeartBeat = new ConfigHeartBeat(heartbeatInfo.getClientId(),heartbeatInfo.getLastUpdateMillis());
-						heartBeatDao.update(configHeartBeat);
+                        configHeartBeatService.update(configHeartBeat);
 						heartbeatInfo.setLastDBSyncMillis(configHeartBeat.getLastModifiedTime());
 					} catch (Exception e) {
 						ConfigServerLogger.error("update client heartbeat error", e);
@@ -152,12 +159,12 @@ public class HeartbeatService {
 	 */
 	public void scanDBTimeoutClient(){
 		try {
-			List<ConfigHeartBeat> configHeartbeats = heartBeatDao.getTimeout();
+			List<ConfigHeartBeat> configHeartbeats = configHeartBeatService.getTimeout();
 			if(configHeartbeats != null){
 				for(ConfigHeartBeat configHeartBeat : configHeartbeats){
 					//delete configuration
 					configServerService.deleteConfigurationByClientId(configHeartBeat.getClientId());
-					heartBeatDao.delete(configHeartBeat.getClientId());
+                    configHeartBeatService.delete(configHeartBeat.getClientId());
 				}
 			}
 		} catch (Exception e) {
@@ -177,7 +184,7 @@ public class HeartbeatService {
 		try {
 			//delete configuration
             configServerService.deleteConfigurationByClientId(clientId);
-			heartBeatDao.delete(clientId);
+            configHeartBeatService.delete(clientId);
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);
 		}

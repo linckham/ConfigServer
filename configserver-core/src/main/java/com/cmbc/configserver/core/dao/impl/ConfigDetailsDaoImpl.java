@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.List;
  * @Date: 2014/10/30
  * @Time: 14:20
  */
+@Service("configDetailsDao")
 public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     private final static String SQL_CONFIG_INSERT = "insert into config_details(category_id,content,client_id) values(?,?,?)";
     private static String SQL_CONFIG_UPDATE = "update config_details set content=?,client_id=? where config_id=?";

@@ -3,15 +3,11 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
     <bean id="categoryDao" class="com.cmbc.configserver.core.dao.impl.CategoryDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
     <bean id="configChangeLogDao" class="com.cmbc.configserver.core.dao.impl.ConfigChangeLogDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
-    <bean id="configDao" class="com.cmbc.configserver.core.dao.impl.ConfigDetailsDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    <bean id="configDetailsDao" class="com.cmbc.configserver.core.dao.impl.ConfigDetailsDaoImpl">
     </bean>
-    <bean id="heartBeatDao" class="com.cmbc.configserver.core.dao.impl.ConfigHeartBeatDaoImpl">
-        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    <bean id="configHeartBeatDao" class="com.cmbc.configserver.core.dao.impl.ConfigHeartBeatDaoImpl">
     </bean>
 </beans>

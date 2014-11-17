@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Service;
 
 import java.sql.*;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
  * @Date 2014/10/30
  * @Time 15:52
  */
+@Service("categoryDao")
 public class CategoryDaoImpl implements CategoryDao {
     private final static String SQL_CATEGORY_INSERT = "insert into config_category(cell,resource,type) values(?,?,?)";
     private static String SQL_CATEGORY_UPDATE = "update config_category set cell=?,resource=?,type=? where id=?";
@@ -106,7 +108,7 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public List<String> getResources(String cell) throws Exception {
         try {
-            List<String> resources = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_RESOURCE, new Object[]{cell});
+            List<String> resources = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_RESOURCE, new Object[]{cell},String.class);
             return resources;
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("getResources of ").append(cell).append("failed. Details is "), ex);

@@ -6,6 +6,7 @@ import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import java.util.List;
  * @Date 2014/10/30
  * @Time 19:51
  */
+@Service("configChangeLogDao")
 public class ConfigChangeLogDaoImpl implements ConfigChangeLogDao {
     private static String SQL_CHANGE_LOG_INSERT = "insert into config_change_log(path,last_modified_time) values(?,?)";
     private static String SQL_CHANGE_LOG_UPDATE = "update config_change_log set last_modified_time=? where path=?";

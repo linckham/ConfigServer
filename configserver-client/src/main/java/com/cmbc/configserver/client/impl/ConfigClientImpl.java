@@ -251,7 +251,8 @@ public class ConfigClientImpl implements ConfigClient {
 		String subKey = PathUtils.getSubscriberPath(config);
 		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
 		if(listeners == null){
-			throw new ConfigClientException("subscribeMap don't have the listener");
+			//don't throw runtime exception,just return
+            return;
 		}
 		
 		listeners.remove(listeners);

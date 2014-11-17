@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    <bean id="configChangeLogService" class="com.cmbc.configserver.core.service.impl.ConfigChangeLogServiceImpl">
+    </bean>
+
+    <bean id="categoryService" class="com.cmbc.configserver.core.service.impl.CategoryServiceImpl">
+    </bean>
+
+    <bean id="configDetailsService" class="com.cmbc.configserver.core.service.impl.ConfigDetailsServiceImpl">
+    </bean>
+
+    <bean id="configHeartBeatService" class="com.cmbc.configserver.core.service.impl.ConfigHeartBeatServiceImpl">
+    </bean>
+
+    <bean id="subscriberService" class="com.cmbc.configserver.core.subscriber.SubscriberService">
+    </bean>
+
     <bean id="configServerService" class="com.cmbc.configserver.core.service.impl.ConfigServerServiceImpl">
-        <property name="configStorage" ref="configStorage"/>
-        <property name="notifyService" ref="notifyService"/>
     </bean>
 
     <bean id="notifyService" class="com.cmbc.configserver.core.notify.NotifyService">
-        <property name="configStorage" ref="configStorage"/>
-        <property name="configNettyServer" ref="configNettyServer"/>
-        <property name="heartbeatService" ref="heartbeatService"/>
     </bean>
 
     <bean id="heartbeatService" class="com.cmbc.configserver.core.heartbeat.HeartbeatService">
-        <property name="heartBeatDao" ref="heartBeatDao"/>
-        <property name="subscriberService" ref="subscriberService"/>
-        <property name="configServerService" ref="configServerService"/>
     </bean>
 
     <bean id="configChangedNotifyService" class="com.cmbc.configserver.core.notify.ConfigChangedNotifyService" init-method="start" destroy-method="stop">
-        <property name="configChangeLogDao" ref="configChangeLogDao"/>
-        <property name="notifyService" ref="notifyService"/>
     </bean>
 </beans>

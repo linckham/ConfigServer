@@ -1,15 +1,5 @@
 package com.cmbc.configserver.core.notify;
 
-import io.netty.channel.Channel;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.protocol.RequestCode;
@@ -17,13 +7,24 @@ import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.server.ConfigNettyServer;
-import com.cmbc.configserver.core.storage.ConfigStorage;
+import com.cmbc.configserver.core.service.CategoryService;
+import com.cmbc.configserver.core.service.ConfigServerService;
+import com.cmbc.configserver.core.subscriber.SubscriberService;
+import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
+import io.netty.channel.Channel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * the notify service uses to manage change event of the configuration.<br/>
@@ -33,6 +34,7 @@ import com.cmbc.configserver.utils.PathUtils;
  * @Date 2014/10/31
  * @Time 11:12
  */
+@Service("notifyService")
 public class NotifyService {
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
     private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(Constants.DEFAULT_MAX_QUEUE_ITEM);
@@ -46,25 +48,28 @@ public class NotifyService {
      * the executor uses to notify all the channels that subscribe the specified path
      */
     private ThreadPoolExecutor subscriberNotifyExecutor;
-    private ConfigStorage configStorage;
+    @Autowired
+    private ConfigServerService configServerService;
+    @Autowired
     private ConfigNettyServer configNettyServer;
+    @Autowired
     private HeartbeatService heartbeatService;
+    @Autowired
+    private SubscriberService subscriberService;
+    @Autowired
+    private CategoryService categoryService;
 
-    public HeartbeatService getHeartbeatService() {
-		return heartbeatService;
-	}
+    public void setCategoryService(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
-	public void setHeartbeatService(HeartbeatService heartbeatService) {
+    public void setSubscriberService(SubscriberService subscriberService) {
+        this.subscriberService = subscriberService;
+    }
+
+    public void setHeartbeatService(HeartbeatService heartbeatService) {
 		this.heartbeatService = heartbeatService;
 	}
-
-	public void setConfigStorage(ConfigStorage configStorage) {
-        this.configStorage = configStorage;
-    }
-
-    public ConfigStorage getConfigStorage() {
-        return this.configStorage;
-    }
 
     public ConfigNettyServer getConfigNettyServer() {
         return configNettyServer;
@@ -72,6 +77,10 @@ public class NotifyService {
 
     public void setConfigNettyServer(ConfigNettyServer configNettyServer) {
         this.configNettyServer = configNettyServer;
+    }
+
+    public void setConfigServerService(ConfigServerService configServerService) {
+        this.configServerService = configServerService;
     }
 
     private void initialize() {
@@ -116,12 +125,15 @@ public class NotifyService {
         this.configLoadExecutor.execute(new ConfigurationLoadWorker(event));
     }
 
+    private void onCategoryChanged(Event event){
+        this.configLoadExecutor.execute(new ConfigurationLoadWorker(event));
+    }
+
     /**
      * the worker that using to load specified path's configuration from database when the specified event happened
      */
     class ConfigurationLoadWorker implements Runnable {
         private Event event;
-
         public ConfigurationLoadWorker(Event event) {
             this.event = event;
         }
@@ -130,36 +142,67 @@ public class NotifyService {
         public void run() {
             if (EventType.PUBLISH == event.getEventType() || EventType.UN_PUBLISH == event.getEventType()) {
                 Configuration config = (Configuration) event.getEventSource();
-                this.doNotify(config);
+                this.notify(config);
             } else if (EventType.PATH_DATA_CHANGED == event.getEventType()) {
                 Configuration config = PathUtils.path2Configuration((String) event.getEventSource());
-                this.doNotify(config);
+                this.notify(config);
+            } else if (EventType.CATEGORY_CHANGED == event.getEventType()) {
+                //the resources of the cell has happened
+                this.notify((Category) event.getEventSource());
             }
         }
 
-        private void doNotify(Configuration config) {
+        private void notify(Configuration config) {
             if (null != config) {
                 try {
                     // get the configuration list which is the latest version in the server.
-                    List<Configuration> configList = NotifyService.this.configStorage.getConfigurationList(config);
+                    List<Configuration> configList = NotifyService.this.configServerService.getConfigurationList(config);
                     String subscriberPath = PathUtils.getSubscriberPath(config);
-                    Notify notify = new Notify();
-                    notify.setPath(subscriberPath);
-                    notify.setConfigLists(configList);
-
-                    byte[] body = RemotingSerializable.encode(notify);
-                    //get the subscriber's channels that will being to notify
-                    Set<Channel> subscriberChannels = NotifyService.this.configStorage.getSubscribeChannel(subscriberPath);
-                    if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
-                        for (Channel channel : subscriberChannels) {
-                            if(null !=channel && channel.isActive()){
-                                //notifySubscriber(channel,body);
-                                subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel, body));
-                            }
-                        }
-                    }
+                    doNotify(subscriberPath, configList);
                 } catch (Exception e) {
-                    ConfigServerLogger.error("ConfigurationLoadWorker process failed, details is ", e);
+                    ConfigServerLogger.error("ConfigurationLoadWorker notify failed, details is ", e);
+                }
+            }
+        }
+
+        /**
+         * notify all the resources of the specified cell
+         *
+         * @param category
+         */
+        private void notify(Category category) {
+            if (null != category) {
+                try {
+                    List<String> resourcesList = NotifyService.this.categoryService.getResources(category.getCell());
+                    if (resourcesList != null && !resourcesList.isEmpty()) {
+                        // build the configuration list
+                        List<Configuration> configurationList = new ArrayList<Configuration>(resourcesList.size());
+                        for (String resource : resourcesList) {
+                            Configuration config = new Configuration();
+                            config.setResource(resource);
+                            configurationList.add(config);
+                        }
+                        String path = Constants.PATH_SEPARATOR + category.getCell();
+                        doNotify(path, configurationList);
+                    }
+                } catch (Exception ex) {
+                    ConfigServerLogger.error("ConfigurationLoadWorker process failed, details is ", ex);
+                }
+            }
+        }
+
+        private void doNotify(String path, List<Configuration> configurations) {
+            Notify notify = new Notify();
+            notify.setPath(path);
+            notify.setConfigLists(configurations);
+            byte[] body = RemotingSerializable.encode(notify);
+            //get the subscriber's channels that will being to notify
+            Set<Channel> subscriberChannels = NotifyService.this.subscriberService.getSubscriberChannels(path);
+            if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
+                for (Channel channel : subscriberChannels) {
+                    if (null != channel && channel.isActive()) {
+                        subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel, body));
+                    }
                 }
             }
         }
@@ -217,6 +260,9 @@ public class NotifyService {
                                 onConfigChanged(event);
                             } else if (EventType.PATH_DATA_CHANGED == eventType) {
                                 onPathDataChanged(event);
+                            }
+                            else if(EventType.CATEGORY_CHANGED == eventType){
+                                onCategoryChanged(event);
                             }
                         } else {
                             //log this event and ignore
