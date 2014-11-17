@@ -11,6 +11,7 @@ import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
 import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 /**
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
  * @Date 2014/10/30
  * @Time 20:38
  */
+@Service("configHeartBeatDao")
 public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
     private static String SQL_HEARTBEAT_INSERT = "insert into config_heart_beat(client_id,last_modified_time) values(?,?)";
     private static String SQL_HEARTBEAT_UPDATE = "update config_heart_beat set last_modified_time=? where client_id=?";

@@ -9,5 +9,6 @@ package com.cmbc.configserver.core.event;
 public enum EventType {
     PUBLISH,
     UN_PUBLISH,
-    PATH_DATA_CHANGED;
+    PATH_DATA_CHANGED,
+    CATEGORY_CHANGED;
 }

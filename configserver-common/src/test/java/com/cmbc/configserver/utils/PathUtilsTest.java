@@ -4,6 +4,8 @@ import com.cmbc.configserver.domain.Category;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.accessibility.AccessibleStateSet;
+
 /**
  * the test class of PathUtils
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -21,16 +23,13 @@ public class PathUtilsTest {
     }
 
     @Test
-    public void testInvalidPath() {
-        String path = "dubbo/serviceA";
-        Exception ex = null;
-        try {
-            PathUtils.path2Category(path);
-        } catch (Exception e) {
-            ex = e;
-        }
-        Assert.assertNotNull(ex);
-        Assert.assertTrue(ex instanceof IllegalArgumentException);
+    public void testCellPath() {
+        String path = "/dubbo";
+        Category category = PathUtils.path2Category(path);
+        Assert.assertNotNull(category);
+        Assert.assertEquals("dubbo",category.getCell());
+        Assert.assertNull(category.getResource());
+        Assert.assertNull(category.getType());
     }
 
     @Test
@@ -45,5 +44,16 @@ public class PathUtilsTest {
         Assert.assertNotNull(ex);
         Assert.assertTrue(ex instanceof IllegalArgumentException);
         Assert.assertEquals("path can not be null or empty!",ex.getMessage());
+    }
+
+    @Test
+    public void testCellResourcePath() {
+        String path = "/dubbo/com.cmbc.configserver.service.HelloService";
+        Category category = PathUtils.path2Category(path);
+        Assert.assertNotNull(category);
+        Assert.assertEquals("dubbo",category.getCell());
+        Assert.assertNotNull(category.getResource());
+        Assert.assertEquals("com.cmbc.configserver.service.HelloService",category.getResource());
+        Assert.assertNull(category.getType());
     }
 }

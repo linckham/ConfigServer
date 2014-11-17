@@ -251,7 +251,8 @@ public class ConfigClientImpl implements ConfigClient {
 		String subKey = PathUtils.getSubscriberPath(config);
 		Set<ResourceListener> listeners =  subscribeMap.get(subKey);
 		if(listeners == null){
-			throw new ConfigClientException("subscribeMap don't have the listener");
+			//don't throw runtime exception,just return
+            return;
 		}
 		
 		listeners.remove(listeners);
@@ -300,7 +301,7 @@ public class ConfigClientImpl implements ConfigClient {
 			try {
 				RemotingCommand result = remotingClient.invokeSyncImpl(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
-					logger.info("send heartbeat ok");
+					//logger.info("send heartbeat ok");
 					sendSuccess = true;
 					break;
 				}

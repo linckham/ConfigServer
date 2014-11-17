@@ -1,8 +1,10 @@
 package com.cmbc.configserver.core.service;
 
-import com.cmbc.configserver.core.storage.ConfigStorage;
 import com.cmbc.configserver.domain.Configuration;
 import io.netty.channel.Channel;
+
+import java.util.List;
+
 /**
  * the config server's core service.<br/>
  * Created by tongchuan.lin<linckham@gmail.com><br/>
@@ -47,8 +49,6 @@ public interface ConfigServerService {
     public void start() throws Exception;
     public void shutdown();
 
-    public ConfigStorage getConfigStorage();
-
     /**
      * delete the configuration list by the specified client id
      * @param clientId the client id which the configuration items belongs to
@@ -56,4 +56,11 @@ public interface ConfigServerService {
      * @throws Exception
      */
     public boolean deleteConfigurationByClientId(String clientId) throws Exception;
+
+    /**
+     * get the configuration list by the specified configuration
+     * @param config the specified configuration
+     * @return the configuration list
+     */
+    public List<Configuration> getConfigurationList(Configuration config) throws Exception;
 }

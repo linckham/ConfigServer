@@ -13,6 +13,8 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.ChannelHandlerContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -23,8 +25,11 @@ import java.util.List;
  * @Date 2014/10/31
  * @Time 11:12
  */
+@Service("defaultRequestProcessor")
 public class DefaultRequestProcessor implements RequestProcessor {
+    @Autowired
     private ConfigServerService configServerService;
+    @Autowired
     private HeartbeatService heartbeatService;
 
     public void setConfigServerService(ConfigServerService configServerService) {
@@ -118,7 +123,7 @@ public class DefaultRequestProcessor implements RequestProcessor {
             boolean bSubscribe = this.configServerService.subscribe(config,ctx.channel());
             if(bSubscribe && null != ctx.channel() && ctx.channel().isActive()){
                 code = ResponseCode.SUBSCRIBE_CONFIG_OK;
-                List<Configuration> configs = this.configServerService.getConfigStorage().getConfigurationList(config);
+                List<Configuration> configs = this.configServerService.getConfigurationList(config);
                 Notify notify = new Notify();
                 notify.setPath(PathUtils.getSubscriberPath(config));
                 notify.setConfigLists(configs);

@@ -7,12 +7,9 @@
     </bean>
 
     <bean id="clientConnectionListener" class="com.cmbc.configserver.core.heartbeat.ClientConnectionListener">
-        <property name="heartbeatService" ref="heartbeatService"/>
     </bean>
 
     <bean id="configNettyServer" class="com.cmbc.configserver.core.server.ConfigNettyServer">
-        <property name="nettyServerConfig" ref="nettyServerConfig"/>
-        <property name="clientConnectionListener" ref="clientConnectionListener"/>
     </bean>
 </beans>
 

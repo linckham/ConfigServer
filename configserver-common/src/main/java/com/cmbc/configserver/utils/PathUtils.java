@@ -55,15 +55,23 @@ public class PathUtils {
 
         //split the path
         String[] paths = path.split("/");
-
-        if (paths.length != 4) {
-            throw new IllegalArgumentException(String.format("%s format is invalid. the correct format is /XXX/XXX/XXX", path));
-        }
-
         Category category = new Category();
-        category.setCell(paths[1]);
-        category.setResource(paths[2]);
-        category.setType(paths[3]);
+        switch (paths.length) {
+            case 2:
+                category.setCell(paths[1]);
+                break;
+            case 3:
+                category.setCell(paths[1]);
+                category.setResource(paths[2]);
+                break;
+            case 4:
+                category.setCell(paths[1]);
+                category.setResource(paths[2]);
+                category.setType(paths[3]);
+                break;
+            default :
+                break;
+        }
         return category;
     }
 

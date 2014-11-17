@@ -5,6 +5,8 @@ import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,12 +18,17 @@ import java.util.concurrent.Executors;
  * @Date 2014/10/31
  * @Time 11:12
  */
+@Service("configServerController")
 public class ConfigServerController {
+    @Autowired
     private ConfigNettyServer configNettyServer;
+    @Autowired
     private ConfigServerService configServerService;
+    @Autowired
     private RequestProcessor defaultRequestProcessor;
-    private ExecutorService remoteExecutor;
+    @Autowired
     private HeartbeatService heartbeatService;
+    private ExecutorService remoteExecutor;
 
     public void setHeartbeatService(HeartbeatService heartbeatService) {
         this.heartbeatService = heartbeatService;

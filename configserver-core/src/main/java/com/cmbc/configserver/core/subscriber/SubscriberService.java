@@ -3,7 +3,6 @@ package com.cmbc.configserver.core.subscriber;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.Map;
@@ -18,6 +17,7 @@ import com.cmbc.configserver.utils.Constants;
 import io.netty.channel.Channel;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 /**
  * the class manages the subscriber channel between config-client and config-server.<br/>
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  * @Date 2014/10/31
  * @Time 11:12
  */
+@Service("subscriberService")
 public class SubscriberService {
     private Map</*path*/String, Set<Channel>> path2ChannelMap = new ConcurrentHashMap<String, Set<Channel>>(Constants.DEFAULT_INITIAL_CAPACITY);
     private Map</*channel*/Channel, Set<String>> channel2PathMap = new ConcurrentHashMap<Channel, Set<String>>(32);
