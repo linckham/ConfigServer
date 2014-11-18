@@ -13,7 +13,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.core.subscriber.SubscriberService;
 import com.cmbc.configserver.domain.ConfigHeartBeat;

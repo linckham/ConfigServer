@@ -2,9 +2,7 @@ package com.cmbc.configserver.core.notify;
 
 import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
-import com.cmbc.configserver.core.service.CategoryService;
 import com.cmbc.configserver.core.service.ConfigChangeLogService;
-import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.ConfigServerLogger;
@@ -14,13 +12,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.*;
 
 /**
- * the notify service uses to manage the change of config_change_log and the category.<br/>
+ * the notify service uses to manage the change of config_change_log.<br/>
  * 1 when the config_change_log has been changed,this service will produce a event and publish it to NotifyService.<br/>
- * 2 when the resources of the specified cell has been changed,this service will produce a event and publish it to NotifyService.<br/>
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
  * @Date 2014/10/31
@@ -36,8 +32,6 @@ public class ConfigChangedNotifyService {
     private ConfigChangeLogService configChangeLogService;
     @Autowired
     private NotifyService notifyService;
-    @Autowired
-    private CategoryService categoryService;
 
     public void setNotifyService(NotifyService notifyService) {
         this.notifyService = notifyService;
@@ -45,10 +39,6 @@ public class ConfigChangedNotifyService {
 
     public void setConfigChangeLogService(ConfigChangeLogService configChangeLogService) {
         this.configChangeLogService = configChangeLogService;
-    }
-
-    public void setCategoryService(CategoryService categoryService) {
-        this.categoryService = categoryService;
     }
 
     public boolean start() throws Exception {
@@ -59,7 +49,6 @@ public class ConfigChangedNotifyService {
 
     private void initialize() {
         this.scheduler.execute(new ChangedWorker());
-        this.scheduler.scheduleAtFixedRate(new CategoryWorker(),60*1000,3*60*1000,TimeUnit.MILLISECONDS);
     }
 
         public void stop() {
@@ -76,33 +65,9 @@ public class ConfigChangedNotifyService {
         this.pathMd5Cache.put(path,last_modified_time);
     }
 
-    /**
-     * update the category cache
-     * @param category
-     */
-    public void updateCategoryCache(Category category){
-        ConcurrentHashSet set = this.categoryMap.get(category.getCell());
-        if (null == set) {
-            categoryMap.putIfAbsent(category.getCell(), new ConcurrentHashSet<String>());
-            set = categoryMap.get(category.getCell());
-        }
-        set.add(category.getResource());
-
-    }
-
     private List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
         //TODO: get the categories from local JVM cache
         return this.configChangeLogService.getAllConfigChangeLogs();
-    }
-
-    /**
-     * get all the categories in the DataBase
-     * @return
-     * @throws Exception
-     */
-    private List<Category> getAllCategories() throws Exception{
-        //TODO: get the categories from local JVM cache
-        return this.categoryService.getAllCategory();
     }
 
     class ChangedWorker implements Runnable {
@@ -134,38 +99,6 @@ public class ConfigChangedNotifyService {
                 } catch (Throwable t) {
                     ConfigServerLogger.warn("error happens when change worker running.", t);
                 }
-            }
-        }
-    }
-
-    /**
-     * the worker uses to listen the config_category table whether has changed,especially listening th resources of the cell
-     */
-    class CategoryWorker implements Runnable {
-        @Override
-        public void run() {
-            try {
-                List<Category> categories = getAllCategories();
-                if (null != categories && !categories.isEmpty()) {
-                    for (Category category : categories) {
-                        ConcurrentHashSet set = categoryMap.get(category.getCell());
-                        if (null == set) {
-                            categoryMap.putIfAbsent(category.getCell(), new ConcurrentHashSet<String>());
-                            set = categoryMap.get(category.getCell());
-                        }
-                        if (!set.contains(category.getResource())) {
-                            //notify
-                            Event event = new Event();
-                            event.setEventType(EventType.CATEGORY_CHANGED);
-                            event.setEventSource(Constants.PATH_SEPARATOR + category.getCell());
-                            event.setEventCreatedTime(System.currentTimeMillis());
-                            ConfigChangedNotifyService.this.notifyService.publish(event);
-                        }
-                        set.add(category.getResource());
-                    }
-                }
-            } catch (Throwable t) {
-                ConfigServerLogger.warn("error happens when category worker running.", t);
             }
         }
     }

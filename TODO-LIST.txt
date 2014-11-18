@@ -10,14 +10,17 @@
       1)当用户通过ConfigClientImpl指定了server address时则优先使用这些地址，否则使用指定的配置文件中的地址
       2)当server address没有指定时，检查配置文件是否存在，同时检查配置文件的内容是否合法；合法后启动定时线程
       扫描配置变化情况，一旦监听到配置文件有更改则将服务列表更新
-
   3.4 服务端加入本地cache
-  3.5 服务端是否需要引入类似memcached redis这种集中式的缓存
-  3.6 服务端添加最大连接数限制功能 (已完成)
+    a)Category服务加入本地cache功能(已经完成)
+  3.5 服务端添加最大连接数限制功能 (已完成)
 4.单元测试,功能测试代码编写
   4.1 通过测试用例发现系统潜在问题
   4.2 提高系统的单元测试覆盖率
   4.3 性能压测(推送延迟测试,压缩比例压缩耗时)
+    a)性能测试(检查系统是否能到达预期的性能指标)
+    b)压力测试
+    c)负载测试
+    d)性能指标数据（TPS Response time, push delay,JVM STW time,frequency）
 5.ConfigServer系统整体设计Review和功能Review
 6.ConfigServer与Dubbo集成
   6.1 完成dubbo-registry-configserver模块代码开发(已经完成)
@@ -26,5 +29,6 @@
     b)consumer从config server获取配置
     c)provider-consumer正确通信
   6.3 dubbo-admin工程改造
+   a) 完成dubbo-admin订阅root根目录的功能，正确的推送root的resource变更
   6,4 dubbo已经迁移到github上
 7.configserver-web工程功能规划和代码开发

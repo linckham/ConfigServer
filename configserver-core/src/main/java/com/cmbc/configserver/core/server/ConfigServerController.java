@@ -2,7 +2,6 @@ package com.cmbc.configserver.core.server;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.heartbeat.HeartbeatService;
-import com.cmbc.configserver.core.processor.DefaultRequestProcessor;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
