@@ -235,7 +235,7 @@ public class NotifyService {
 
                 this.getConfigNettyServer().getRemotingServer()
                         .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
-                
+                //avoiding to kill this channel,update the subscriber channel's heart beat time when push the notify message on the channel.
                 heartbeatService.updateHeartbeat(channel);
             } catch (Exception ex) {
                 ConfigServerLogger.warn(String.format("notify the configuration to subscriber %s failed.", channel), ex);

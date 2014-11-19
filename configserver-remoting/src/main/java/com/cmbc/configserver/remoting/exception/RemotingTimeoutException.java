@@ -8,13 +8,13 @@ public class RemotingTimeoutException extends RemotingException {
 		super(message);
 	}
 
-	public RemotingTimeoutException(String addr, long timeoutMillis) {
-		this(addr, timeoutMillis, null);
+	public RemotingTimeoutException(String address, long timeoutMillis) {
+		this(address, timeoutMillis, null);
 	}
 
-	public RemotingTimeoutException(String addr, long timeoutMillis,
+	public RemotingTimeoutException(String address, long timeoutMillis,
 			Throwable cause) {
-		super("wait response on the channel <" + addr + "> timeout, "
+		super("wait response on the channel <" + address + "> timeout, "
 				+ timeoutMillis + "(ms)", cause);
 	}
 }

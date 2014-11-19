@@ -149,7 +149,7 @@ public class ConfigClientImpl implements ConfigClient {
 				throw new ConfigClientException("publish config failed");
 			}
 		} catch (Exception e) {
-			logger.info(e.toString());
+			logger.error(e.toString());
 			throw new ConfigClientException(e);
 		} 
 		
@@ -164,10 +164,10 @@ public class ConfigClientImpl implements ConfigClient {
 		try {
 			RemotingCommand result = remotingClient.invokeSync(request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
 			if(result.getCode() != ResponseCode.UNPUBLISH_CONFIG_OK){
-				throw new ConfigClientException("unpublish config failed");
+				throw new ConfigClientException("un publish config failed");
 			}
 		} catch (Exception e) {
-			logger.info(e.toString());
+			logger.error(e.toString());
 			throw new ConfigClientException(e);
 		} 
 	}
@@ -202,7 +202,7 @@ public class ConfigClientImpl implements ConfigClient {
 									listeners.add(listener);
                                     return notify.getConfigLists();
 								}else{
-									logger.info("subscribe notify is null!");
+									logger.warn("subscribe notify is null!");
 									throw new ConfigClientException("subscribe notify is null!");
 								}
 							}
@@ -213,7 +213,7 @@ public class ConfigClientImpl implements ConfigClient {
                             return notify.getConfigLists();
 						}
 					} catch (Exception e) {
-						logger.info(e.toString());
+						logger.error(e.toString());
 						throw new ConfigClientException(e);
 					} finally {
 						subscribeMapLock.unlock();
@@ -222,7 +222,7 @@ public class ConfigClientImpl implements ConfigClient {
 					throw new ConfigClientException("get subscribeMapLock timeout");
 				}
 			} catch (InterruptedException e) {
-				logger.info(e.toString());
+				logger.error(e.toString());
 				throw new ConfigClientException(e);
 			}
 		} else {
@@ -240,7 +240,7 @@ public class ConfigClientImpl implements ConfigClient {
                 try {
                     listener.notify(notify.getConfigLists());
                 } catch (Exception e) {
-                    logger.info(e.toString());
+                    logger.error(e.toString());
                 }
             }
         });
@@ -275,7 +275,7 @@ public class ConfigClientImpl implements ConfigClient {
 							}
 						}
 					} catch (Exception e) {
-						logger.info(e.toString());
+						logger.error(e.toString());
 						throw new ConfigClientException(e);
 					} finally {
 						subscribeMapLock.unlock();
@@ -284,7 +284,7 @@ public class ConfigClientImpl implements ConfigClient {
 					throw new ConfigClientException("get subscribeMapLock timeout");
 				}
 			} catch (InterruptedException e) {
-				logger.info(e.toString());
+				logger.error(e.toString());
 				throw new ConfigClientException(e);
 			}
 		}
@@ -307,14 +307,14 @@ public class ConfigClientImpl implements ConfigClient {
 				}
 			} catch (Exception e) {
 				//do nothing
-				logger.info(e.toString());
+				logger.error(e.toString());
 			} 
 		}
 		
 		if(!sendSuccess){
 			int times = heartbeatFailedTimes.incrementAndGet();
 			if(times >= 3){
-				logger.info("heartbeat failed, do reset works");
+				logger.warn("heartbeat failed, do reset works");
 				this.clear(channel);
 			}
 		}

@@ -29,13 +29,12 @@ import java.util.concurrent.locks.Lock;
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class CacheFactory {
-    public static String LOCAL_CACHE_PROPERTY_NAME = "cache.clustering.local.class";
-    private static long SECOND = 1000l;
+    private static long SECOND = 1000L;
     private static long MINUTE = 60 * SECOND;
     private static long HOUR = 60 * MINUTE;
     private static Map<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
     private static CacheFactoryStrategy cacheFactoryStrategy;
-    public static final long DEFAULT_MAX_CACHE_SIZE = 1024l * 1024 * 128;
+    public static final long DEFAULT_MAX_CACHE_SIZE = 1024L * 1024 * 128;
     public static final long DEFAULT_MAX_CACHE_LIFETIME = 24 * HOUR;
     /**
      * Default properties to use for local caches. Default properties can be
@@ -45,27 +44,6 @@ public class CacheFactory {
 
     static {
         initialize();
-        cacheProps.put("cache.appkey.size", 1024l * 1024 * 32); // 32M
-        cacheProps.put("cache.appkey.maxLifetime", 10 * MINUTE);
-
-        cacheProps.put("cache.auth.size", 1024l * 1024 * 256);
-        cacheProps.put("cache.auth.maxLifetime", 30 * MINUTE);
-
-        cacheProps.put("cache.test.size", 1024l * 1024 * 64);
-        cacheProps.put("cache.test.maxLifetime", 2 * MINUTE);
-
-        cacheProps.put("cache.whiteip_api2wl.size", 1024l * 1024 * 1); //1M
-        cacheProps.put("cache.whiteip_api2wl.maxLifetime", 30 * MINUTE);
-
-        cacheProps.put("cache.whiteip_ipwl.size", 1024l * 1024 * 2); //2M
-        cacheProps.put("cache.whiteip_ipwl.maxLifetime", 30 * MINUTE);
-
-        cacheProps.put("cache.whiteip_uidwl.size", 1024l * 1024 * 1); //1M
-        cacheProps.put("cache.whiteip_uidwl.maxLifetime", 30 * MINUTE);
-
-        cacheProps.put("cache.whiteip_iuserwl.size", 1024l * 1024 * 1); //1M
-        cacheProps.put("cache.whiteip_iuserwl.maxLifetime", 30 * MINUTE);
-
     }
 
     private CacheFactory() {

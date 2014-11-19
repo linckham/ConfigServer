@@ -94,6 +94,7 @@ public class CategoryDaoImpl implements CategoryDao {
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public List<Category> getAllCategory() throws Exception {
         try {
             List<Category> categories = this.jdbcTemplate.query(SQL_CATEGORY_QUERY_ALL, new CategoryRowMapper());
@@ -117,6 +118,7 @@ public class CategoryDaoImpl implements CategoryDao {
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public List<String> getTypes(String cell, String resource) throws Exception {
         try {
             List<String> types = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_TYPE, new Object[]{cell, resource});

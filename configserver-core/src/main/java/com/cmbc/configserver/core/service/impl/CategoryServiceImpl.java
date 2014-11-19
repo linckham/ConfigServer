@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
     @Autowired
     private NotifyService notifyService;
 
-    private static final long LOCAL_CACHE_LIFE_TIME = 1000*60*5;
+    private static final long LOCAL_CACHE_LIFE_TIME = 1000*60*30;
     private final Cache<Integer,Category> categoryCache = CacheFactory.createCache("category.cache", LOCAL_CACHE_LIFE_TIME);
     private ConcurrentHashMap</*cell*/String,ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -238,6 +238,8 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
         public void run() {
             try{
                 List<Category> categories = getAllCategory();
+                ConfigServerLogger.info(String.format("CategoryWorker getAllCategory from database. size = %s, categories = %s",
+                        categories ==null?0: categories.size(),categories));
                 if(null != categories && !categories.isEmpty()){
                     for(Category category : categories){
                         ConcurrentHashSet set = categoryMap.get(category.getCell());
@@ -246,6 +248,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                             set = categoryMap.get(category.getCell());
                         }
                         if (!set.contains(category.getResource())) {
+                            ConfigServerLogger.warn(String.format("the cell %s has new resource %s",category.getCell(),category.getResource()));
                             //notify
                             Event event = new Event();
                             event.setEventType(EventType.CATEGORY_CHANGED);

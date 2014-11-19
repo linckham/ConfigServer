@@ -380,13 +380,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 			if (channelFuture.awaitUninterruptibly(this.nettyClientConfig.getConnectTimeoutMillis())) {
 				if (clientChannel.isOK()) {
 					log.info(
-							"createChannel: connect remote host[{}] success, {}",
-							serverAddressSelected.get(), channelFuture.toString());
+							"createChannel: connect remote host[{}] success,local address [{}]",
+							serverAddressSelected.get(), RemotingHelper.parseChannelLocalAddress(clientChannel.getChannel()));
 					return clientChannel.getChannel();
 				} else {
-					log.warn("createChannel: connect remote host[" + serverAddressSelected.get()
-							+ "] failed, " + channelFuture.toString(),
-							channelFuture.cause());
+					log.warn("createChannel: connect remote host[" + serverAddressSelected.get()+ "] failed, "
+                                    + channelFuture.toString(),
+                            channelFuture.cause());
 				}
 			} else {
 				log.warn(
@@ -395,7 +395,6 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 						channelFuture.toString());
 			}
 		}
-
 		return null;
 	}
 

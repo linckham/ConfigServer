@@ -65,7 +65,7 @@ public class Constants {
     /**
      * default sleep time of Thread
      */
-    public static final int DEFAULT_THREAD_SLEEP_TIME = 2*1000;
+    public static final int DEFAULT_THREAD_SLEEP_TIME = 5*1000;
     /**
      * default compress length
      */

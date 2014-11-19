@@ -76,6 +76,8 @@ public class ConfigChangedNotifyService {
             while (!stop && !Thread.interrupted()) {
                 try {
                     List<ConfigChangeLog> changeLogList = getAllConfigChangeLogs();
+                    ConfigServerLogger.info(String.format("ChangedWorker getAllConfigChangeLogs from database. size = %s, changeLogs = %s",
+                            changeLogList ==null?0: changeLogList.size(),changeLogList));
                     if (null != changeLogList && !changeLogList.isEmpty()) {
                         for (ConfigChangeLog changeLog : changeLogList) {
                             //the last modify time in local cache is not equals the value in database
@@ -85,6 +87,8 @@ public class ConfigChangedNotifyService {
                                 if (null != pathMd5Cache.get(changeLog.getPath())) {
                                     //doesn't send notify event when the JVM is just starting
                                     //send a event to NotifyService
+                                    ConfigServerLogger.warn(String.format("the path %s has changed,last_modified_time is %s",
+                                            changeLog.getPath(),changeLog.getLastModifiedTime()));
                                     Event event = new Event();
                                     event.setEventType(EventType.PATH_DATA_CHANGED);
                                     event.setEventSource(changeLog.getPath());
