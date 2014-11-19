@@ -268,14 +268,14 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 		@Override
 		public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
 			final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
-			log.info("NETTY SERVER PIPELINE: channelRegistered {}",remoteAddress);
+			log.info("NettyConnectManageHandler channelRegistered {}",remoteAddress);
 			super.channelRegistered(ctx);
 		}
 
 		@Override
 		public void channelUnregistered(ChannelHandlerContext ctx)	throws Exception {
 			final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
-			log.info("NETTY SERVER PIPELINE: channelUnregistered, the channel[{}]",remoteAddress);
+			log.info("NettyConnectManageHandler channelUnregistered, the channel[{}]",remoteAddress);
 			super.channelUnregistered(ctx);
 		}
 
@@ -293,7 +293,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             ConfigServerLogger.info(String.format("channel[%s] is connected to server. the total connection count is %s", ctx.channel(), connectionCount));
 
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
-            log.info("NETTY SERVER PIPELINE: channelActive, the channel[{}]", remoteAddress);
+            log.info("NettyConnectManageHandler channelActive, the channel[{}]", remoteAddress);
             super.channelActive(ctx);
 
 			if (NettyRemotingServer.this.channelEventListener != null) {
@@ -306,7 +306,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 		@Override
 		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 			final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
-			log.info("NETTY SERVER PIPELINE: channelInactive, the channel[{}]",remoteAddress);
+			log.info("NettyConnectManageHandler channelInactive, the channel[{}]",remoteAddress);
 			super.channelInactive(ctx);
             decrementConnection(ctx.channel());
 			if (NettyRemotingServer.this.channelEventListener != null) {
@@ -323,7 +323,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 				if (event.state().equals(IdleState.ALL_IDLE)) {
 					final String remoteAddress = RemotingHelper
 							.parseChannelRemoteAddress(ctx.channel());
-					log.warn("NETTY SERVER PIPELINE: IDLE exception [{}]",
+					log.warn("NettyConnectManageHandler IDLE exception [{}]",
 							remoteAddress);
 					if (NettyRemotingServer.this.channelEventListener != null) {
 						NettyRemotingServer.this.putNettyEvent(new NettyEvent(
@@ -340,8 +340,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)	throws Exception {
 			final String remoteAddress = RemotingHelper
 					.parseChannelRemoteAddress(ctx.channel());
-			log.warn("NETTY SERVER PIPELINE: exceptionCaught {}", remoteAddress);
-			log.warn("NETTY SERVER PIPELINE: exceptionCaught exception.", cause);
+			log.warn("NettyConnectManageHandler exceptionCaught remoteAddress {} exception {}.",remoteAddress,cause);
 
 			if (NettyRemotingServer.this.channelEventListener != null) {
 				NettyRemotingServer.this.putNettyEvent(new NettyEvent(

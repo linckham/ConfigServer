@@ -23,8 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RemotingUtil {
-	private static final Logger log = LoggerFactory
-			.getLogger(RemotingUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RemotingUtil.class);
 	public static final String OS_NAME = System.getProperty("os.name");
 
 	private static boolean isLinuxPlatform = false;
@@ -190,15 +189,12 @@ public class RemotingUtil {
 	}
 
 	public static void closeChannel(Channel channel) {
-		final String addrRemote = RemotingHelper
-				.parseChannelRemoteAddress(channel);
+		final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(channel);
 		channel.close().addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture future)
 					throws Exception {
-				log.info(
-						"closeChannel: close the connection to remote address[{}] result: {}",
-						addrRemote, future.isSuccess());
+				LOGGER.info("closeChannel: close the connection to remote address[{}] result: {}", remoteAddress, future.isSuccess());
 			}
 		});
 	}
