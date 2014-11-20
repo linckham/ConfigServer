@@ -1,5 +1,6 @@
 package com.cmbc.configserver.remoting.netty;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.remoting.ChannelEventListener;
 import com.cmbc.configserver.remoting.ConnectionStateListener;
 import com.cmbc.configserver.remoting.RPCHook;
@@ -26,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -154,35 +152,14 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             publicThreadNumbers = 4;
         }
 
-        this.publicExecutor = Executors.newFixedThreadPool(publicThreadNumbers,
-                new ThreadFactory() {
-                    private AtomicInteger threadIndex = new AtomicInteger(0);
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        return new Thread(r, "NettyClientPublicExecutor_"+ this.threadIndex.incrementAndGet());
-                    }
-                });
-
-        this.eventLoopGroupWorker = new NioEventLoopGroup(1,
-                new ThreadFactory() {
-                    private AtomicInteger threadIndex = new AtomicInteger(0);
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        return new Thread(r, String.format("NettyClientSelector_%d",this.threadIndex.incrementAndGet()));
-                    }
-                });
+        this.publicExecutor = new ThreadPoolExecutor(publicThreadNumbers,publicThreadNumbers, 0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM), new ThreadFactoryImpl("NettyClientPublicExecutor-"));
+        this.eventLoopGroupWorker = new NioEventLoopGroup(1,new ThreadFactoryImpl("NettyClientSelector-"));
     }
 
 	public void start()  {
 		this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
-				nettyClientConfig.getClientWorkerThreads(),
-				new ThreadFactory() {
-					private AtomicInteger threadIndex = new AtomicInteger(0);
-					@Override
-					public Thread newThread(Runnable r) {
-						return new Thread(r, "NettyClientWorkerThread_"+ this.threadIndex.incrementAndGet());
-					}
-				});
+				nettyClientConfig.getClientWorkerThreads(),new ThreadFactoryImpl("NettyClientWorkerThread-"));
 
 		this.bootstrap.group(this.eventLoopGroupWorker)
 				.channel(NioSocketChannel.class)

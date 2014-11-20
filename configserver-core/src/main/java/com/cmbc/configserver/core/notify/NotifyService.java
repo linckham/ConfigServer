@@ -39,7 +39,7 @@ public class NotifyService {
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
     private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(Constants.DEFAULT_MAX_QUEUE_ITEM);
     private volatile boolean stop = true;
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("event-dispatcher-"));
     /**
      * the executor uses to load the specified path's all configuration items.
      */
@@ -167,8 +167,6 @@ public class NotifyService {
 
         /**
          * notify all the resources of the specified cell
-         *
-         * @param category
          */
         private void notify(Category category) {
             if (null != category) {
@@ -199,6 +197,7 @@ public class NotifyService {
             //get the subscriber's channels that will being to notify
             Set<Channel> subscriberChannels = NotifyService.this.subscriberService.getSubscriberChannels(path);
             if (null != subscriberChannels && !subscriberChannels.isEmpty()) {
+                ConfigServerLogger.info(String.format("subscriber channel of path %s has %d items,channel details is %s",path,subscriberChannels.size(),subscriberChannels));
                 for (Channel channel : subscriberChannels) {
                     if (null != channel && channel.isActive()) {
                         subscriberNotifyExecutor.execute(new SubscriberNotifyWorker(channel, body));
@@ -232,9 +231,7 @@ public class NotifyService {
                 if(null !=body){
                     request.setBody(body);
                 }
-
-                this.getConfigNettyServer().getRemotingServer()
-                        .invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
+                this.getConfigNettyServer().getRemotingServer().invokeSync(channel, request, Constants.DEFAULT_SOCKET_READING_TIMEOUT);
                 //avoiding to kill this channel,update the subscriber channel's heart beat time when push the notify message on the channel.
                 heartbeatService.updateHeartbeat(channel);
             } catch (Exception ex) {
@@ -265,8 +262,7 @@ public class NotifyService {
                                 onCategoryChanged(event);
                             }
                         } else {
-                            //log this event and ignore
-                            ConfigServerLogger.warn(String.format("%s after the current time too much,so ignore it!", event));
+                            ConfigServerLogger.warn(String.format("dispatcher event %s after the current time too much, so ignore it!", event));
                         }
                     }
                 } catch (Throwable t) {

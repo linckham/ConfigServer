@@ -1,5 +1,6 @@
 package com.cmbc.configserver.client.impl;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.utils.*;
 import io.netty.channel.Channel;
 
@@ -38,7 +39,7 @@ public class ConfigClientImpl implements ConfigClient {
     /**
      * the schedule that uses to scan the config server address file with fix rate
      */
-    private ScheduledExecutorService  scheduleService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService  scheduleService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("server-address-listen-"));
 
     private final String serverAddressFile;
     private volatile  SnapshotFile snapshotFile;

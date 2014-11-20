@@ -25,12 +25,12 @@ import java.util.List;
 @Service("configDetailsDao")
 public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
     private final static String SQL_CONFIG_INSERT = "insert into config_details(category_id,content,client_id) values(?,?,?)";
-    private static String SQL_CONFIG_UPDATE = "update config_details set content=?,client_id=? where config_id=?";
-    private static String SQL_CONFIG_DELETE = "delete from config_details where client_id=? and category_id=?";
-    private static String SQL_CONFIG_QUERY_BY_CATEGORY_ID = "select * from config_details where category_id=?";
-    private static String SQL_CONFIG_QUERY_BY_CLIENT_ID = "select * from config_details where client_id=?";
-    private static String SQL_CONFIG_DELETE_BY_CLIENT_ID = "delete  from config_details where client_id=?";
-    private static String SQL_CONFIG_CATEGORY_ID_BY_CLIENT_ID = "select distinct category_id from config_details where client_id=?";
+    private final static String SQL_CONFIG_UPDATE = "update config_details set content=?,client_id=? where config_id=?";
+    private final static String SQL_CONFIG_DELETE = "delete from config_details where client_id=? and category_id=?";
+    private final static String SQL_CONFIG_QUERY_BY_CATEGORY_ID = "select * from config_details where category_id=?";
+    private final static String SQL_CONFIG_QUERY_BY_CLIENT_ID = "select * from config_details where client_id=?";
+    private final static String SQL_CONFIG_DELETE_BY_CLIENT_ID = "delete  from config_details where client_id=?";
+    private final static String SQL_CONFIG_CATEGORY_ID_BY_CLIENT_ID = "select distinct category_id from config_details where client_id=?";
 
 
     @Autowired
@@ -159,7 +159,6 @@ public class ConfigDetailsDaoImpl implements ConfigDetailsDao {
             Configuration config;
             try {
                 config = new Configuration();
-                //
                 if (null != category) {
                     config.setCell(category.getCell());
                     config.setResource(category.getResource());

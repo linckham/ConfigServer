@@ -1,62 +1,43 @@
 package com.cmbc.configserver.remoting.netty;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.cmbc.configserver.remoting.ChannelEventListener;
 import com.cmbc.configserver.remoting.InvokeCallback;
 import com.cmbc.configserver.remoting.RPCHook;
-import com.cmbc.configserver.remoting.common.Pair;
-import com.cmbc.configserver.remoting.common.RemotingHelper;
-import com.cmbc.configserver.remoting.common.RequestProcessor;
-import com.cmbc.configserver.remoting.common.ResponseFuture;
-import com.cmbc.configserver.remoting.common.SemaphoreReleaseOnlyOnce;
-import com.cmbc.configserver.remoting.common.ServiceThread;
+import com.cmbc.configserver.remoting.common.*;
 import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
 import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
+import com.cmbc.configserver.utils.Constants;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.concurrent.*;
 
 public abstract class NettyRemotingAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyRemotingAbstract.class);
     protected final Semaphore semaphoreOneway;
     protected final Semaphore semaphoreAsync;
+    protected final byte[] SYSTEM_BUSY_BYTES = "too many requests and system thread pool busy, please try another server".getBytes();
 
     // cache all the remote request that is outing
-    protected final ConcurrentHashMap<Integer /* requestId */, ResponseFuture> responseTable =
-            new ConcurrentHashMap<Integer, ResponseFuture>(256);
-
+    protected final ConcurrentHashMap<Integer /* requestId */, ResponseFuture> responseTable =  new ConcurrentHashMap<Integer, ResponseFuture>(256);
     // the default request processor
     protected Pair<RequestProcessor, ExecutorService> defaultRequestProcessor;
-
     // the request processors
-    protected final HashMap<Integer/* request code */, Pair<RequestProcessor, ExecutorService>> processorTable =
-            new HashMap<Integer, Pair<RequestProcessor, ExecutorService>>(64);
-
+    protected final HashMap<Integer/* request code */, Pair<RequestProcessor, ExecutorService>> processorTable =  new HashMap<Integer, Pair<RequestProcessor, ExecutorService>>(64);
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
-
-
     public abstract ChannelEventListener getChannelEventListener();
 
-
     public abstract RPCHook getRPCHook();
-
 
     public void putNettyEvent(final NettyEvent event) {
         this.nettyEventExecutor.putNettyEvent(event);
@@ -64,29 +45,22 @@ public abstract class NettyRemotingAbstract {
 
     class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
-        private final int MaxSize = 10000;
-
-
         public void putNettyEvent(final NettyEvent event) {
-            if (this.eventQueue.size() <= MaxSize) {
+            if (this.eventQueue.size() <= Constants.DEFAULT_MAX_QUEUE_ITEM) {
                 this.eventQueue.add(event);
             }
             else {
-                LOGGER.warn("event queue size[{}] enough, so drop this event {}", this.eventQueue.size(),
-                        event.toString());
+                LOGGER.warn("event queue size {} enough, so drop this event {}", this.eventQueue.size(),event.toString());
             }
         }
-
 
         @Override
         public void run() {
             LOGGER.info(this.getServiceName() + " service started");
-
             final ChannelEventListener listener = NettyRemotingAbstract.this.getChannelEventListener();
-
             while (!this.isStopped()) {
                 try {
-                    NettyEvent event = this.eventQueue.poll(3000, TimeUnit.MILLISECONDS);
+                    NettyEvent event = this.eventQueue.poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (event != null) {
                         switch (event.getType()) {
                         case IDLE:
@@ -106,7 +80,6 @@ public abstract class NettyRemotingAbstract {
                         	break;
                         default:
                             break;
-
                         }
                     }
                 }
@@ -114,10 +87,8 @@ public abstract class NettyRemotingAbstract {
                     LOGGER.warn(this.getServiceName() + " service has exception. ", e);
                 }
             }
-
             LOGGER.info(this.getServiceName() + " service end");
         }
-
 
         @Override
         public String getServiceName() {
@@ -134,9 +105,7 @@ public abstract class NettyRemotingAbstract {
 
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
         final Pair<RequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
-        final Pair<RequestProcessor, ExecutorService> pair =
-                null == matched ? this.defaultRequestProcessor : matched;
-
+        final Pair<RequestProcessor, ExecutorService> pair = null== matched ? this.defaultRequestProcessor : matched;
         if (pair != null) {
             Runnable run = new Runnable() {
                 @Override
@@ -144,8 +113,7 @@ public abstract class NettyRemotingAbstract {
                     try {
                         RPCHook rpcHook = NettyRemotingAbstract.this.getRPCHook();
                         if (rpcHook != null) {
-                            rpcHook
-                                .doBeforeRequest(RemotingHelper.parseChannelRemoteAddress(ctx.channel()), cmd);
+                            rpcHook.doBeforeRequest(RemotingHelper.parseChannelRemoteAddress(ctx.channel()), cmd);
                         }
 
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
@@ -161,27 +129,17 @@ public abstract class NettyRemotingAbstract {
                                 response.markResponseType();
                                 try {
                                     ctx.writeAndFlush(response);
+                                } catch (Throwable e) {
+                                    LOGGER.error(String.format("process request %s over, but response %s failed", cmd.toString(), response.toString()), e);
                                 }
-                                catch (Throwable e) {
-                                    LOGGER.error("process request over, but response failed", e);
-                                    LOGGER.error(cmd.toString());
-                                    LOGGER.error(response.toString());
-                                }
-                            } else {
-                                //Ignore the case : Receive the request,but the ACK is not response.
-                                //the cause of the case : the ACK is being processed in the processRequest method
                             }
                         }
                     }
                     catch (Throwable e) {
-                        LOGGER.error("process request exception", e);
-                        LOGGER.error(cmd.toString());
-
+                        LOGGER.error(String.format("process request %s error,exception is ", cmd.toString()), e);
                         if (!cmd.isOnewayRPC()) {
-                            //TODO: define the exception response command
-                            final RemotingCommand response =
-                                    RemotingCommand.createResponseCommand(
-                                            RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
+                            final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
+                            response.setBody(e.getMessage() == null ? "system error".getBytes() : e.getMessage().getBytes());
                             response.setRequestId(cmd.getRequestId());
                             ctx.writeAndFlush(response);
                         }
@@ -190,39 +148,26 @@ public abstract class NettyRemotingAbstract {
             };
 
             try {
-                // TODO: need tho control the request's flow,It is better to limit the thread pool's size
                 pair.getObject2().submit(run);
             }
             catch (RejectedExecutionException e) {
-                LOGGER.warn(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) //
-                        + ", too many requests and system thread pool busy, RejectedExecutionException " //
-                        + pair.getObject2().toString() //
-                        + " request code: " + cmd.getCode());
+                LOGGER.warn(String.format("%s too many requests and system thread pool busy, RejectedExecutionException %s of request code %s",
+                        RemotingHelper.parseChannelRemoteAddress(ctx.channel()), pair.getObject2().toString(), cmd.getCode()));
                 if (!cmd.isOnewayRPC()) {
-                    /*final RemotingCommand response =
-                            RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY,
-                                "too many requests and system thread pool busy, please try another server");*/
-                    //TODO: define the exception response command
-                    final RemotingCommand response =
-                            RemotingCommand.createResponseCommand(
-                                    RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
+                    final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.SYSTEM_BUSY, cmd.getRequestId());
+                    response.setBody(SYSTEM_BUSY_BYTES);
                     response.setRequestId(cmd.getRequestId());
                     ctx.writeAndFlush(response);
                 }
             }
         }
         else {
-           /* String error = " request type " + cmd.getCode() + " not supported";
-            final RemotingCommand response =
-                    RemotingCommand.createResponseCommand(RemotingSysResponseCode.REQUEST_CODE_NOT_SUPPORTED,
-                        error);
-            response.setOpaque(cmd.getOpaque());*/
-            String error = " request type " + cmd.getCode() + " not supported";
-            //TODO: define the exception response command
-            final RemotingCommand response =  RemotingCommand.createResponseCommand( RemotingSysResponseCode.SYSTEM_ERROR, cmd.getRequestId());
+            //request is not supported
+            String error = "request type " + cmd.getCode() + " not supported";
+            final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.REQUEST_CODE_NOT_SUPPORTED, cmd.getRequestId());
+            response.setBody(error.getBytes());
             response.setRequestId(cmd.getRequestId());
             ctx.writeAndFlush(response);
-
             LOGGER.error(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) + error);
         }
     }
@@ -279,8 +224,7 @@ public abstract class NettyRemotingAbstract {
             //case
             //1.the request is not sending by the client
             //2.the request is sending by the client,but it is timeout,and after the timeout period,the server response this request.
-            LOGGER.warn("receive response, but not matched any request,channel id "+ RemotingHelper.getChannelId(ctx.channel()));
-            LOGGER.warn(cmd.toString());
+            LOGGER.warn(String.format("receive response %s, but not matched any request,channel id %s", cmd.toString(), RemotingHelper.getChannelId(ctx.channel())));
         }
         responseTable.remove(cmd.getRequestId());
     }
@@ -302,9 +246,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-
     abstract public ExecutorService getCallbackExecutor();
-
 
     public void scanResponseTable() {
         Iterator<Entry<Integer, ResponseFuture>> it = this.responseTable.entrySet().iterator();
@@ -329,7 +271,6 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-
     public RemotingCommand invokeSyncImpl(final Channel channel, final RemotingCommand request,
             final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
             RemotingTimeoutException {
@@ -347,15 +288,12 @@ public abstract class NettyRemotingAbstract {
                     else {
                         responseFuture.setSendRequestOK(false);
                     }
-
                     responseTable.remove(request.getRequestId());
                     responseFuture.setCause(f.cause());
                     responseFuture.putResponse(null);
-                    LOGGER.warn("send a request command to channel <" + channel.remoteAddress() + "> failed.");
-                    LOGGER.warn(request.toString());
+                    LOGGER.warn(String.format("send request %s to channel <%s> failed.", request.toString(), RemotingHelper.getChannelId(channel)));
                 }
             });
-
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {
                 // successfully sending the remote request,timeout happens when reading the ACK
@@ -375,14 +313,12 @@ public abstract class NettyRemotingAbstract {
                         responseFuture.getCause());
                 }
             }
-
             return responseCommand;
         }
         finally {
             this.responseTable.remove(request.getRequestId());
         }
     }
-
 
     public void invokeAsyncImpl(final Channel channel, final RemotingCommand request,
             final long timeoutMillis, final InvokeCallback invokeCallback) throws InterruptedException,
@@ -446,7 +382,6 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-
     public void invokeOnewayImpl(final Channel channel, final RemotingCommand request,
             final long timeoutMillis) throws InterruptedException, RemotingTooMuchRequestException,
             RemotingTimeoutException, RemotingSendRequestException {
@@ -477,14 +412,8 @@ public abstract class NettyRemotingAbstract {
                 throw new RemotingTooMuchRequestException("invokeOnewayImpl invoke too fast");
             }
             else {
-                String info =
-                        String
-                                .format(
-                                        "invokeOnewayImpl tryAcquire semaphore timeout, %dms, waiting thread numbers: %d semaphoreAsyncValue: %d", //
-                                        timeoutMillis,//
-                                        this.semaphoreAsync.getQueueLength(),//
-                                        this.semaphoreAsync.availablePermits()//
-                                );
+                String info = String.format("invokeOnewayImpl tryAcquire semaphore timeout  %dms, waiting thread numbers: %d semaphoreAsyncValue: %d",
+                        timeoutMillis, this.semaphoreAsync.getQueueLength(), this.semaphoreAsync.availablePermits());
                 LOGGER.warn(info);
                 LOGGER.warn(request.toString());
                 throw new RemotingTimeoutException(info);

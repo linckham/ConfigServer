@@ -1,5 +1,6 @@
 package com.cmbc.configserver.remoting.netty;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.remoting.ChannelEventListener;
 import com.cmbc.configserver.remoting.InvokeCallback;
 import com.cmbc.configserver.remoting.RPCHook;
@@ -58,53 +59,24 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 		this(nettyServerConfig, null);
 	}
 
-	public NettyRemotingServer(final NettyServerConfig nettyServerConfig,
-			final ChannelEventListener channelEventListener) {
-		super(nettyServerConfig.getServerOnewaySemaphoreValue(),
-				nettyServerConfig.getServerAsyncSemaphoreValue());
+	public NettyRemotingServer(final NettyServerConfig nettyServerConfig,final ChannelEventListener channelEventListener) {
+		super(nettyServerConfig.getServerOnewaySemaphoreValue(),nettyServerConfig.getServerAsyncSemaphoreValue());
 		this.serverBootstrap = new ServerBootstrap();
 		this.nettyServerConfig = nettyServerConfig;
 		this.channelEventListener = channelEventListener;
 
-		int publicThreadNumbers = nettyServerConfig
-				.getServerCallbackExecutorThreads();
+		int publicThreadNumbers = nettyServerConfig.getServerCallbackExecutorThreads();
 		if (publicThreadNumbers <= 0) {
 			publicThreadNumbers = 4;
 		}
 
-		this.publicExecutor = Executors.newFixedThreadPool(publicThreadNumbers,
-				new ThreadFactory() {
-					private AtomicInteger threadIndex = new AtomicInteger(0);
+		this.publicExecutor = Executors.newFixedThreadPool(publicThreadNumbers,new ThreadFactoryImpl("NettyServerPublicExecutor-"));
 
-					@Override
-					public Thread newThread(Runnable r) {
-						return new Thread(r, "NettyServerPublicExecutor_"
-								+ this.threadIndex.incrementAndGet());
-					}
-				});
+		this.eventLoopGroupBoss = new NioEventLoopGroup(1,new ThreadFactoryImpl("NettyBossSelector-"));
 
-		this.eventLoopGroupBoss = new NioEventLoopGroup(1, new ThreadFactory() {
-			private AtomicInteger threadIndex = new AtomicInteger(0);
-			@Override
-			public Thread newThread(Runnable r) {
-				return new Thread(r, String.format("NettyBossSelector_%d",
-						this.threadIndex.incrementAndGet()));
-			}
-		});
-
-		this.eventLoopGroupWorker = new NioEventLoopGroup(
-				nettyServerConfig.getServerSelectorThreads(),
-				new ThreadFactory() {
-					private AtomicInteger threadIndex = new AtomicInteger(0);
-					private int threadTotal = nettyServerConfig.getServerSelectorThreads();
-					@Override
-					public Thread newThread(Runnable r) {
-						return new Thread(r, String.format(
-								"NettyServerSelector_%d_%d", threadTotal,
-								this.threadIndex.incrementAndGet()));
-					}
-				});
-	}
+        this.eventLoopGroupWorker = new NioEventLoopGroup(nettyServerConfig.getServerSelectorThreads(),
+                new ThreadFactoryImpl(String.format("NettyServerSelector-%d-", nettyServerConfig.getServerSelectorThreads())));
+    }
 
 	@Override
 	public void start() {

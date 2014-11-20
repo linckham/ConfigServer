@@ -389,7 +389,6 @@ public class JdbcTemplate extends JdbcAccessor{
 		}
 		Connection con = null;
 		Statement stmt = null;
-		boolean sussess = false;
 		try {
 			con = safeGetConnection(ds, isWrite);
 			Connection conToUse = con;
@@ -405,7 +404,6 @@ public class JdbcTemplate extends JdbcAccessor{
 			}
 			Object result = action.doInStatement(stmtToUse);
 			handleWarnings(stmt);
-			sussess = true;
 			return result;
 		}catch(CannotGetJdbcConnectionException e){
 			throw e;

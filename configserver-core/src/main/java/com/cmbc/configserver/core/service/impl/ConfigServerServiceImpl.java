@@ -303,7 +303,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
                 this.configChangedNotifyService.updatePathMd5Cache(path, changeLog.getLastModifiedTime());
             }
         } catch (Exception ex) {
-            ConfigServerLogger.warn(String.format("update the md5 of the path [%]  failed.", path), ex);
+            ConfigServerLogger.warn(String.format("update the md5 of the path %s  failed.", path), ex);
         }
     }
 }

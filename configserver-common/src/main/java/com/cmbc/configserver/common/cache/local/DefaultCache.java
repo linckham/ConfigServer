@@ -416,8 +416,6 @@ public class DefaultCache<K, V> implements Cache<K, V> {
         // First, clear all entries that have been in cache longer than the
         // maximum defined age.
         deleteExpiredEntries();
-        // TODO Make this work right
-
         synchronized (this) {
             final Map<K, V> result = new HashMap<K, V>();
             for (final Entry<K, CacheObject<V>> entry : map.entrySet()) {

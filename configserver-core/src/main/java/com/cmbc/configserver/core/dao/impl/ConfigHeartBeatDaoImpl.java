@@ -1,19 +1,17 @@
 package com.cmbc.configserver.core.dao.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-
 import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
 import com.cmbc.configserver.core.dao.util.JdbcTemplate;
 import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 /**
  * Created by tongchuan.lin<linckham@gmail.com><br/>
  *
@@ -22,11 +20,11 @@ import java.sql.Timestamp;
  */
 @Service("configHeartBeatDao")
 public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
-    private static String SQL_HEARTBEAT_INSERT = "insert into config_heart_beat(client_id,last_modified_time) values(?,?)";
-    private static String SQL_HEARTBEAT_UPDATE = "update config_heart_beat set last_modified_time=? where client_id=?";
-    private static String SQL_HEARTBEAT_DELETE = "delete from config_heart_beat where client_id=?";
-    private static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=? for update";
-    private static String SQL_HEARTBEAT_GET_TIMEOUT = " select * from config_heart_beat where last_modified_time < ?";
+    private final static String SQL_HEARTBEAT_INSERT = "insert into config_heart_beat(client_id,last_modified_time) values(?,?)";
+    private final static String SQL_HEARTBEAT_UPDATE = "update config_heart_beat set last_modified_time=? where client_id=?";
+    private final static String SQL_HEARTBEAT_DELETE = "delete from config_heart_beat where client_id=?";
+    private final static String SQL_HEARTBEAT_GET = "select * from config_heart_beat where client_id=? for update";
+    private final static String SQL_HEARTBEAT_GET_TIMEOUT = " select * from config_heart_beat where last_modified_time < ?";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -109,13 +107,12 @@ public class ConfigHeartBeatDaoImpl implements ConfigHeartBeatDao {
 	@Override
 	@SuppressWarnings({"unchecked"})
 	public List<ConfigHeartBeat> getTimeout() throws Exception {
-		try {
-            List<ConfigHeartBeat> configHeartBeats = this.jdbcTemplate.query(SQL_HEARTBEAT_GET_TIMEOUT,
-            		new Object[]{System.currentTimeMillis() - ConfigHeartBeat.DB_TIMEOUT},new HeartBeatMapper());
-            return configHeartBeats;
+        try {
+            return this.jdbcTemplate.query(SQL_HEARTBEAT_GET_TIMEOUT,
+                    new Object[]{System.currentTimeMillis() - ConfigHeartBeat.DB_TIMEOUT}, new HeartBeatMapper());
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("get timeout list error "), ex);
             throw ex;
         }
-	}
+    }
 }

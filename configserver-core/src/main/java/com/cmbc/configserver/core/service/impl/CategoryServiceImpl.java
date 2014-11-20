@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.service.impl;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.cache.local.Cache;
 import com.cmbc.configserver.common.cache.local.CacheFactory;
 import com.cmbc.configserver.core.dao.CategoryDao;
@@ -40,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
     private static final long LOCAL_CACHE_LIFE_TIME = 1000*60*30;
     private final Cache<Integer,Category> categoryCache = CacheFactory.createCache("category.cache", LOCAL_CACHE_LIFE_TIME);
     private ConcurrentHashMap</*cell*/String,ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("category-changed-"));
 
     public void setCategoryDao(CategoryDao categoryDao) {
         this.categoryDao = categoryDao;
@@ -51,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
     }
 
     public void start(){
-        this.scheduler.scheduleAtFixedRate(new CategoryWorker(),60*1000,3*60*1000, TimeUnit.MILLISECONDS);
+        this.scheduler.scheduleAtFixedRate(new CategoryWorker(),0,3*60*1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -95,7 +96,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                 resourceList.add(temp.getResource());
             }
         }
-        if (null != resourceList && !resourceList.isEmpty()) {
+        if (!resourceList.isEmpty()) {
             return resourceList;
         } else {
             List<String> resources = categoryDao.getResources(cell);
@@ -113,7 +114,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                 typeList.add(temp.getType());
             }
         }
-        if (null != typeList && !typeList.isEmpty()) {
+        if (!typeList.isEmpty()) {
             return typeList;
         } else {
             List<String> types = categoryDao.getTypes(cell, resource);
@@ -150,12 +151,10 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
             return category;
         }
 
-        if (null == category ) {
-            category = this.categoryDao.getCategory(cell, resource, type);
-            ConfigServerLogger.warn(String.format("getCategory of cell=%s,resource=%s,type=%s from database. result is %s ", cell, resource, type,category));
-            if (null != category && Category.EMPTY_MESSAGE != category) {
-                this.categoryCache.put(category.getId(), category);
-            }
+        category = this.categoryDao.getCategory(cell, resource, type);
+        ConfigServerLogger.warn(String.format("getCategory of cell=%s,resource=%s,type=%s from database. result is %s ", cell, resource, type, category));
+        if (null != category && Category.EMPTY_MESSAGE != category) {
+            this.categoryCache.put(category.getId(), category);
         }
         return category;
     }
@@ -221,8 +220,9 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
 
     /**
      * update the category cache
-     * @param category
+     * @param category the category that will be update to cache
      */
+    @SuppressWarnings("unchecked")
     private void updateCategoryCache(Category category){
         ConcurrentHashSet set = this.categoryMap.get(category.getCell());
         if (null == set) {
@@ -235,6 +235,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
 
     class CategoryWorker implements  Runnable{
         @Override
+        @SuppressWarnings("unchecked")
         public void run() {
             try{
                 List<Category> categories = getAllCategory();
@@ -242,17 +243,20 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                         categories ==null?0: categories.size(),categories));
                 if(null != categories && !categories.isEmpty()){
                     for(Category category : categories){
+                        //update the categoryCache period
+                        categoryCache.put(category.getId(), category);
+                        //check whether has new resource of the cell
                         ConcurrentHashSet set = categoryMap.get(category.getCell());
                         if (null == set) {
                             categoryMap.putIfAbsent(category.getCell(), new ConcurrentHashSet<String>());
                             set = categoryMap.get(category.getCell());
                         }
                         if (!set.contains(category.getResource())) {
-                            ConfigServerLogger.warn(String.format("the cell %s has new resource %s",category.getCell(),category.getResource()));
+                            ConfigServerLogger.warn(String.format("the cell %s has new resource %s", category.getCell(), category.getResource()));
                             //notify
                             Event event = new Event();
                             event.setEventType(EventType.CATEGORY_CHANGED);
-                            event.setEventSource(Constants.PATH_SEPARATOR + category.getCell());
+                            event.setEventSource(category);
                             event.setEventCreatedTime(System.currentTimeMillis());
                             notifyService.publish(event);
                         }

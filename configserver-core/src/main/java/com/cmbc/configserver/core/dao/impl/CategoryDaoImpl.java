@@ -23,13 +23,13 @@ import java.util.List;
 @Service("categoryDao")
 public class CategoryDaoImpl implements CategoryDao {
     private final static String SQL_CATEGORY_INSERT = "insert into config_category(cell,resource,type) values(?,?,?)";
-    private static String SQL_CATEGORY_UPDATE = "update config_category set cell=?,resource=?,type=? where id=?";
-    private static String SQL_CATEGORY_DELETE = "delete from config_category where id=?";
-    private static String SQL_CATEGORY_QUERY_ALL = "select * from config_category";
-    private static String SQL_CATEGORY_QUERY_RESOURCE = "select distinct resource from config_category where cell =?";
-    private static String SQL_CATEGORY_QUERY_TYPE = "select * from config_category where cell =? and resource=?";
-    private static String SQL_CATEGORY_QUERY_ID = "select * from config_category where id=?";
-    private static String SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE = "select * from config_category where cell =? and resource=? and type=?";
+    private final static String SQL_CATEGORY_UPDATE = "update config_category set cell=?,resource=?,type=? where id=?";
+    private final static String SQL_CATEGORY_DELETE = "delete from config_category where id=?";
+    private final static String SQL_CATEGORY_QUERY_ALL = "select * from config_category";
+    private final static String SQL_CATEGORY_QUERY_RESOURCE = "select distinct resource from config_category where cell =?";
+    private final static String SQL_CATEGORY_QUERY_TYPE = "select * from config_category where cell =? and resource=?";
+    private final static String SQL_CATEGORY_QUERY_ID = "select * from config_category where id=?";
+    private final static String SQL_CATEGORY_QUERY_CELL_RESOURCE_TYPE = "select * from config_category where cell =? and resource=? and type=?";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -97,8 +97,7 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public List<Category> getAllCategory() throws Exception {
         try {
-            List<Category> categories = this.jdbcTemplate.query(SQL_CATEGORY_QUERY_ALL, new CategoryRowMapper());
-            return categories;
+            return this.jdbcTemplate.query(SQL_CATEGORY_QUERY_ALL, new CategoryRowMapper());
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("getAllCategory failed. Details is "), ex);
             throw ex;
@@ -109,8 +108,7 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public List<String> getResources(String cell) throws Exception {
         try {
-            List<String> resources = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_RESOURCE, new Object[]{cell},String.class);
-            return resources;
+            return  this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_RESOURCE, new Object[]{cell},String.class);
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("getResources of ").append(cell).append("failed. Details is "), ex);
             throw ex;
@@ -121,8 +119,7 @@ public class CategoryDaoImpl implements CategoryDao {
     @SuppressWarnings({"unchecked"})
     public List<String> getTypes(String cell, String resource) throws Exception {
         try {
-            List<String> types = this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_TYPE, new Object[]{cell, resource});
-            return types;
+            return this.jdbcTemplate.queryForList(SQL_CATEGORY_QUERY_TYPE, new Object[]{cell, resource});
         } catch (Exception ex) {
             ConfigServerLogger.error(new StringBuilder(128).append("getTypes of cell=").append(cell).append(",resource=").append(resource).append("failed. Details is "), ex);
             throw ex;
@@ -202,11 +199,12 @@ public class CategoryDaoImpl implements CategoryDao {
             }
             sqlBuilder.append(")");
         }
+        String sql = sqlBuilder.toString();
         try {
-            return (List<Category>) this.jdbcTemplate.query(sqlBuilder.toString(), categoryIds, new CategoryRowMapper());
+            return (List<Category>) this.jdbcTemplate.query(sql, categoryIds, new CategoryRowMapper());
         } catch (Exception ex) {
-            ConfigServerLogger.error(new StringBuilder(128).append("get category by ids=")
-                    .append(categoryIds).append("failed. Details is "), ex);
+            ConfigServerLogger.error(new StringBuilder(128).append("get category for sql {")
+                    .append(sql).append("} failed. Details is "), ex);
             throw ex;
         }
     }

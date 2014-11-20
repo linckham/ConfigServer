@@ -4,11 +4,11 @@ import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.service.ConfigServerService;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
+import com.cmbc.configserver.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * the controller of config server.It is the core class of the configserver-core project
@@ -54,7 +54,10 @@ public class ConfigServerController {
      * @return true if the controller initialize successfully,else false.
      */
     public boolean initialize() {
-        this.remoteExecutor = Executors.newFixedThreadPool(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), new ThreadFactoryImpl("ConfigServerExecutorThread_"));
+        //limit the max queue size of the thread pool
+        this.remoteExecutor = new ThreadPoolExecutor(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(),
+                this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), 0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM), new ThreadFactoryImpl("ConfigServerExecutorThread-"));
         this.configNettyServer.initialize(this);
         this.registerProcessor();
         return true;

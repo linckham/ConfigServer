@@ -29,7 +29,7 @@ class ArgTypePreparedStatementSetter implements PreparedStatementSetter, Paramet
 	}
 
 	public void setValues(PreparedStatement ps) throws SQLException {
-		int argIndx = 1;
+		int argumentIndex = 1;
 		if (this.args != null) {
 			for (int i = 0; i < this.args.length; i++) {
 				Object arg = this.args[i];
@@ -41,16 +41,16 @@ class ArgTypePreparedStatementSetter implements PreparedStatementSetter, Paramet
 							Object[] valueArray = ((Object[])entry);
 							for (int k = 0; k < valueArray.length; k++) {
 								Object argValue = valueArray[k];
-								StatementCreatorUtils.setParameterValue(ps, argIndx++, this.argTypes[i], argValue);
+								StatementCreatorUtils.setParameterValue(ps, argumentIndex++, this.argTypes[i], argValue);
 							}
 						}
 						else {
-							StatementCreatorUtils.setParameterValue(ps, argIndx++, this.argTypes[i], entry);
+							StatementCreatorUtils.setParameterValue(ps, argumentIndex++, this.argTypes[i], entry);
 						}
 					}
 				}
 				else {
-					StatementCreatorUtils.setParameterValue(ps, argIndx++, this.argTypes[i], arg);
+					StatementCreatorUtils.setParameterValue(ps, argumentIndex++, this.argTypes[i], arg);
 				}
 			}
 		}

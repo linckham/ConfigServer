@@ -1,5 +1,6 @@
 package com.cmbc.configserver.core.notify;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.service.ConfigChangeLogService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * the notify service uses to manage the change of config_change_log.<br/>
@@ -27,7 +29,7 @@ public class ConfigChangedNotifyService {
     private Map</*path*/String,/*md5*/Long> pathMd5Cache = new ConcurrentHashMap<String, Long>(Constants.DEFAULT_INITIAL_CAPACITY);
     private ConcurrentHashMap</*cell*/String,ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
     private volatile boolean stop = true;
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2,new ThreadFactoryImpl("change-log-notify-"));
     @Autowired
     private ConfigChangeLogService configChangeLogService;
     @Autowired
@@ -58,45 +60,47 @@ public class ConfigChangedNotifyService {
 
     /**
      * update the path's md5
-     * @param path
-     * @param last_modified_time
      */
     public void updatePathMd5Cache(String path,Long last_modified_time){
         this.pathMd5Cache.put(path,last_modified_time);
     }
 
     private List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
-        //TODO: get the categories from local JVM cache
         return this.configChangeLogService.getAllConfigChangeLogs();
     }
 
     class ChangedWorker implements Runnable {
+        private AtomicLong loadingTimes = new AtomicLong(0);
         @Override
         public void run() {
             while (!stop && !Thread.interrupted()) {
                 try {
                     List<ConfigChangeLog> changeLogList = getAllConfigChangeLogs();
-                    ConfigServerLogger.info(String.format("ChangedWorker getAllConfigChangeLogs from database. size = %s, changeLogs = %s",
-                            changeLogList ==null?0: changeLogList.size(),changeLogList));
+                    long times = loadingTimes.incrementAndGet();
+                    //reduce the statistics log
+                    if (times % 64 == 1) {
+                        ConfigServerLogger.info(String.format("ChangedWorker getAllConfigChangeLogs from database. size = %s, changeLogs = %s",
+                                changeLogList == null ? 0 : changeLogList.size(), changeLogList));
+                    }
+                    if (times >= Long.MAX_VALUE) {
+                        loadingTimes.set(0);
+                    }
+
                     if (null != changeLogList && !changeLogList.isEmpty()) {
                         for (ConfigChangeLog changeLog : changeLogList) {
                             //the last modify time in local cache is not equals the value in database
                             //fix the bug: change log's modify time is long,and the value of path in Cache is Long,when the value is null,compare the long with
                             //null,It may be thrown the JNP exception
                             if ((pathMd5Cache.get(changeLog.getPath()) == null)||(changeLog.getLastModifiedTime() != pathMd5Cache.get(changeLog.getPath()))) {
-                                if (null != pathMd5Cache.get(changeLog.getPath())) {
-                                    //doesn't send notify event when the JVM is just starting
-                                    //send a event to NotifyService
-                                    ConfigServerLogger.warn(String.format("the path %s has changed,last_modified_time is %s",
-                                            changeLog.getPath(),changeLog.getLastModifiedTime()));
-                                    Event event = new Event();
-                                    event.setEventType(EventType.PATH_DATA_CHANGED);
-                                    event.setEventSource(changeLog.getPath());
-                                    event.setEventCreatedTime(System.currentTimeMillis());
-                                    ConfigChangedNotifyService.this.notifyService.publish(event);
-                                }
-                                pathMd5Cache.put(changeLog.getPath(), changeLog.getLastModifiedTime());
+                                ConfigServerLogger.warn(String.format("the path %s has changed,last_modified_time is %s",
+                                        changeLog.getPath(), changeLog.getLastModifiedTime()));
+                                Event event = new Event();
+                                event.setEventType(EventType.PATH_DATA_CHANGED);
+                                event.setEventSource(changeLog.getPath());
+                                event.setEventCreatedTime(System.currentTimeMillis());
+                                notifyService.publish(event);
                             }
+                            pathMd5Cache.put(changeLog.getPath(), changeLog.getLastModifiedTime());
                         }
                     }
                     TimeUnit.MILLISECONDS.sleep(Constants.DEFAULT_THREAD_SLEEP_TIME);
