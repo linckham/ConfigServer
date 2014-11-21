@@ -2,6 +2,7 @@ package com.cmbc.configserver.core.notify;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.event.Event;
+import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.service.ConfigChangeLogService;
 import com.cmbc.configserver.domain.ConfigChangeLog;
@@ -27,21 +28,12 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service("configChangedNotifyService")
 public class ConfigChangedNotifyService {
     private Map</*path*/String,/*md5*/Long> pathMd5Cache = new ConcurrentHashMap<String, Long>(Constants.DEFAULT_INITIAL_CAPACITY);
-    private ConcurrentHashMap</*cell*/String,ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
     private volatile boolean stop = true;
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2,new ThreadFactoryImpl("change-log-notify-"));
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("change-log-notify-"));
     @Autowired
     private ConfigChangeLogService configChangeLogService;
     @Autowired
-    private NotifyService notifyService;
-
-    public void setNotifyService(NotifyService notifyService) {
-        this.notifyService = notifyService;
-    }
-
-    public void setConfigChangeLogService(ConfigChangeLogService configChangeLogService) {
-        this.configChangeLogService = configChangeLogService;
-    }
+    private EventService<Event> eventService;
 
     public boolean start() throws Exception {
         this.stop = false;
@@ -53,7 +45,7 @@ public class ConfigChangedNotifyService {
         this.scheduler.execute(new ChangedWorker());
     }
 
-        public void stop() {
+    public void stop() {
         this.stop = true;
         this.scheduler.shutdown();
     }
@@ -98,7 +90,7 @@ public class ConfigChangedNotifyService {
                                 event.setEventType(EventType.PATH_DATA_CHANGED);
                                 event.setEventSource(changeLog.getPath());
                                 event.setEventCreatedTime(System.currentTimeMillis());
-                                notifyService.publish(event);
+                                eventService.publish(event);
                             }
                             pathMd5Cache.put(changeLog.getPath(), changeLog.getLastModifiedTime());
                         }

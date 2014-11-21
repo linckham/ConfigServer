@@ -10,10 +10,6 @@ public class ClientConnectionListener implements ChannelEventListener{
     @Autowired
     private HeartbeatService heartbeatService;
 
-    public void setHeartbeatService(HeartbeatService heartbeatService) {
-        this.heartbeatService = heartbeatService;
-    }
-
     @Override
     public void onChannelConnect(String remoteAddress, Channel channel) {
     }

@@ -1,7 +1,18 @@
 package com.cmbc.configserver.core.heartbeat;
 
+import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.core.service.ConfigHeartBeatService;
+import com.cmbc.configserver.core.service.ConfigServerService;
+import com.cmbc.configserver.core.subscriber.SubscriberService;
+import com.cmbc.configserver.domain.ConfigHeartBeat;
+import com.cmbc.configserver.remoting.common.RemotingHelper;
+import com.cmbc.configserver.remoting.common.RemotingUtil;
+import com.cmbc.configserver.utils.ConfigServerLogger;
 import io.netty.channel.Channel;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 import java.util.List;
@@ -10,21 +21,13 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import com.cmbc.configserver.core.service.ConfigServerService;
-import com.cmbc.configserver.core.subscriber.SubscriberService;
-import com.cmbc.configserver.domain.ConfigHeartBeat;
-import com.cmbc.configserver.remoting.common.RemotingHelper;
-import com.cmbc.configserver.remoting.common.RemotingUtil;
-import com.cmbc.configserver.utils.ConfigServerLogger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 @Service("heartbeatService")
-public class HeartbeatService {
+public class HeartbeatService implements InitializingBean,DisposableBean {
 	private final Map<String/* clientId */, HeartbeatInfo> heartbeatInfoTable;
+    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("HeartBeat-Timeout-Thread-"));
+
     @Autowired
     private ConfigHeartBeatService configHeartBeatService;
     @Autowired
@@ -32,27 +35,11 @@ public class HeartbeatService {
     @Autowired
     private ConfigServerService configServerService;
 
-	private ScheduledExecutorService scheduledExecutorService = Executors
-			.newSingleThreadScheduledExecutor(new ThreadFactory() {
-				@Override
-				public Thread newThread(Runnable r) {
-					return new Thread(r, "heartbeat_timeout_scan_thread");
-				}
-			});
-
-    public void setSubscriberService(SubscriberService subscriberService) {
-		this.subscriberService = subscriberService;
-	}
-
-    public void setConfigServerService(ConfigServerService configServerService) {
-        this.configServerService = configServerService;
+    public HeartbeatService(){
+        this.heartbeatInfoTable = new ConcurrentHashMap<String, HeartbeatInfo>(256);
     }
 
-    public void setConfigHeartBeatService(ConfigHeartBeatService configHeartBeatService) {
-        this.configHeartBeatService = configHeartBeatService;
-    }
-    
-	public void start() {
+    private void start() {
         //scan timeout channel
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -68,12 +55,8 @@ public class HeartbeatService {
         }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
     }
 	
-	public void shutdown(){
+	private void shutdown(){
 		this.scheduledExecutorService.shutdown();
-	}
-	
-	public HeartbeatService(){
-		this.heartbeatInfoTable = new ConcurrentHashMap<String, HeartbeatInfo>(256);
 	}
 	
 	public void channelCreated(Channel channel){
@@ -190,4 +173,22 @@ public class HeartbeatService {
 		
 		ConfigServerLogger.info("server clear channel end:" + channel);
 	}
+
+    @Override
+    public void destroy() throws Exception {
+        shutdown();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        start();
+    }
+
+    public void setSubscriberService(SubscriberService subscriberService) {
+        this.subscriberService = subscriberService;
+    }
+
+    public void setConfigServerService(ConfigServerService configServerService) {
+        this.configServerService = configServerService;
+    }
 }

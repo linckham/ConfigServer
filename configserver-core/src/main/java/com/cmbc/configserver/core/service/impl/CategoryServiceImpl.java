@@ -5,8 +5,8 @@ import com.cmbc.configserver.common.cache.local.Cache;
 import com.cmbc.configserver.common.cache.local.CacheFactory;
 import com.cmbc.configserver.core.dao.CategoryDao;
 import com.cmbc.configserver.core.event.Event;
+import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
-import com.cmbc.configserver.core.notify.NotifyService;
 import com.cmbc.configserver.core.service.CategoryService;
 import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
@@ -33,23 +33,15 @@ import java.util.concurrent.TimeUnit;
  */
 @Service("categoryService")
 public class CategoryServiceImpl implements CategoryService, InitializingBean, DisposableBean {
+    private static final long LOCAL_CACHE_LIFE_TIME = 1000 * 60 * 30;
+    private final Cache<Integer, Category> categoryCache = CacheFactory.createCache("category.cache", LOCAL_CACHE_LIFE_TIME);
+    private ConcurrentHashMap</*cell*/String, ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, new ThreadFactoryImpl("category-changed-"));
+
     @Autowired
     private CategoryDao categoryDao;
     @Autowired
-    private NotifyService notifyService;
-
-    private static final long LOCAL_CACHE_LIFE_TIME = 1000*60*30;
-    private final Cache<Integer,Category> categoryCache = CacheFactory.createCache("category.cache", LOCAL_CACHE_LIFE_TIME);
-    private ConcurrentHashMap</*cell*/String,ConcurrentHashSet<String>> categoryMap = new ConcurrentHashMap<String, ConcurrentHashSet<String>>(Constants.DEFAULT_INITIAL_CAPACITY);
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("category-changed-"));
-
-    public void setCategoryDao(CategoryDao categoryDao) {
-        this.categoryDao = categoryDao;
-    }
-
-    public void setNotifyService(NotifyService notifyService) {
-        this.notifyService = notifyService;
-    }
+    private EventService<Event> eventService;
 
     public void start(){
         this.scheduler.scheduleAtFixedRate(new CategoryWorker(),0,3*60*1000, TimeUnit.MILLISECONDS);
@@ -258,7 +250,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                             event.setEventType(EventType.CATEGORY_CHANGED);
                             event.setEventSource(category);
                             event.setEventCreatedTime(System.currentTimeMillis());
-                            notifyService.publish(event);
+                            eventService.publish(event);
                         }
                         set.add(category.getResource());
                     }

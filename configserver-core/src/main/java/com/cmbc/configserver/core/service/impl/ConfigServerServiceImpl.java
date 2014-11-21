@@ -1,6 +1,7 @@
 package com.cmbc.configserver.core.service.impl;
 
 import com.cmbc.configserver.core.event.Event;
+import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.notify.ConfigChangedNotifyService;
 import com.cmbc.configserver.core.notify.NotifyService;
@@ -33,7 +34,7 @@ import java.util.List;
 @Service("configServerService")
 public class ConfigServerServiceImpl implements ConfigServerService {
     @Autowired
-    private NotifyService notifyService;
+    private EventService<Event> eventService;
     @Autowired
     private CategoryService categoryService;
     @Autowired
@@ -44,30 +45,6 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     private ConfigChangedNotifyService configChangedNotifyService;
     @Autowired
     private SubscriberService subscriberService;
-
-    public void setSubscriberService(SubscriberService subscriberService) {
-        this.subscriberService = subscriberService;
-    }
-
-    public void setCategoryService(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
-    public void setConfigDetailsService(ConfigDetailsService configDetailsService) {
-        this.configDetailsService = configDetailsService;
-    }
-
-    public void setConfigChangeLogService(ConfigChangeLogService configChangeLogService) {
-        this.configChangeLogService = configChangeLogService;
-    }
-
-    public void setConfigChangedNotifyService(ConfigChangedNotifyService configChangedNotifyService) {
-        this.configChangedNotifyService = configChangedNotifyService;
-    }
-
-    public void setNotifyService(NotifyService notifyService) {
-        this.notifyService = notifyService;
-    }
 
     /**
      * publish the configuration to the config server
@@ -92,7 +69,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             event.setEventType(EventType.CATEGORY_CHANGED);
             event.setEventSource(category);
             event.setEventCreatedTime(System.currentTimeMillis());
-            this.notifyService.publish(event);
+            eventService.publish(event);
         }
 
         config.setCategoryId(category.getId());
@@ -110,7 +87,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             event.setEventType(EventType.PUBLISH);
             event.setEventSource(config);
             event.setEventCreatedTime(System.currentTimeMillis());
-            this.notifyService.publish(event);
+            eventService.publish(event);
         }
         return bSuccess;
     }
@@ -139,7 +116,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             event.setEventType(EventType.UN_PUBLISH);
             event.setEventSource(config);
             event.setEventCreatedTime(System.currentTimeMillis());
-            this.notifyService.publish(event);
+            eventService.publish(event);
         }
         return bDelConfig;
     }
@@ -168,16 +145,6 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     public boolean unSubscribe(Configuration config, Channel channel) throws Exception {
         validConfiguration(config);
         return this.subscriberService.unSubcribe(PathUtils.getSubscriberPath(config), channel);
-    }
-
-    @Override
-    public void start() throws Exception {
-        this.notifyService.start();
-    }
-
-    @Override
-    public void shutdown() {
-        this.notifyService.stop();
     }
 
     private void validConfiguration(Configuration config) throws Exception {
@@ -226,7 +193,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             event.setEventType(EventType.PATH_DATA_CHANGED);
             event.setEventSource(path);
             event.setEventCreatedTime(System.currentTimeMillis());
-            this.notifyService.publish(event);
+            eventService.publish(event);
         }
         return true;
     }

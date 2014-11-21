@@ -4,6 +4,7 @@ import com.cmbc.configserver.common.RemotingSerializable;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.common.protocol.RequestCode;
 import com.cmbc.configserver.core.event.Event;
+import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.heartbeat.HeartbeatService;
 import com.cmbc.configserver.core.server.ConfigNettyServer;
@@ -18,6 +19,8 @@ import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
 import io.netty.channel.Channel;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +38,8 @@ import java.util.concurrent.*;
  * @Time 11:12
  */
 @Service("notifyService")
-public class NotifyService {
+public class NotifyService implements InitializingBean,DisposableBean {
     private static final int MAX_DELAY_TIME = 3 * 60 * 1000;
-    private LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>(Constants.DEFAULT_MAX_QUEUE_ITEM);
     private volatile boolean stop = true;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("event-dispatcher-"));
     /**
@@ -58,29 +60,11 @@ public class NotifyService {
     private SubscriberService subscriberService;
     @Autowired
     private CategoryService categoryService;
-
-    public void setCategoryService(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
-    public void setSubscriberService(SubscriberService subscriberService) {
-        this.subscriberService = subscriberService;
-    }
-
-    public void setHeartbeatService(HeartbeatService heartbeatService) {
-		this.heartbeatService = heartbeatService;
-	}
+    @Autowired
+    private EventService<Event> eventService;
 
     public ConfigNettyServer getConfigNettyServer() {
         return configNettyServer;
-    }
-
-    public void setConfigNettyServer(ConfigNettyServer configNettyServer) {
-        this.configNettyServer = configNettyServer;
-    }
-
-    public void setConfigServerService(ConfigServerService configServerService) {
-        this.configServerService = configServerService;
     }
 
     private void initialize() {
@@ -108,13 +92,14 @@ public class NotifyService {
         ConfigServerLogger.info("NotifyService has been stopped!");
     }
 
-    /**
-     * publish the event to queue
-     *
-     * @param event
-     */
-    public void publish(Event event) {
-        this.eventQueue.offer(event);
+    @Override
+    public void destroy() throws Exception {
+        stop();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        start();
     }
 
     private void onConfigChanged(Event event) {
@@ -248,7 +233,7 @@ public class NotifyService {
         public void run() {
             while (!stop && !Thread.interrupted()) {
                 try {
-                    Event event = eventQueue.poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    Event event = NotifyService.this.eventService.getQueue().poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (null != event) {
                         long delayTime = System.currentTimeMillis() - event.getEventCreatedTime();
                         if (delayTime <= MAX_DELAY_TIME) {

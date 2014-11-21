@@ -45,10 +45,6 @@ public interface ConfigServerService {
      * @return true if unSubscribed successfully,else false
      */
     public boolean unSubscribe(Configuration config,Channel channel) throws Exception;
-
-    public void start() throws Exception;
-    public void shutdown();
-
     /**
      * delete the configuration list by the specified client id
      * @param clientId the client id which the configuration items belongs to

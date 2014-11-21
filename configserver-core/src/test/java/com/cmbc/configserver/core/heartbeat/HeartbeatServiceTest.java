@@ -25,8 +25,6 @@ public class HeartbeatServiceTest {
         clientId = RemotingHelper.getChannelId(MockUtils.mockChannel());
         heartbeatService.setConfigServerService(MockUtils.mockConfigServerService());
         heartbeatService.setSubscriberService(new SubscriberService());
-
-        heartbeatService.start();
     }
 
     @Test

@@ -1,7 +1,13 @@
+|---------------------------------------------------------------------------------------------------------
+|该文件记录当前所要做的任务,并定期检查是否完成，标记相应的进度情况
+|---------------------------------------------------------------------------------------------------------
+
 1.现有代码里面的TODO list进行填补和完善
   1.1 除去changeLogNotifyService,NettyRemotingAbstract两个类没有完成TODO修复之外，其他的TODO都已经修理完毕
+
 2.现有版本的BUG修复,每次修复一个BUG需要记录BUG的详细信息
    BUG描述 BUG产生的原因 BUG是否修复
+
 3.系统尚未完成的辅助功能
   3.1 通信协议的序列化和反序列化,压缩解压功能 (已经完成)
   3.2 发布者调用取消发布配置信息时，如何唯一确定哪条记录需要删除
@@ -15,6 +21,10 @@
   3.5 服务端添加最大连接数限制功能 (已完成)
   3.6 路由，动态配置信息与发布者消费者的信息需要区分，是否持久化存储(类似zookeeper的临时节点和永久节点)
   3.7 检查所有的线程池,线程是否设置了线程名称
+  3.8 检查所有的线程池是否正确配置了最大的任务队列数
+  3.9 定时统计所有的线程池任务数(已经提交的任务，当前正在活动的任务数量,总共提交的任务数,队列堆积数)
+  3.10 事件消息和变更消息模块拆分
+
 4.单元测试,功能测试代码编写
   4.1 通过测试用例发现系统潜在问题
   4.2 提高系统的单元测试覆盖率
@@ -23,11 +33,13 @@
     b)压力测试
     c)负载测试
     d)性能指标数据（TPS Response time, push delay,JVM STW time,frequency）
+
 5.ConfigServer系统整体设计Review和功能Review
   5,1 数据库表设计合理性检查
     a)config_change_log表的path字段需要增加唯一性检查，避免插入了重复的path
     b)config_category的<cell,resource,type>需要进行唯一性检查,避免插入了相同的cell resource type
     c)
+
 6.ConfigServer与Dubbo集成
   6.1 完成dubbo-registry-configserver模块代码开发(已经完成)
   6.2 实现dubbo-demo工程正确运行(已经完成)
@@ -35,6 +47,8 @@
     b)consumer从config server获取配置
     c)provider-consumer正确通信
   6.3 dubbo-admin工程改造
-   a) 完成dubbo-admin订阅root根目录的功能，正确的推送root的resource变更
-  6,4 dubbo已经迁移到github上
+   a) 完成dubbo-admin订阅root根目录的功能，正确的推送root的resource变更(已经完成)
+  6.4 dubbo已经迁移到github上
+  6.5 dubbo-admin工程熟悉和掌握
+  
 7.configserver-web工程功能规划和代码开发
