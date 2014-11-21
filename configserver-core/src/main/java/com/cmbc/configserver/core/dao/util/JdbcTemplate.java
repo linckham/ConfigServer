@@ -36,11 +36,9 @@ public class JdbcTemplate extends JdbcAccessor{
 	private List<DataSource> dataSourceSlaves = new ArrayList<DataSource>();
 	private int readTryGetConCount = 3;
 	private int writeTryGetConCount = 3;
-	private int resource;
-	private int port;
 	private long dbFireTimeout = 500;
 	
-	private Map<DataSource, SQLExceptionTranslator> exceptionTranslators = new ConcurrentHashMap<DataSource, SQLExceptionTranslator>();
+	private final Map<DataSource, SQLExceptionTranslator> exceptionTranslators = new ConcurrentHashMap<DataSource, SQLExceptionTranslator>();
 	
 	private Random random = new Random();
 	public DataSource getDataSource() {
@@ -48,10 +46,6 @@ public class JdbcTemplate extends JdbcAccessor{
 	}
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
-	}
-
-	public int getPort() {
-		return port;
 	}
 
 	public void setDataSourceSlaves(List<DataSource> dataSourceSlaves) {
@@ -76,8 +70,7 @@ public class JdbcTemplate extends JdbcAccessor{
 	}
 	
 	public DataSource getDataSource(boolean isWrite) {
-		DataSource ds = getDataSource1(isWrite);
-		return ds;
+		return getDataSource1(isWrite);
 	}
 
 	public long getDbFireTimeout() {
@@ -443,7 +436,7 @@ public class JdbcTemplate extends JdbcAccessor{
 				con = DataSourceUtils.getConnection(ds);
 				return con;
 			} catch (CannotGetJdbcConnectionException e) {
-                ConfigServerLogger.info(new StringBuilder(64).append("get connection try count:").append((retryCount - count)).append(", ds=").append("jdbcurl,time:"+(System.currentTimeMillis()-start)));
+                ConfigServerLogger.info(new StringBuilder(64).append("get connection try count:").append((retryCount - count)).append(", ds= jdbcurl,time:").append(System.currentTimeMillis()-start));
 				DataSourceUtils.releaseConnection(con, ds);
 			}
 		}
@@ -534,13 +527,13 @@ public class JdbcTemplate extends JdbcAccessor{
 				if (ConfigServerLogger.isTraceEnabled()) {
                     ConfigServerLogger.trace(new StringBuilder(64).append("SQL update affected ").append(rows).append(" rows").toString());
 				}
-				return new Integer(rows);
+				return rows;
 			}
 			public String getSql() {
 				return sql;
 			}
 		}
-		return ((Integer) execute(new UpdateStatementCallback(), true)).intValue();
+		return (Integer) execute(new UpdateStatementCallback(), true);
 	}
 
 	public int[] batchUpdate(final String[] sql) throws DataAccessException {
@@ -601,9 +594,7 @@ public class JdbcTemplate extends JdbcAccessor{
 		}
 		Connection con = null;
 		PreparedStatement ps = null;
-		boolean sussess = false;
 		try {
-			//finally里的日志统计应包含所有请求，而不只是获取到connection的请求
 			con = safeGetConnection(ds, isWrite);
 			Connection conToUse = con;
 			if (this.nativeJdbcExtractor != null &&
@@ -618,7 +609,6 @@ public class JdbcTemplate extends JdbcAccessor{
 			}
 			Object result = action.doInPreparedStatement(psToUse);
 			handleWarnings(ps);
-			sussess = true;
 			return result;
 		}catch(CannotGetJdbcConnectionException e){
 			throw e;
@@ -825,9 +815,9 @@ public class JdbcTemplate extends JdbcAccessor{
 
 		if(ConfigServerLogger.isTraceEnabled()){
             ConfigServerLogger.trace("Executing prepared SQL update");
-		}		
+		}
 
-		Integer result = (Integer) execute(psc, new PreparedStatementCallback() {
+        return (Integer) execute(psc, new PreparedStatementCallback() {
 			public Object doInPreparedStatement(PreparedStatement ps) throws SQLException {
 				try {
 					if (pss != null) {
@@ -837,7 +827,7 @@ public class JdbcTemplate extends JdbcAccessor{
 					if (ConfigServerLogger.isTraceEnabled()) {
                         ConfigServerLogger.trace("SQL update affected " + rows + " rows");
 					}
-					return new Integer(rows);
+					return rows;
 				}
 				finally {
 					if (pss instanceof ParameterDisposer) {
@@ -846,7 +836,6 @@ public class JdbcTemplate extends JdbcAccessor{
 				}
 			}
 		}, true);
-		return result.intValue();
 	}
 
 	public int update(PreparedStatementCreator psc) throws DataAccessException {
@@ -861,7 +850,7 @@ public class JdbcTemplate extends JdbcAccessor{
             ConfigServerLogger.trace("Executing SQL update and returning generated keys");
 		}		
 
-		Integer result = (Integer) execute(psc, new PreparedStatementCallback() {
+		return (Integer) execute(psc, new PreparedStatementCallback() {
 			public Object doInPreparedStatement(PreparedStatement ps) throws SQLException {
 				int rows = ps.executeUpdate();
 				List generatedKeys = generatedKeyHolder.getKeyList();
@@ -880,10 +869,9 @@ public class JdbcTemplate extends JdbcAccessor{
 				if (ConfigServerLogger.isTraceEnabled()) {
                     ConfigServerLogger.trace("SQL update affected " + rows + " rows and returned " + generatedKeys.size() + " keys");
 				}
-				return new Integer(rows);
+				return rows;
 			}
 		}, true);
-		return result.intValue();
 	}
 
 	public int update(String sql, PreparedStatementSetter pss) throws DataAccessException {
@@ -927,11 +915,11 @@ public class JdbcTemplate extends JdbcAccessor{
 							if (ipss != null && ipss.isBatchExhausted(i)) {
 								break;
 							}
-							rowsAffected.add(new Integer(ps.executeUpdate()));
+							rowsAffected.add(ps.executeUpdate());
 						}
 						int[] rowsAffectedArray = new int[rowsAffected.size()];
 						for (int i = 0; i < rowsAffectedArray.length; i++) {
-							rowsAffectedArray[i] = ((Integer) rowsAffected.get(i)).intValue();
+							rowsAffectedArray[i] = (Integer) rowsAffected.get(i);
 						}
 						return rowsAffectedArray;
 					}
@@ -960,14 +948,12 @@ public class JdbcTemplate extends JdbcAccessor{
             ConfigServerLogger.trace("Calling stored procedure" + (sql != null ? " [" + sql  + "]" : ""));
 		}
 
-		long start = System.currentTimeMillis();
 		DataSource ds = getDataSource(isWrite);
 		if(ds == null){
 			return null;
 		}
 		Connection con = null;
 		CallableStatement cs = null;
-		boolean sussess = false;
 		try {
 			con = safeGetConnection(ds, isWrite);
 			Connection conToUse = con;
@@ -982,7 +968,6 @@ public class JdbcTemplate extends JdbcAccessor{
 			}
 			Object result = action.doInCallableStatement(csToUse);
 			handleWarnings(cs);
-			sussess = true;
 			return result;
 		}catch(CannotGetJdbcConnectionException e){
 			throw e;
@@ -1006,9 +991,6 @@ public class JdbcTemplate extends JdbcAccessor{
 			}
 		}
 		finally {
-		    long end = System.currentTimeMillis();
-            long useTime = end -start;
-
 			if (csc instanceof ParameterDisposer) {
 				((ParameterDisposer) csc).cleanupParameters();
 			}
@@ -1240,7 +1222,7 @@ public class JdbcTemplate extends JdbcAccessor{
 			}
 			else if (method.getName().equals("hashCode")) {
 				// Use hashCode of PersistenceManager proxy.
-				return new Integer(System.identityHashCode(proxy));
+				return System.identityHashCode(proxy);
 			}
 			else if (method.getName().equals("close")) {
 				// Handle close method: suppress, not valid.

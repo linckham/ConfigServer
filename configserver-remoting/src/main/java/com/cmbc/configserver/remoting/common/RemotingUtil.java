@@ -3,24 +3,17 @@ package com.cmbc.configserver.remoting.common;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RemotingUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemotingUtil.class);
@@ -144,9 +137,7 @@ public class RemotingUtil {
 	 */
 	public static SocketAddress string2SocketAddress(final String addr) {
 		String[] s = addr.split(":");
-		InetSocketAddress isa = new InetSocketAddress(s[0],
-				Integer.valueOf(s[1]));
-		return isa;
+		return new InetSocketAddress(s[0],Integer.valueOf(s[1]));
 	}
 
 	public static String socketAddress2String(final SocketAddress addr) {

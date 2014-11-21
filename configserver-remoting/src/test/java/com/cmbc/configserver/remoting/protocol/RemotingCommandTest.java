@@ -74,7 +74,7 @@ public class RemotingCommandTest {
         packetBuffer.flip();
         //decode the ByteBuffer
         try {
-            RemotingCommand decodeCommand = RemotingCommand.decode(packetBuffer);
+            RemotingCommand.decode(packetBuffer);
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("request/response command magic code is invalid"));
             System.out.println(e.getMessage());

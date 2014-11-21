@@ -1,6 +1,7 @@
 package com.cmbc.configserver.client.impl;
 
 import com.cmbc.configserver.common.ThreadFactoryImpl;
+import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.utils.*;
 import io.netty.channel.Channel;
 
@@ -30,7 +31,6 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 public class ConfigClientImpl implements ConfigClient {
 	private static final Logger logger = LoggerFactory.getLogger(ConfigClientImpl.class);
 	private NettyRemotingClient remotingClient;
-	private ClientRemotingProcessor clientRemotingProcessor;
 	private ExecutorService publicExecutor;
 	public Map<String,Set<ResourceListener>> subscribeMap = new ConcurrentHashMap<String,Set<ResourceListener>>();
 	private final Lock subscribeMapLock = new ReentrantLock();
@@ -67,7 +67,7 @@ public class ConfigClientImpl implements ConfigClient {
                 throw new RuntimeException(String.format("config server address file %s doesn't exists, please check it.", serverAddressFile));
             }
         }
-        this.clientRemotingProcessor = new ClientRemotingProcessor(this);
+        RequestProcessor clientRemotingProcessor = new ClientRemotingProcessor(this);
 		remotingClient.registerProcessor(RequestCode.NOTIFY_CONFIG, clientRemotingProcessor, null);
 		//start client
         remotingClient.start();
@@ -198,7 +198,7 @@ public class ConfigClientImpl implements ConfigClient {
 								throw new Exception();
 							} else {
 								if(response.getBody() != null){
-									Notify notify = RemotingSerializable.decode(response.getBody(),Notify.class);;
+									Notify notify = RemotingSerializable.decode(response.getBody(),Notify.class);
 									notifyCache.put(subKey,notify);
 									listeners.add(listener);
                                     return notify.getConfigLists();
@@ -256,7 +256,7 @@ public class ConfigClientImpl implements ConfigClient {
             return;
 		}
 		
-		listeners.remove(listeners);
+		listeners.remove(listener);
 		
 		if(listeners.size() == 0){
 			try {

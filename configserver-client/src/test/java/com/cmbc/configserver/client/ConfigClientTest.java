@@ -5,7 +5,6 @@ import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.netty.NettyClientConfig;
 import com.cmbc.configserver.utils.PathUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,11 +20,10 @@ import java.util.List;
  */
 public class ConfigClientTest {
     private ConfigClient configClient;
-    private NettyClientConfig nettyClientConfig;
 
     @Before
     public void initialize() throws InterruptedException {
-        nettyClientConfig = new NettyClientConfig();
+        NettyClientConfig nettyClientConfig = new NettyClientConfig();
         List<String> configServerAddress = new ArrayList<String>(1);
         configServerAddress.add("127.0.0.1:19999");
         this.configClient = new ConfigClientImpl(nettyClientConfig, configServerAddress, null);
@@ -35,7 +33,7 @@ public class ConfigClientTest {
     @Test
     public void testPublish() {
         Configuration config = new Configuration();
-        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}").toString();
+        String content = "{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}";
         config.setContent(content);
         config.setCell("test-cell");
         config.setResource("test-message-queue");
@@ -48,7 +46,7 @@ public class ConfigClientTest {
     @Test
     public void testPubSub() {
         Configuration config = new Configuration();
-        String content = new StringBuilder(128).append("{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}").toString();
+        String content = "{\"ip\":\"127.0.0.1\",\"port\":21881,\"meta\":\"just for test\"}";
         config.setContent(content);
 
         config.setCell("test-cell");

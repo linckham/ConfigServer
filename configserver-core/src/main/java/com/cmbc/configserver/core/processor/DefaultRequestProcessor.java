@@ -70,19 +70,24 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            //valid the client id
-            if(null == config.getClientId() || config.getClientId().isEmpty()){
-                config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
-            }
+            if(null != config) {
+                //valid the client id
+                if (null == config.getClientId() || config.getClientId().isEmpty()) {
+                    config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
+                }
 
-            //validate channel
-            if(ctx.channel() != null && ctx.channel().isActive()){
-            	this.configServerService.publish(config);
-                code = ResponseCode.PUBLISH_CONFIG_OK;
-            }else{
-            	code = ResponseCode.PUBLISH_CONFIG_FAILED;
+                //validate channel
+                if (ctx.channel() != null && ctx.channel().isActive()) {
+                    this.configServerService.publish(config);
+                    code = ResponseCode.PUBLISH_CONFIG_OK;
+                } else {
+                    code = ResponseCode.PUBLISH_CONFIG_FAILED;
+                }
             }
-            
+            else{
+                code = ResponseCode.PUBLISH_CONFIG_FAILED;
+                responseBody = "configuration is null or empty!";
+            }
         } catch (Exception e) {
             code = ResponseCode.PUBLISH_CONFIG_FAILED;
             responseBody = e.getMessage();
@@ -98,13 +103,17 @@ public class DefaultRequestProcessor implements RequestProcessor {
             if (null != request.getBody()) {
                 config = Configuration.decode(request.getBody(), Configuration.class);
             }
-            //valid the client id
-            if(null == config.getClientId() || config.getClientId().isEmpty()){
-                config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
+            if (null != config) {
+                //valid the client id
+                if (null == config.getClientId() || config.getClientId().isEmpty()) {
+                    config.setClientId(RemotingHelper.getChannelId(ctx.channel()));
+                }
+                this.configServerService.unPublish(config);
+                code = ResponseCode.UNPUBLISH_CONFIG_OK;
+            } else {
+                code = ResponseCode.UNPUBLISH_CONFIG_FAILED;
+                responseBody = "configuration is null or empty!";
             }
-
-            this.configServerService.unPublish(config);
-            code = ResponseCode.UNPUBLISH_CONFIG_OK;
         } catch (Exception e) {
             code = ResponseCode.UNPUBLISH_CONFIG_FAILED;
             responseBody = e.getMessage();

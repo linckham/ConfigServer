@@ -10,5 +10,5 @@ public enum EventType {
     PUBLISH,
     UN_PUBLISH,
     PATH_DATA_CHANGED,
-    CATEGORY_CHANGED;
+    CATEGORY_CHANGED
 }

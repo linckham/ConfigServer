@@ -37,7 +37,6 @@ public class ConfigServerStartup {
                                     long consumingTime = System.currentTimeMillis() - beginTime;
                                     String tips = String.format("the shutdown action of ConfigServer cost %s ms", consumingTime);
                                     ConfigServerLogger.info(tips);
-                                    System.out.println(tips);
                                 }
                             }
                         }

@@ -82,22 +82,24 @@ public class RemotingCommand {
         int headerLengthSize = Constants.HEADER_LENGTH_BYTE_COUNT;
         
         byte[] headerData = this.buildHeader();
-        int headerLength = 0;
-        if(null != headerData){
-            headerLength = headerData.length;
+
+        if(null == headerData){
+            throw new NullPointerException("header data is null or empty!");
         }
+
+        int headerLength = headerData.length;
         //valid the header's length
         if(headerLength < Constants.HEADER_FIX_DATA_LENGTH || headerLength > Constants.MAX_PACKET_HEADER_LENGTH ){
             throw new Exception(String.format("request/response packet's header length is invalid. %s is not in [%s,%s]",headerLength,Constants.HEADER_FIX_DATA_LENGTH,Constants.MAX_PACKET_HEADER_LENGTH));
         }
 
-        ByteBuffer result = ByteBuffer.allocate(magicCodeSize + totalLengthSize + headerLengthSize + headerData.length);
+        ByteBuffer result = ByteBuffer.allocate(magicCodeSize + totalLengthSize + headerLengthSize + headerLength);
 
         //put magic code
         result.putShort(Constants.MAGIC_CODE);
         // put total length
-        int totalLength = headerData.length + bodyLength;
-        this.setHeaderLength(headerData.length);
+        int totalLength = headerLength+ bodyLength;
+        this.setHeaderLength(headerLength);
         this.setPacketLength(totalLength);
         //valid the body's length
         if (bodyLength > Constants.MAX_PACKET_LENGTH) {
@@ -106,7 +108,7 @@ public class RemotingCommand {
         result.putInt(totalLength);
 
         // put header length
-        result.putShort((short)headerData.length);
+        result.putShort((short)headerLength);
 
         // put header data
         result.put(headerData);

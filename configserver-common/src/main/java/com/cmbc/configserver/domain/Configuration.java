@@ -84,15 +84,8 @@ public class Configuration  extends RemotingSerializable{
 
         Configuration that = (Configuration) o;
 
-        if (categoryId != that.categoryId) return false;
-        if (id != that.id) return false;
-        if (!cell.equals(that.cell)) return false;
-        if (!clientId.equals(that.clientId)) return false;
-        if (!content.equals(that.content)) return false;
-        if (!resource.equals(that.resource)) return false;
-        if (!type.equals(that.type)) return false;
+        return categoryId == that.categoryId && id == that.id && cell.equals(that.cell) && clientId.equals(that.clientId) && content.equals(that.content) && resource.equals(that.resource) && type.equals(that.type);
 
-        return true;
     }
 
     @Override

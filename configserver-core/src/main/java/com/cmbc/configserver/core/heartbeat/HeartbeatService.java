@@ -155,14 +155,12 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 	}
 	
 	public void clearChannel(Channel channel){
-		ConfigServerLogger.info("server clear channel start:" + channel);
-		
-		String clientId = RemotingHelper.getChannelId(channel);
+        String clientId = RemotingHelper.getChannelId(channel);
+        ConfigServerLogger.info("server clear channel start:" + clientId);
 		heartbeatInfoTable.remove(clientId);
 		RemotingUtil.closeChannel(channel);
 		//delete subscribe
 		subscriberService.clearChannel(channel);
-		
 		try {
 			//delete configuration
             configServerService.deleteConfigurationByClientId(clientId);
@@ -170,8 +168,7 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);
 		}
-		
-		ConfigServerLogger.info("server clear channel end:" + channel);
+		ConfigServerLogger.info("server clear channel end:" + clientId);
 	}
 
     @Override

@@ -256,7 +256,6 @@ public class CacheFactory {
      * Returns basic information about the current members of the cluster or an
      * empty collection if not running in a cluster.
      *
-     * @return information about the current members of the cluster or an empty
      * collection if not running in a cluster.
      * <p/>
      * public static Collection<ClusterNodeInfo> getClusterNodesInfo() {

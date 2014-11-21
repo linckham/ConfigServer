@@ -45,7 +45,6 @@ public class ClientSubscribe {
                 }
             });
         }
-		System.in.read();
 		configClient.close();
 	}
 }

@@ -45,10 +45,8 @@ public class ConfigHeartBeat {
 
         ConfigHeartBeat that = (ConfigHeartBeat) o;
 
-        if (lastModifiedTime != that.lastModifiedTime) return false;
-        if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
+        return lastModifiedTime == that.lastModifiedTime && !(clientId != null ? !clientId.equals(that.clientId) : that.clientId != null);
 
-        return true;
     }
 
     @Override

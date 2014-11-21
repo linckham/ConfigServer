@@ -29,7 +29,6 @@ import com.cmbc.configserver.common.protocol.ResponseCode;
 import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-import com.cmbc.configserver.remoting.protocol.RemotingSysResponseCode;
 
 public class ClientRemotingProcessor implements RequestProcessor {
 

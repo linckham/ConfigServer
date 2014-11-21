@@ -4,7 +4,6 @@ import com.cmbc.configserver.core.event.Event;
 import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.notify.ConfigChangedNotifyService;
-import com.cmbc.configserver.core.notify.NotifyService;
 import com.cmbc.configserver.core.service.CategoryService;
 import com.cmbc.configserver.core.service.ConfigChangeLogService;
 import com.cmbc.configserver.core.service.ConfigDetailsService;
@@ -147,7 +146,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
         return this.subscriberService.unSubcribe(PathUtils.getSubscriberPath(config), channel);
     }
 
-    private void validConfiguration(Configuration config) throws Exception {
+    private void validConfiguration(Configuration config) {
         if (null == config) {
             throw new NullPointerException("configuration is null");
         }

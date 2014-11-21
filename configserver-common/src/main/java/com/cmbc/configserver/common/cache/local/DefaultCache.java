@@ -585,9 +585,7 @@ public class DefaultCache<K, V> implements Cache<K, V> {
                 ObjectOutputStream outObj = new ObjectOutputStream(out);
                 outObj.writeObject(object);
                 size = out.size();
-                if(null != outObj){
-                	outObj.close();
-                }
+                outObj.close();
             }
             catch (IOException ioe) {
                 log.error(ioe);

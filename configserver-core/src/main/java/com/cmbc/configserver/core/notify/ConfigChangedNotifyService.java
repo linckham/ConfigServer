@@ -6,9 +6,10 @@ import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.service.ConfigChangeLogService;
 import com.cmbc.configserver.domain.ConfigChangeLog;
-import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @Time 16:10
  */
 @Service("configChangedNotifyService")
-public class ConfigChangedNotifyService {
+public class ConfigChangedNotifyService implements InitializingBean,DisposableBean {
     private Map</*path*/String,/*md5*/Long> pathMd5Cache = new ConcurrentHashMap<String, Long>(Constants.DEFAULT_INITIAL_CAPACITY);
     private volatile boolean stop = true;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1,new ThreadFactoryImpl("change-log-notify-"));
@@ -35,17 +36,17 @@ public class ConfigChangedNotifyService {
     @Autowired
     private EventService<Event> eventService;
 
-    public boolean start() throws Exception {
+    private boolean start() {
         this.stop = false;
         initialize();
         return true;
     }
 
     private void initialize() {
-        this.scheduler.execute(new ChangedWorker());
+        this.scheduler.execute(new ChangeLogWorker());
     }
 
-    public void stop() {
+    private void stop() {
         this.stop = true;
         this.scheduler.shutdown();
     }
@@ -57,11 +58,21 @@ public class ConfigChangedNotifyService {
         this.pathMd5Cache.put(path,last_modified_time);
     }
 
+    @Override
+    public void destroy() throws Exception {
+        stop();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        start();
+    }
+
     private List<ConfigChangeLog> getAllConfigChangeLogs() throws Exception {
         return this.configChangeLogService.getAllConfigChangeLogs();
     }
 
-    class ChangedWorker implements Runnable {
+    class ChangeLogWorker implements Runnable {
         private AtomicLong loadingTimes = new AtomicLong(0);
         @Override
         public void run() {
@@ -71,7 +82,7 @@ public class ConfigChangedNotifyService {
                     long times = loadingTimes.incrementAndGet();
                     //reduce the statistics log
                     if (times % 64 == 1) {
-                        ConfigServerLogger.info(String.format("ChangedWorker getAllConfigChangeLogs from database. size = %s, changeLogs = %s",
+                        ConfigServerLogger.info(String.format("ChangeLogWorker getAllConfigChangeLogs from database. size = %s, changeLogs = %s",
                                 changeLogList == null ? 0 : changeLogList.size(), changeLogList));
                     }
                     if (times >= Long.MAX_VALUE) {

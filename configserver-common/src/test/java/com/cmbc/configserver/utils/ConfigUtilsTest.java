@@ -25,7 +25,7 @@ public class ConfigUtilsTest {
     public void testGetConfigServerAddressList(){
         //remove the key.
         System.getProperties().remove(Constants.CONFIG_SERVER_ADDRESS_FILE_NAME_KEY);
-        String configServerAddressFile = ConfigUtils.getProperty(Constants.CONFIG_SERVER_ADDRESS_FILE_NAME_KEY,Constants.DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME);;
+        String configServerAddressFile = ConfigUtils.getProperty(Constants.CONFIG_SERVER_ADDRESS_FILE_NAME_KEY,Constants.DEFAULT_CONFIG_SERVER_ADDRESS_FILE_NAME);
         List<String> addressList = ConfigUtils.getConfigServerAddressList(configServerAddressFile,Constants.CONFIG_SERVER_ADDRESS_KEY);
         System.out.println(configServerAddressFile);
         Assert.assertNotNull(addressList);
@@ -43,7 +43,10 @@ public class ConfigUtilsTest {
         File tempFile = new File(configServerAddressFile);
         if (!tempFile.exists()) {
             try {
-                tempFile.createNewFile();
+
+                boolean created = tempFile.createNewFile();
+                Assert.assertTrue(created);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -79,8 +82,9 @@ public class ConfigUtilsTest {
         Assert.assertEquals("127.0.0.1:20000", addressList.get(1));
 
         //delete temp file
-        tempFile.delete();
+        boolean delete =tempFile.delete();
         addressList = ConfigUtils.getConfigServerAddressList(configServerAddressFile,Constants.CONFIG_SERVER_ADDRESS_KEY);
+        Assert.assertTrue(delete);
         Assert.assertNotNull(addressList);
         Assert.assertEquals(0, addressList.size());
     }

@@ -2,7 +2,6 @@ package com.cmbc.configserver.core.heartbeat;
 
 import com.cmbc.configserver.core.MockUtils;
 import com.cmbc.configserver.core.subscriber.SubscriberService;
-import com.cmbc.configserver.remoting.common.RemotingHelper;
 import io.netty.channel.Channel;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,12 +16,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class HeartbeatServiceTest {
     private HeartbeatService heartbeatService;
-    private String clientId;
 
     @Before
     public void setUp() throws Exception{
         heartbeatService = new HeartbeatService();
-        clientId = RemotingHelper.getChannelId(MockUtils.mockChannel());
         heartbeatService.setConfigServerService(MockUtils.mockConfigServerService());
         heartbeatService.setSubscriberService(new SubscriberService());
     }

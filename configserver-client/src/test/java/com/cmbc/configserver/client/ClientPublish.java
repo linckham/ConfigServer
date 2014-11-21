@@ -47,7 +47,6 @@ public class ClientPublish {
 			
 			Thread.sleep(20*1000);
 		}
-		System.in.read();
 		configClient.close();
 	}
 }

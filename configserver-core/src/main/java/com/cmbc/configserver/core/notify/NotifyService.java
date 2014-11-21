@@ -18,6 +18,7 @@ import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.PathUtils;
+import com.cmbc.configserver.utils.StatisticsLog;
 import io.netty.channel.Channel;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -78,6 +79,8 @@ public class NotifyService implements InitializingBean,DisposableBean {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM),
                 new ThreadFactoryImpl("subscriber-notify-thread-"));
+        StatisticsLog.registerExecutor("config-load-pool",this.configLoadExecutor);
+        StatisticsLog.registerExecutor("subscriber-notify-pool",this.subscriberNotifyExecutor);
     }
 
     public boolean start() {

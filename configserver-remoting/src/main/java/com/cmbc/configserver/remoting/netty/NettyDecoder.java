@@ -1,18 +1,16 @@
 package com.cmbc.configserver.remoting.netty;
 
+import com.cmbc.configserver.remoting.common.RemotingHelper;
+import com.cmbc.configserver.remoting.exception.RemotingCommandException;
+import com.cmbc.configserver.remoting.protocol.RemotingCommand;
+import com.cmbc.configserver.utils.Constants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-
-import java.nio.ByteBuffer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cmbc.configserver.remoting.common.RemotingHelper;
-import com.cmbc.configserver.remoting.common.RemotingUtil;
-import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-import com.cmbc.configserver.utils.Constants;
+import java.nio.ByteBuffer;
 
 /**
  * the decoder of communication protocol between server and client.<br/>
@@ -40,15 +38,12 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
             ByteBuffer byteBuffer = frame.nioBuffer();
             return RemotingCommand.decode(byteBuffer);
         } catch (Exception e) {
-            log.error("decode exception, " + RemotingHelper.parseChannelRemoteAddress(ctx.channel()), e);
-            // a event will happen when the channel is closed,a clean up job will being triggered.
-            RemotingUtil.closeChannel(ctx.channel());
+            log.error("decode exception on channel " + RemotingHelper.parseChannelRemoteAddress(ctx.channel()), e);
+            throw new RemotingCommandException("remote command can't decode",e);
         } finally {
             if (null != frame) {
                 frame.release();
             }
         }
-
-        return null;
     }
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Time 21:48
  */
 public class CompressFactory {
-    private static Map</**/Integer,Compress> compressMap = new ConcurrentHashMap<Integer,Compress>(8);
+    private final static Map</**/Integer,Compress> compressMap = new ConcurrentHashMap<Integer,Compress>(8);
 
     public static Compress createCompress(CompressType type){
         Compress compress = compressMap.get(type.getType());

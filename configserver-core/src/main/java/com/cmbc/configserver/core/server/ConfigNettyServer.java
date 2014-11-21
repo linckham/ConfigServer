@@ -41,7 +41,7 @@ public class ConfigNettyServer {
         return true;
     }
 
-    public void start() throws Exception{
+    public void start() {
         this.remotingServer.start();
     }
 }

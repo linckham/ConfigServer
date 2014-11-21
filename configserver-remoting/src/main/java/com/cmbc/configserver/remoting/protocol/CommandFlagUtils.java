@@ -58,13 +58,11 @@ public class CommandFlagUtils {
 
     public static void setCompressType(RemotingHeader header, CompressType type) {
         if (null != header) {
-            if (null != header) {
-                int flag = header.getFlag();
-                int tmp = flag & 0xFFFFFFF8;
-                tmp = tmp | type.getType();
-                flag = tmp;
-                header.setFlag(flag);
-            }
+            int flag = header.getFlag();
+            int tmp = flag & 0xFFFFFFF8;
+            tmp = tmp | type.getType();
+            flag = tmp;
+            header.setFlag(flag);
         }
     }
 }

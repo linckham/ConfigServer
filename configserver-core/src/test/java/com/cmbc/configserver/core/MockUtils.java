@@ -2,7 +2,6 @@ package com.cmbc.configserver.core;
 
 import com.cmbc.configserver.core.dao.ConfigHeartBeatDao;
 import com.cmbc.configserver.core.service.ConfigServerService;
-import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import io.netty.channel.Channel;
@@ -12,8 +11,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import org.easymock.EasyMock;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -35,9 +32,8 @@ public class MockUtils {
         return configuration;
     }
 
-    public static ConfigHeartBeatDao mockConfigHeartBeatDao() throws Exception {
-        ConfigHeartBeatDao dao = EasyMock.createMock(ConfigHeartBeatDao.class);
-        return dao;
+    public static ConfigHeartBeatDao mockConfigHeartBeatDao() {
+        return EasyMock.createMock(ConfigHeartBeatDao.class);
     }
 
     public static ConfigServerService mockConfigServerService() throws Exception {

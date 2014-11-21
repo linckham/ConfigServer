@@ -61,13 +61,11 @@ public class Category {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
-        if (id != category.id) return false;
-        return true;
+        return id == category.id;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        return result;
+        return id;
     }
 }

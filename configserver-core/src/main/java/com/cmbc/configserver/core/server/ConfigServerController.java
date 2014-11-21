@@ -3,6 +3,7 @@ package com.cmbc.configserver.core.server;
 import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.utils.StatisticsLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ public class ConfigServerController {
         this.remoteExecutor = new ThreadPoolExecutor(this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(),
                 this.configNettyServer.getNettyServerConfig().getServerWorkerThreads(), 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(Constants.DEFAULT_MAX_QUEUE_ITEM), new ThreadFactoryImpl("ConfigServerExecutorThread-"));
+        StatisticsLog.registerExecutor("remote-request-pool",(ThreadPoolExecutor)this.remoteExecutor);
         this.configNettyServer.initialize(this);
         this.registerProcessor();
         return true;
@@ -41,7 +43,7 @@ public class ConfigServerController {
         this.configNettyServer.getRemotingServer().registerDefaultProcessor(this.defaultRequestProcessor, this.remoteExecutor);
     }
 
-    public void start() throws Exception{
+    public void start() {
         this.configNettyServer.start();
     }
 

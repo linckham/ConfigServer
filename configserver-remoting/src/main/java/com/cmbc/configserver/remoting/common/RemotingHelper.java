@@ -17,9 +17,7 @@ public class RemotingHelper {
 	 */
 	public static SocketAddress string2SocketAddress(final String address) {
 		String[] s = address.split(":");
-		InetSocketAddress isa = new InetSocketAddress(s[0],
-				Integer.valueOf(s[1]));
-		return isa;
+		return new InetSocketAddress(s[0],Integer.valueOf(s[1]));
 	}
 
 	public static String parseChannelRemoteAddress(final Channel channel) {

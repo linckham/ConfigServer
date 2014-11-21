@@ -6,7 +6,6 @@ import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.remoting.exception.RemotingConnectException;
 import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
 import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
-import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 
 /**

@@ -14,6 +14,7 @@ import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
 import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.utils.StatisticsLog;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -112,7 +113,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 			final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
 			LOGGER.warn("NettyConnectManageHandler exceptionCaught remote address {} exception {}.", remoteAddress, cause);
 			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress.toString(), ctx.channel()));
+				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel()));
 			}
 		}
 
@@ -124,7 +125,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 				if (event.state().equals(IdleState.READER_IDLE)) {
 					final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
 					if (NettyRemotingClient.this.channelEventListener != null) {
-						NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress.toString(),ctx.channel()));
+						NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress,ctx.channel()));
 					}
 				}
 			}
@@ -158,6 +159,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     }
 
 	public void start()  {
+        StatisticsLog.registerExecutor("public-pool",(ThreadPoolExecutor)publicExecutor);
 		this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
 				nettyClientConfig.getClientWorkerThreads(),new ThreadFactoryImpl("NettyClientWorkerThread-"));
 
@@ -225,9 +227,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
 			this.eventLoopGroupWorker.shutdownGracefully();
 
-			if (this.nettyEventExecutor != null) {
-				this.nettyEventExecutor.shutdown();
-			}
+            this.nettyEventExecutor.shutdown();
 
 			if (this.defaultEventExecutorGroup != null) {
 				this.defaultEventExecutorGroup.shutdownGracefully();
@@ -311,13 +311,8 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     if (clientChannel.isOK()) {
                         return clientChannel.getChannel();
                     }
-                    // the connection is doing
-                    else if (!clientChannel.getChannelFuture().isDone()) {
-                        createNewConnection = false;
-                    }
-                    // the connection is not successful
                     else {
-                        createNewConnection = true;
+                        createNewConnection = clientChannel.getChannelFuture().isDone();
                     }
                 } else {
                     createNewConnection = true;
@@ -406,6 +401,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 				LOGGER.warn("invokeSync: send request exception,channel {}", serverAddressSelected.get());
 				throw e;
 			} catch (RemotingTimeoutException e) {
+                LOGGER.warn("invokeSync: request exception,channel {}", serverAddressSelected.get());
 				throw e;
 			}
 		} else {

@@ -4,8 +4,6 @@ import com.cmbc.configserver.domain.Category;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.accessibility.AccessibleStateSet;
-
 /**
  * the test class of PathUtils
  * Created by tongchuan.lin<linckham@gmail.com><br/>

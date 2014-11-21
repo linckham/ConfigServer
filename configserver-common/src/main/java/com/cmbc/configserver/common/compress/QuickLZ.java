@@ -165,7 +165,7 @@ public class QuickLZ implements Compress{
                 fetch = (int) fast_read(source, src, 3);
 
                 int o, offset2;
-                int matchlen, k, m, best_k = 0;
+                int matchlen, k, m = 0;
                 byte c;
                 int remaining = ((source.length - UNCOMPRESSED_END - src + 1 - 1) > 255 ? 255 : (source.length - UNCOMPRESSED_END - src + 1 - 1));
                 int hash = ((fetch >>> 12) ^ fetch) & (HASH_VALUES - 1);
@@ -182,7 +182,6 @@ public class QuickLZ implements Compress{
                         if ((m > matchlen) || (m == matchlen && o > offset2)) {
                             offset2 = o;
                             matchlen = m;
-                            best_k = k;
                         }
                     }
                 }
@@ -230,7 +229,7 @@ public class QuickLZ implements Compress{
 
         while (src <= source.length - 1) {
             if ((cword_val & 1) == 1) {
-                fast_write(destination, cword_ptr, (long) ((cword_val >>> 1) | 0x80000000L), 4);
+                fast_write(destination, cword_ptr, ((cword_val >>> 1) | 0x80000000L), 4);
                 cword_ptr = dst;
                 dst += CWORD_LEN;
                 cword_val = 0x80000000L;
@@ -244,7 +243,7 @@ public class QuickLZ implements Compress{
         while ((cword_val & 1) != 1) {
             cword_val = (cword_val >>> 1);
         }
-        fast_write(destination, cword_ptr, (long) ((cword_val >>> 1) | 0x80000000L), CWORD_LEN);
+        fast_write(destination, cword_ptr, ((cword_val >>> 1) | 0x80000000L), CWORD_LEN);
         write_header(destination, level, true, source.length, dst);
 
         d2 = new byte[dst];
@@ -271,7 +270,7 @@ public class QuickLZ implements Compress{
         long cword_val = 1;
         byte[] destination = new byte[size];
         int[] hashtable = new int[4096];
-        byte[] hash_counter = new byte[4096];
+        // byte[] hash_counter = new byte[4096];
         int last_matchstart = size - UNCONDITIONAL_MATCH_LENGTH - UNCOMPRESSED_END - 1;
         int last_hashed = -1;
         int hash;
@@ -341,16 +340,14 @@ public class QuickLZ implements Compress{
                         matchlen = ((fetch >>> 7) & 255) + 3;
                         src += 4;
                     }
-                    offset2 = (int) (dst - offset);
+                    offset2 = dst - offset;
                 }
 
                 destination[dst + 0] = destination[offset2 + 0];
                 destination[dst + 1] = destination[offset2 + 1];
                 destination[dst + 2] = destination[offset2 + 2];
 
-                for (int i = 3; i < matchlen; i += 1) {
-                    destination[dst + i] = destination[offset2 + i];
-                }
+                System.arraycopy(destination, offset2 + 3, destination, dst + 3, matchlen - 3);
                 dst += matchlen;
 
                 if (level == 1) {
@@ -359,7 +356,7 @@ public class QuickLZ implements Compress{
                         last_hashed++;
                         hash = ((fetch >>> 12) ^ fetch) & (HASH_VALUES - 1);
                         hashtable[hash] = last_hashed;
-                        hash_counter[hash] = 1;
+                        //hash_counter[hash] = 1;
                         fetch = fetch >>> 8 & 0xffff | (((int) destination[last_hashed + 3]) & 0xff) << 16;
                     }
                     fetch = (int) fast_read(source, src, 3);
@@ -380,7 +377,7 @@ public class QuickLZ implements Compress{
                             int fetch2 = (int) fast_read(destination, last_hashed, 3);
                             hash = ((fetch2 >>> 12) ^ fetch2) & (HASH_VALUES - 1);
                             hashtable[hash] = last_hashed;
-                            hash_counter[hash] = 1;
+                            //hash_counter[hash] = 1;
                         }
                         fetch = fetch >> 8 & 0xffff | (((int) source[src + 2]) & 0xff) << 16;
                     } else {

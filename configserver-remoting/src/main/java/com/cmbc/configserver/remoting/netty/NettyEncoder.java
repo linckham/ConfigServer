@@ -1,7 +1,7 @@
 package com.cmbc.configserver.remoting.netty;
 
 import com.cmbc.configserver.remoting.common.RemotingHelper;
-import com.cmbc.configserver.remoting.common.RemotingUtil;
+import com.cmbc.configserver.remoting.exception.RemotingCommandException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,11 +27,9 @@ public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
             }
         }
         catch (Exception e) {
-            log.error("encode exception, " + RemotingHelper.parseChannelRemoteAddress(ctx.channel()), e);
-            if (remotingCommand != null) {
-                log.error(remotingCommand.toString());
-            }
-            RemotingUtil.closeChannel(ctx.channel());
+            log.error(String.format("exception happens when encode remote command %s on channel %s",
+                    remotingCommand,RemotingHelper.parseChannelRemoteAddress(ctx.channel())), e);
+            throw new RemotingCommandException("remote command can't correctly encode.");
         }
     }
 }
