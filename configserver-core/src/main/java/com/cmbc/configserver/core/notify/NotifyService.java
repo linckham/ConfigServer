@@ -15,10 +15,7 @@ import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.domain.Notify;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
-import com.cmbc.configserver.utils.ConfigServerLogger;
-import com.cmbc.configserver.utils.Constants;
-import com.cmbc.configserver.utils.PathUtils;
-import com.cmbc.configserver.utils.StatisticsLog;
+import com.cmbc.configserver.utils.*;
 import io.netty.channel.Channel;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,15 +80,17 @@ public class NotifyService implements InitializingBean,DisposableBean {
         StatisticsLog.registerExecutor("subscriber-notify-pool",this.subscriberNotifyExecutor);
     }
 
-    public boolean start() {
+    private boolean start() {
         this.stop = false;
         initialize();
         return true;
     }
 
-    public void stop() {
+    private void stop() {
         this.stop = true;
-        this.scheduler.shutdown();
+        ThreadUtils.shutdownAndAwaitTermination(this.scheduler);
+        ThreadUtils.shutdownAndAwaitTermination(this.configLoadExecutor);
+        ThreadUtils.shutdownAndAwaitTermination(this.subscriberNotifyExecutor);
         ConfigServerLogger.info("NotifyService has been stopped!");
     }
 

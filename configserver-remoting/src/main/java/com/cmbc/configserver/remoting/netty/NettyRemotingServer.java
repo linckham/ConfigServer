@@ -14,7 +14,9 @@ import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.exception.RemotingTooMuchRequestException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.cmbc.configserver.utils.NetUtils;
 import com.cmbc.configserver.utils.StatisticsLog;
+import com.cmbc.configserver.utils.ThreadUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -84,6 +86,10 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         StatisticsLog.registerExecutor("server-public-pool",(ThreadPoolExecutor)this.publicExecutor);
 		this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("NettyServerWorkerThread-"));
 
+        if (!NetUtils.isValidPort(this.nettyServerConfig.getListenPort())) {
+            throw new IllegalArgumentException(String.format("invalid listening port %s of the config server", this.nettyServerConfig.getListenPort()));
+        }
+
 		ServerBootstrap childHandler = this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupWorker)
 				.channel(NioServerSocketChannel.class)
 				.option(ChannelOption.SO_BACKLOG, 1024)
@@ -91,7 +97,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 				.childOption(ChannelOption.TCP_NODELAY, true)
 				.childOption(ChannelOption.SO_SNDBUF,NettySystemConfig.SocketSndbufSize)
 				.childOption(ChannelOption.SO_RCVBUF, NettySystemConfig.SocketRcvbufSize)
-				.localAddress(new InetSocketAddress(this.nettyServerConfig.getListenPort()))
+				.localAddress(new InetSocketAddress(NetUtils.getLocalAddress(),this.nettyServerConfig.getListenPort()))
 				.childHandler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					public void initChannel(SocketChannel ch) throws Exception {
@@ -199,7 +205,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
 		if (this.publicExecutor != null) {
 			try {
-				this.publicExecutor.shutdown();
+                ThreadUtils.shutdownAndAwaitTermination(this.publicExecutor);
 			} catch (Exception e) {
 				log.error("NettyRemotingServer shutdown exception, ", e);
 			}

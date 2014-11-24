@@ -12,6 +12,7 @@ import com.cmbc.configserver.domain.Category;
 import com.cmbc.configserver.utils.ConcurrentHashSet;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.utils.ThreadUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -202,7 +203,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
 
     @Override
     public void destroy() throws Exception {
-        this.scheduler.shutdown();
+        ThreadUtils.shutdownAndAwaitTermination(this.scheduler);
     }
 
     @Override

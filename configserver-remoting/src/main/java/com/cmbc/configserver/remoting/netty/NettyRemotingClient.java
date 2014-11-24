@@ -15,6 +15,7 @@ import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.StatisticsLog;
+import com.cmbc.configserver.utils.ThreadUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -238,7 +239,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
 		if (this.publicExecutor != null) {
 			try {
-				this.publicExecutor.shutdown();
+                ThreadUtils.shutdownAndAwaitTermination(this.publicExecutor);
 			} catch (Exception e) {
 				LOGGER.error("NettyRemotingClient shutdown exception, ", e);
 			}

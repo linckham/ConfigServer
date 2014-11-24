@@ -8,6 +8,7 @@ import com.cmbc.configserver.core.service.ConfigChangeLogService;
 import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.utils.ThreadUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class ConfigChangedNotifyService implements InitializingBean,DisposableBe
 
     private void stop() {
         this.stop = true;
-        this.scheduler.shutdown();
+        ThreadUtils.shutdownAndAwaitTermination(this.scheduler);
     }
 
     /**

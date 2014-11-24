@@ -4,6 +4,7 @@ import com.cmbc.configserver.common.ThreadFactoryImpl;
 import com.cmbc.configserver.remoting.common.RequestProcessor;
 import com.cmbc.configserver.utils.Constants;
 import com.cmbc.configserver.utils.StatisticsLog;
+import com.cmbc.configserver.utils.ThreadUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,6 @@ public class ConfigServerController {
 
     public void shutdown(){
         this.configNettyServer.getRemotingServer().shutdown();
-        this.remoteExecutor.shutdown();
+        ThreadUtils.shutdownAndAwaitTermination(this.remoteExecutor);
     }
 }

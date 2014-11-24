@@ -8,6 +8,7 @@ import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.cmbc.configserver.utils.ThreadUtils;
 import io.netty.channel.Channel;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -56,7 +57,7 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
     }
 	
 	private void shutdown(){
-		this.scheduledExecutorService.shutdown();
+        ThreadUtils.shutdownAndAwaitTermination(this.scheduledExecutorService);
 	}
 	
 	public void channelCreated(Channel channel){
