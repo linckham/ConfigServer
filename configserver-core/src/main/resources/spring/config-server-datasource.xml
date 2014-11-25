@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
-    <bean id="basicDataSource" class="org.apache.commons.dbcp.BasicDataSource" abstract="true">
+    <bean id="basicDataSource" class="org.apache.commons.dbcp.BasicDataSource" abstract="true" destroy-method="close">
         <property name="driverClassName">
             <value>com.mysql.jdbc.Driver</value>
         </property>
@@ -27,11 +27,19 @@
         <property name="maxWait">
             <value>1000</value>
         </property>
-        <property name="minEvictableIdleTimeMillis">
+        <!--<property name="minEvictableIdleTimeMillis">
             <value>60000</value>
-        </property>
+        </property>-->
+        <!--in order to avoid Could not open JDBC Connection for transaction; nested exception is com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: The last packet successfully received from the server was XXXX milliseconds ago-->
+        <!--the default wait_timeout of mysql is 8 hour (28800 seconds)-->
         <property name="timeBetweenEvictionRunsMillis">
-            <value>300000</value>
+            <value>3600000</value><!-- start the connection check scheduler, the scheduler interval is 1 hour -->
+        </property>
+        <property name="testWhileIdle">
+            <value>true</value>
+        </property>
+        <property name="validationQuery">
+            <value>select 1 from dual</value>
         </property>
     </bean>
 
