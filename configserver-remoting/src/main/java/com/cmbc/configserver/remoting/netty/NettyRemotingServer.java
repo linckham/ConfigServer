@@ -251,12 +251,12 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                 //close the channel
                 RemotingUtil.closeChannel(ctx.channel());
                 //throw an runtime exception
-                throw new RuntimeException(String.format("channel connection exceeds the max_connection_number %s. close the channel %s", nettyServerConfig.getServerMaxConnectionNumbers(), ctx.channel()));
+                throw new RuntimeException(String.format("channel connection exceeds the max_connection_number %s. close the channel %s", nettyServerConfig.getServerMaxConnectionNumbers(), RemotingHelper.getChannelId(ctx.channel())));
 
             }
 
             int connectionCount = totalConnectionNumber.incrementAndGet();
-            ConfigServerLogger.info(String.format("channel[%s] is connected to server. the total connection count is %s", ctx.channel(), connectionCount));
+            ConfigServerLogger.info(String.format("channel %s is connected to server. the total connection count is %s", RemotingHelper.getChannelId(ctx.channel()), connectionCount));
 
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
             log.info("NettyConnectManageHandler channelActive, the channel {}", remoteAddress);
@@ -265,7 +265,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 			if (NettyRemotingServer.this.channelEventListener != null) {
 				NettyRemotingServer.this.putNettyEvent(new NettyEvent(
 						NettyEventType.ACTIVE, remoteAddress, ctx
-								.channel()));
+								.channel(),null));
 			}
 		}
 
@@ -278,7 +278,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 			if (NettyRemotingServer.this.channelEventListener != null) {
 				NettyRemotingServer.this.putNettyEvent(new NettyEvent(
 						NettyEventType.CLOSE, remoteAddress, ctx
-								.channel()));
+								.channel(),null));
 			}
 		}
 
@@ -294,7 +294,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 					if (NettyRemotingServer.this.channelEventListener != null) {
 						NettyRemotingServer.this.putNettyEvent(new NettyEvent(
 								NettyEventType.IDLE, remoteAddress,
-								ctx.channel()));
+								ctx.channel(),null));
 					}
 				}
 			}
@@ -311,7 +311,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 			if (NettyRemotingServer.this.channelEventListener != null) {
 				NettyRemotingServer.this.putNettyEvent(new NettyEvent(
 						NettyEventType.EXCEPTION, remoteAddress, ctx
-								.channel()));
+								.channel(),cause));
 			}
 		}
 
@@ -321,7 +321,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             if(totalConnectionNumber.get() < 0 ){
                 totalConnectionNumber.set(0);
             }
-            ConfigServerLogger.info(String.format("channel %s is closed from server. the total connection count is %s", channel, connectionCount));
+            ConfigServerLogger.info(String.format("channel %s is closed from server. the total connection count is %s", RemotingHelper.getChannelId(channel), connectionCount));
         }
 	}
 

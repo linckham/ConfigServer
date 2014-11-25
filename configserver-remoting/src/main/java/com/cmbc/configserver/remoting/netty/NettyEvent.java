@@ -4,30 +4,32 @@ import io.netty.channel.Channel;
 
 public class NettyEvent {
 	private final NettyEventType type;
-	private final String remoteAddr;
+	private final String remoteAddress;
 	private final Channel channel;
+    private final Throwable cause;
 
-	public NettyEvent(NettyEventType type, String remoteAddr, Channel channel) {
-		this.type = type;
-		this.remoteAddr = remoteAddr;
-		this.channel = channel;
-	}
+    public NettyEvent(NettyEventType type, String remoteAddress, Channel channel,Throwable cause){
+        this.type = type;
+        this.remoteAddress = remoteAddress;
+        this.channel = channel;
+        this.cause = cause;
+    }
 
 	public NettyEventType getType() {
 		return type;
-	}
-
-	public String getRemoteAddr() {
-		return remoteAddr;
 	}
 
 	public Channel getChannel() {
 		return channel;
 	}
 
+    public Throwable getCause(){
+        return cause;
+    }
+
 	@Override
 	public String toString() {
-		return "NettyEvent [type=" + type + ", remoteAddr=" + remoteAddr
+		return "NettyEvent [type=" + type + ", remoteAddress=" + remoteAddress
 				+ ", channel=" + channel + "]";
 	}
 }

@@ -8,6 +8,7 @@ import com.cmbc.configserver.domain.ConfigHeartBeat;
 import com.cmbc.configserver.remoting.common.RemotingHelper;
 import com.cmbc.configserver.remoting.common.RemotingUtil;
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.cmbc.configserver.utils.SystemTimer;
 import com.cmbc.configserver.utils.ThreadUtils;
 import io.netty.channel.Channel;
 import org.springframework.beans.factory.DisposableBean;
@@ -75,7 +76,7 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 			if(heartbeatInfoTable.get(clientId) != null){
 				this.clearChannel(channel);
 			}else{
-				HeartbeatInfo heartbeatInfo = new HeartbeatInfo(clientId,channel,System.currentTimeMillis());
+				HeartbeatInfo heartbeatInfo = new HeartbeatInfo(clientId,channel,SystemTimer.currentTimeMillis());
 				heartbeatInfoTable.put(clientId, heartbeatInfo);
 				
 				//save db
@@ -97,7 +98,7 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 		if(heartbeatInfo == null){
 			ConfigServerLogger.warn("heartbeatInfo is null in updateHeartbeat!");
 		}else{
-			heartbeatInfo.setLastUpdateMillis(System.currentTimeMillis());
+			heartbeatInfo.setLastUpdateMillis(SystemTimer.currentTimeMillis());
 			if(heartbeatInfo.getLastDBSyncMillis() <= 0){
 				// save heartbeat to db error or in saving to db in channelCreated.
 				ConfigServerLogger.warn("heartbeatInfo lastDBSyncMillis <= 0");
@@ -129,7 +130,7 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 		Iterator<Entry<String, HeartbeatInfo>> i = heartbeatInfoTable.entrySet().iterator();
 		while(i.hasNext()){
 			HeartbeatInfo heartbeatInfo = i.next().getValue();
-			if(System.currentTimeMillis() - heartbeatInfo.getLastUpdateMillis() > HeartbeatInfo.TIMEOUT){
+			if(SystemTimer.currentTimeMillis() - heartbeatInfo.getLastUpdateMillis() > HeartbeatInfo.TIMEOUT){
 				i.remove();
 				this.clearChannel(heartbeatInfo.getChannel());
 			}
@@ -157,19 +158,26 @@ public class HeartbeatService implements InitializingBean,DisposableBean {
 	
 	public void clearChannel(Channel channel){
         String clientId = RemotingHelper.getChannelId(channel);
-        ConfigServerLogger.info("server clear channel start:" + clientId);
+        ConfigServerLogger.info("server clear channel " + clientId+" start");
 		heartbeatInfoTable.remove(clientId);
 		RemotingUtil.closeChannel(channel);
 		//delete subscribe
 		subscriberService.clearChannel(channel);
 		try {
+            long start = SystemTimer.currentTimeMillis();
 			//delete configuration
             configServerService.deleteConfigurationByClientId(clientId);
+            long end = SystemTimer.currentTimeMillis();
+            ConfigServerLogger.info("configServerService.deleteConfigurationByClientId cost "+(end-start));
+
+            start = SystemTimer.currentTimeMillis();
             configHeartBeatService.delete(clientId);
+            end = SystemTimer.currentTimeMillis();
+            ConfigServerLogger.info("configHeartBeatService.delete cost "+(end-start));
 		} catch (Exception e) {
 			ConfigServerLogger.error("delete client heartbeat error", e);
 		}
-		ConfigServerLogger.info("server clear channel end:" + clientId);
+		ConfigServerLogger.info("server clear channel "+clientId+" end");
 	}
 
     @Override

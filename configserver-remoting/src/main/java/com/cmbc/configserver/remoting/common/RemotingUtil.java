@@ -180,13 +180,16 @@ public class RemotingUtil {
 	}
 
 	public static void closeChannel(Channel channel) {
-		final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(channel);
-		channel.close().addListener(new ChannelFutureListener() {
-			@Override
-			public void operationComplete(ChannelFuture future)
-					throws Exception {
-				LOGGER.info("closeChannel: close the connection to remote address[{}] result: {}", remoteAddress, future.isSuccess());
-			}
-		});
-	}
+        //check the channel whether is active before close it
+        if (null != channel && channel.isActive()) {
+            final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(channel);
+            channel.close().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future)
+                        throws Exception {
+                    LOGGER.info("closeChannel: close the connection to remote address {} result {}", remoteAddress, future.isSuccess());
+                }
+            });
+        }
+    }
 }

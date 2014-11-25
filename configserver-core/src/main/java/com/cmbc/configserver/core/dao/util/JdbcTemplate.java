@@ -1,6 +1,7 @@
 package com.cmbc.configserver.core.dao.util;
 
 import com.cmbc.configserver.utils.ConfigServerLogger;
+import com.cmbc.configserver.utils.SystemTimer;
 import org.springframework.core.CollectionFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -431,23 +432,25 @@ public class JdbcTemplate extends JdbcAccessor{
 		int retryCount, count;
 		retryCount = count = (isWrite ? writeTryGetConCount : readTryGetConCount);
 		while(count-- > 0){
-			long start = System.currentTimeMillis();
+			long start = SystemTimer.currentTimeMillis();
 			try {
 				con = DataSourceUtils.getConnection(ds);
 				return con;
 			} catch (CannotGetJdbcConnectionException e) {
-                ConfigServerLogger.info(new StringBuilder(64).append("get connection try count:").append((retryCount - count)).append(", ds= jdbcurl,time:").append(System.currentTimeMillis()-start));
+                ConfigServerLogger.warn(new StringBuilder(64).append("get connection try count ").append((retryCount - count))
+                        .append(",ds ").append(((org.apache.commons.dbcp.BasicDataSource) ds).getUrl())
+                        .append(",time ").append(SystemTimer.currentTimeMillis() - start));
 				DataSourceUtils.releaseConnection(con, ds);
 			}
 		}
-		throw new CannotGetJdbcConnectionException("Could not get JDBC Connection:  JDBC Url=",new SQLException());
+		throw new CannotGetJdbcConnectionException("Could not get JDBC Connection,Url= "+((org.apache.commons.dbcp.BasicDataSource)ds).getUrl(),new SQLException());
 	}
 
 	public Object query(final String sql, final ResultSetExtractor rse) throws DataAccessException {
 		Assert.notNull(sql, "SQL must not be null");
 		Assert.notNull(rse, "ResultSetExtractor must not be null");
 		if (ConfigServerLogger.isTraceEnabled()) {
-            ConfigServerLogger.trace(new StringBuilder(64).append("Executing SQL query [").append(sql).append("]").toString());
+            ConfigServerLogger.trace(String.format("Executing SQL update [%s]", sql));
 		}
 
 		class QueryStatementCallback implements StatementCallback, SqlProvider {
@@ -518,14 +521,14 @@ public class JdbcTemplate extends JdbcAccessor{
 	public int update(final String sql) throws DataAccessException {
 		Assert.notNull(sql, "SQL must not be null");
 		if (ConfigServerLogger.isTraceEnabled()) {
-            ConfigServerLogger.trace(new StringBuilder(64).append("Executing SQL update [").append(sql).append("]").toString());
+            ConfigServerLogger.trace(String.format("Executing SQL update [%s]", sql));
 		}
 
 		class UpdateStatementCallback implements StatementCallback, SqlProvider {
 			public Object doInStatement(Statement stmt) throws SQLException {
 				int rows = stmt.executeUpdate(sql);
 				if (ConfigServerLogger.isTraceEnabled()) {
-                    ConfigServerLogger.trace(new StringBuilder(64).append("SQL update affected ").append(rows).append(" rows").toString());
+                    ConfigServerLogger.trace(String.format("SQL update affected %d rows", rows));
 				}
 				return rows;
 			}
@@ -539,7 +542,7 @@ public class JdbcTemplate extends JdbcAccessor{
 	public int[] batchUpdate(final String[] sql) throws DataAccessException {
 		Assert.notEmpty(sql, "SQL array must not be empty");
 		if (ConfigServerLogger.isTraceEnabled()) {
-            ConfigServerLogger.trace(new StringBuilder(128).append("Executing SQL batch update of ").append(sql.length).append(" statements").toString());
+            ConfigServerLogger.trace(String.format("Executing SQL batch update %d statements",sql.length));
 		}
 
 		class BatchUpdateStatementCallback implements StatementCallback, SqlProvider {
@@ -585,7 +588,7 @@ public class JdbcTemplate extends JdbcAccessor{
 		Assert.notNull(action, "Callback object must not be null");
 		if (ConfigServerLogger.isTraceEnabled()) {
 			String sql = getSql(psc);
-            ConfigServerLogger.trace(new StringBuilder(128).append("Executing prepared SQL statement").append((sql != null ? " [" + sql + "]" : "")).toString());
+            ConfigServerLogger.trace(String.format("Executing prepared SQL statement %s", sql == null ? "" : sql));
 		}
 
 		DataSource ds = getDataSource(isWrite);

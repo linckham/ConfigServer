@@ -8,6 +8,7 @@ import com.cmbc.configserver.core.service.ConfigChangeLogService;
 import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.Constants;
+import com.cmbc.configserver.utils.SystemTimer;
 import com.cmbc.configserver.utils.ThreadUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -101,7 +102,7 @@ public class ConfigChangedNotifyService implements InitializingBean,DisposableBe
                                 Event event = new Event();
                                 event.setEventType(EventType.PATH_DATA_CHANGED);
                                 event.setEventSource(changeLog.getPath());
-                                event.setEventCreatedTime(System.currentTimeMillis());
+                                event.setEventCreatedTime(SystemTimer.currentTimeMillis());
                                 eventService.publish(event);
                             }
                             pathMd5Cache.put(changeLog.getPath(), changeLog.getLastModifiedTime());

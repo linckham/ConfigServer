@@ -9,10 +9,7 @@ import com.cmbc.configserver.core.event.EventService;
 import com.cmbc.configserver.core.event.EventType;
 import com.cmbc.configserver.core.service.CategoryService;
 import com.cmbc.configserver.domain.Category;
-import com.cmbc.configserver.utils.ConcurrentHashSet;
-import com.cmbc.configserver.utils.ConfigServerLogger;
-import com.cmbc.configserver.utils.Constants;
-import com.cmbc.configserver.utils.ThreadUtils;
+import com.cmbc.configserver.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -250,7 +247,7 @@ public class CategoryServiceImpl implements CategoryService, InitializingBean, D
                             Event event = new Event();
                             event.setEventType(EventType.CATEGORY_CHANGED);
                             event.setEventSource(category);
-                            event.setEventCreatedTime(System.currentTimeMillis());
+                            event.setEventCreatedTime(SystemTimer.currentTimeMillis());
                             eventService.publish(event);
                         }
                         set.add(category.getResource());

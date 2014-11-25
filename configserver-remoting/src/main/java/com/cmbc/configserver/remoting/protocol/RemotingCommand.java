@@ -5,6 +5,7 @@ import com.cmbc.configserver.common.compress.Compress;
 import com.cmbc.configserver.common.compress.CompressFactory;
 import com.cmbc.configserver.common.compress.CompressType;
 import com.cmbc.configserver.common.serialize.SerializeType;
+import com.cmbc.configserver.remoting.exception.RemotingCommandException;
 import com.cmbc.configserver.utils.Constants;
 
 import java.nio.ByteBuffer;
@@ -90,7 +91,7 @@ public class RemotingCommand {
         int headerLength = headerData.length;
         //valid the header's length
         if(headerLength < Constants.HEADER_FIX_DATA_LENGTH || headerLength > Constants.MAX_PACKET_HEADER_LENGTH ){
-            throw new Exception(String.format("request/response packet's header length is invalid. %s is not in [%s,%s]",headerLength,Constants.HEADER_FIX_DATA_LENGTH,Constants.MAX_PACKET_HEADER_LENGTH));
+            throw new RemotingCommandException(String.format("request/response packet's header length is invalid. %s is not in [%s,%s]",headerLength,Constants.HEADER_FIX_DATA_LENGTH,Constants.MAX_PACKET_HEADER_LENGTH));
         }
 
         ByteBuffer result = ByteBuffer.allocate(magicCodeSize + totalLengthSize + headerLengthSize + headerLength);
@@ -103,7 +104,7 @@ public class RemotingCommand {
         this.setPacketLength(totalLength);
         //valid the body's length
         if (bodyLength > Constants.MAX_PACKET_LENGTH) {
-            throw new Exception(String.format("request/response packet's body length is invalid.%s is not in[0,%s]", bodyLength, Constants.MAX_PACKET_LENGTH));
+            throw new RemotingCommandException(String.format("request/response packet's body length is invalid.%s is not in[0,%s]", bodyLength, Constants.MAX_PACKET_LENGTH));
         }
         result.putInt(totalLength);
 
@@ -125,7 +126,7 @@ public class RemotingCommand {
 
         //valid the magic code
         if (magicCode != Constants.MAGIC_CODE) {
-            throw new Exception(String.format("request/response command magic code is invalid. %s is not match the correct code %s", magicCode, Constants.MAGIC_CODE));
+            throw new RemotingCommandException(String.format("request/response command magic code is invalid. %s is not match the correct code %s", magicCode, Constants.MAGIC_CODE));
         }
 
         byte[] headerData = new byte[headerLength];

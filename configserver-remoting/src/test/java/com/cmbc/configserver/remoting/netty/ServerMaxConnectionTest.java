@@ -11,7 +11,6 @@ import com.cmbc.configserver.remoting.exception.RemotingSendRequestException;
 import com.cmbc.configserver.remoting.exception.RemotingTimeoutException;
 import com.cmbc.configserver.remoting.protocol.RemotingCommand;
 import com.cmbc.configserver.utils.Constants;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,25 +49,25 @@ public class ServerMaxConnectionTest {
         RemotingServer server = new NettyRemotingServer(config, new ChannelEventListener() {
 
             @Override
-            public void onChannelConnect(String remoteAddress, Channel channel) {
+            public void onChannelConnect(final NettyEvent event) {
 
             }
 
             @Override
-            public void onChannelClose(String remoteAddress, Channel channel) {
+            public void onChannelClose(final NettyEvent event) {
             }
 
             @Override
-            public void onChannelException(String remoteAddress, Channel channel) {
+            public void onChannelException(final NettyEvent event) {
             }
 
             @Override
-            public void onChannelIdle(String remoteAddress, Channel channel) {
+            public void onChannelIdle(final NettyEvent event) {
 
             }
 
             @Override
-            public void onChannelActive(Channel channel) {
+            public void onChannelActive(final NettyEvent event) {
             }
         });
         server.registerProcessor(0, new RequestProcessor() {

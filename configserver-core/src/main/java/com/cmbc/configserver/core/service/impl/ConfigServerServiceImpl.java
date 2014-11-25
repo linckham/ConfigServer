@@ -14,6 +14,7 @@ import com.cmbc.configserver.domain.ConfigChangeLog;
 import com.cmbc.configserver.domain.Configuration;
 import com.cmbc.configserver.utils.ConfigServerLogger;
 import com.cmbc.configserver.utils.PathUtils;
+import com.cmbc.configserver.utils.SystemTimer;
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             Event event = new Event();
             event.setEventType(EventType.PUBLISH);
             event.setEventSource(config);
-            event.setEventCreatedTime(System.currentTimeMillis());
+            event.setEventCreatedTime(SystemTimer.currentTimeMillis());
             eventService.publish(event);
         }
         return bSuccess;
@@ -114,7 +115,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             Event event = new Event();
             event.setEventType(EventType.UN_PUBLISH);
             event.setEventSource(config);
-            event.setEventCreatedTime(System.currentTimeMillis());
+            event.setEventCreatedTime(SystemTimer.currentTimeMillis());
             eventService.publish(event);
         }
         return bDelConfig;
@@ -191,7 +192,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
             Event event = new Event();
             event.setEventType(EventType.PATH_DATA_CHANGED);
             event.setEventSource(path);
-            event.setEventCreatedTime(System.currentTimeMillis());
+            event.setEventCreatedTime(SystemTimer.currentTimeMillis());
             eventService.publish(event);
         }
         return true;
@@ -248,7 +249,7 @@ public class ConfigServerServiceImpl implements ConfigServerService {
     private void updateLastModifyTime(String path, boolean isPublish) {
         try {
             ConfigChangeLog changeLog = new ConfigChangeLog();
-            changeLog.setLastModifiedTime(System.currentTimeMillis());
+            changeLog.setLastModifiedTime(SystemTimer.currentTimeMillis());
             changeLog.setPath(path);
             boolean bChangeLog;
             //only in the publish case, we should check the path where exists in config_change_log

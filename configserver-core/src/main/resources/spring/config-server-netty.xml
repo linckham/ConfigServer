@@ -6,7 +6,7 @@
         <property name="serverMaxConnectionNumbers" value="${configServer.maxConnectionNumbers}"/>
     </bean>
 
-    <bean id="clientConnectionListener" class="com.cmbc.configserver.core.heartbeat.ClientConnectionListener">
+    <bean id="clientConnectionListener" class="com.cmbc.configserver.core.server.ClientConnectionListener">
     </bean>
 
     <bean id="configNettyServer" class="com.cmbc.configserver.core.server.ConfigNettyServer">

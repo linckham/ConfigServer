@@ -29,7 +29,7 @@ public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
         catch (Exception e) {
             log.error(String.format("exception happens when encode remote command %s on channel %s",
                     remotingCommand,RemotingHelper.parseChannelRemoteAddress(ctx.channel())), e);
-            throw new RemotingCommandException("remote command can't correctly encode.");
+            throw new RemotingCommandException("remote command can't encode.",e);
         }
     }
 }

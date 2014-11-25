@@ -95,7 +95,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 		public void channelActive(ChannelHandlerContext ctx) throws Exception {
 			super.channelActive(ctx);
 			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.ACTIVE, null, ctx.channel()));
+				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.ACTIVE, null, ctx.channel(),null));
 			}
 		}
 
@@ -103,7 +103,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 			super.channelInactive(ctx);
 			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, null, ctx.channel()));
+				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, null, ctx.channel(),null));
 			}
 		}
 
@@ -114,7 +114,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 			final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
 			LOGGER.warn("NettyConnectManageHandler exceptionCaught remote address {} exception {}.", remoteAddress, cause);
 			if (NettyRemotingClient.this.channelEventListener != null) {
-				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel()));
+				NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel(),cause));
 			}
 		}
 
@@ -126,7 +126,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 				if (event.state().equals(IdleState.READER_IDLE)) {
 					final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
 					if (NettyRemotingClient.this.channelEventListener != null) {
-						NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress,ctx.channel()));
+						NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress,ctx.channel(),null));
 					}
 				}
 			}

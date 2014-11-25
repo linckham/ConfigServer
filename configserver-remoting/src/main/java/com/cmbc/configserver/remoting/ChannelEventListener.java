@@ -1,17 +1,15 @@
 package com.cmbc.configserver.remoting;
 
-import io.netty.channel.Channel;
+import com.cmbc.configserver.remoting.netty.NettyEvent;
 
 public interface ChannelEventListener {
-	public void onChannelConnect(final String remoteAddress,
-			final Channel channel);
+	public void onChannelConnect(final NettyEvent event);
 
-	public void onChannelClose(final String remoteAddress, final Channel channel);
+	public void onChannelClose(final NettyEvent event);
 
-	public void onChannelException(final String remoteAddress,
-			final Channel channel);
+	public void onChannelException(final NettyEvent event);
 
-	public void onChannelIdle(final String remoteAddress, final Channel channel);
+	public void onChannelIdle(final NettyEvent event);
 	
-	public void onChannelActive(final Channel channel);
+	public void onChannelActive(final NettyEvent event);
 }

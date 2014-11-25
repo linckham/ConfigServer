@@ -1,6 +1,5 @@
 package com.cmbc.configserver.core.server;
 
-import com.cmbc.configserver.core.heartbeat.ClientConnectionListener;
 import com.cmbc.configserver.remoting.RemotingServer;
 import com.cmbc.configserver.remoting.netty.NettyRemotingServer;
 import com.cmbc.configserver.remoting.netty.NettyServerConfig;

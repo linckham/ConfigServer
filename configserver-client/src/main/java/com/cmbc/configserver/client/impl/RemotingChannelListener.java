@@ -1,8 +1,7 @@
 package com.cmbc.configserver.client.impl;
 
-import io.netty.channel.Channel;
-
 import com.cmbc.configserver.remoting.ChannelEventListener;
+import com.cmbc.configserver.remoting.netty.NettyEvent;
 
 public class RemotingChannelListener implements ChannelEventListener{
 	
@@ -13,26 +12,26 @@ public class RemotingChannelListener implements ChannelEventListener{
 	}
 
 	@Override
-	public void onChannelConnect(String remoteAddress, Channel channel) {
+	public void onChannelConnect(final NettyEvent event) {
 	}
 
 	@Override
-	public void onChannelClose(String remoteAddress, Channel channel) {
-		clientImpl.clear(channel);
+	public void onChannelClose(final NettyEvent event) {
+		clientImpl.clear(event.getChannel());
 	}
 
 	@Override
-	public void onChannelException(String remoteAddres, Channel channel) {
-		clientImpl.clear(channel);
+	public void onChannelException(final NettyEvent event) {
+		clientImpl.clear(event.getChannel());
 	}
 
 	@Override
-	public void onChannelIdle(String remoteAddress, Channel channel) {
-		clientImpl.sendHeartbeat(channel);
+	public void onChannelIdle(final NettyEvent event) {
+		clientImpl.sendHeartbeat(event.getChannel());
 	}
 
 	@Override
-	public void onChannelActive(Channel channel) {
+	public void onChannelActive(final NettyEvent event) {
 	}
 
 }

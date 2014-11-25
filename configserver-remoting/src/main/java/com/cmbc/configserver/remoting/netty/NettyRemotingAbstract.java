@@ -60,23 +60,23 @@ public abstract class NettyRemotingAbstract {
             final ChannelEventListener listener = NettyRemotingAbstract.this.getChannelEventListener();
             while (!this.isStopped()) {
                 try {
-                    NettyEvent event = this.eventQueue.poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    final NettyEvent event = this.eventQueue.poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (event != null) {
                         switch (event.getType()) {
                         case IDLE:
-                            listener.onChannelIdle(event.getRemoteAddr(), event.getChannel());
+                            listener.onChannelIdle(event);
                             break;
                         case CLOSE:
-                            listener.onChannelClose(event.getRemoteAddr(), event.getChannel());
+                            listener.onChannelClose(event);
                             break;
                         case CONNECT:
-                            listener.onChannelConnect(event.getRemoteAddr(), event.getChannel());
+                            listener.onChannelConnect(event);
                             break;
                         case EXCEPTION:
-                            listener.onChannelException(event.getRemoteAddr(), event.getChannel());
+                            listener.onChannelException(event);
                             break;
                         case ACTIVE:
-                        	listener.onChannelActive(event.getChannel());
+                        	listener.onChannelActive(event);
                         	break;
                         default:
                             break;
@@ -164,11 +164,11 @@ public abstract class NettyRemotingAbstract {
         else {
             //request is not supported
             String error = "request type " + cmd.getCode() + " not supported";
+            LOGGER.error(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) + error);
             final RemotingCommand response = RemotingCommand.createResponseCommand(RemotingSysResponseCode.REQUEST_CODE_NOT_SUPPORTED, cmd.getRequestId());
             response.setBody(error.getBytes());
             response.setRequestId(cmd.getRequestId());
             ctx.writeAndFlush(response);
-            LOGGER.error(RemotingHelper.parseChannelRemoteAddress(ctx.channel()) + error);
         }
     }
 

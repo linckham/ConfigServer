@@ -237,7 +237,7 @@ public class NotifyService implements InitializingBean,DisposableBean {
                 try {
                     Event event = NotifyService.this.eventService.getQueue().poll(Constants.DEFAULT_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (null != event) {
-                        long delayTime = System.currentTimeMillis() - event.getEventCreatedTime();
+                        long delayTime = SystemTimer.currentTimeMillis() - event.getEventCreatedTime();
                         if (delayTime <= MAX_DELAY_TIME) {
                             EventType eventType = event.getEventType();
                             if (EventType.PUBLISH == eventType || EventType.UN_PUBLISH == eventType) {
