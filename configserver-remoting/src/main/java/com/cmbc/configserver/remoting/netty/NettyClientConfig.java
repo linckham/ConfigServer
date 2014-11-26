@@ -3,8 +3,7 @@ package com.cmbc.configserver.remoting.netty;
 public class NettyClientConfig {
 	// 处理Server Response/Request
 	private int clientWorkerThreads = 4;
-	private int clientCallbackExecutorThreads = Runtime.getRuntime()
-			.availableProcessors();
+	private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
 	private int clientOnewaySemaphoreValue = 256;
 	private int clientAsyncSemaphoreValue = 128;
 	private long connectTimeoutMillis = 3000;

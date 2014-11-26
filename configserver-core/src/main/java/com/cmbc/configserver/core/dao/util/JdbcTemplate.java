@@ -439,8 +439,8 @@ public class JdbcTemplate extends JdbcAccessor{
 			} catch (CannotGetJdbcConnectionException e) {
                 ConfigServerLogger.warn(new StringBuilder(64).append("get connection try count ").append((retryCount - count))
                         .append(",ds ").append(((org.apache.commons.dbcp.BasicDataSource) ds).getUrl())
-                        .append(",time ").append(SystemTimer.currentTimeMillis() - start));
-				DataSourceUtils.releaseConnection(con, ds);
+                        .append(",time ").append(SystemTimer.currentTimeMillis() - start),e);
+				//DataSourceUtils.releaseConnection(con, ds);
 			}
 		}
 		throw new CannotGetJdbcConnectionException("Could not get JDBC Connection,Url= "+((org.apache.commons.dbcp.BasicDataSource)ds).getUrl(),new SQLException());
