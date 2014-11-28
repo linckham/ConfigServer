@@ -304,6 +304,7 @@ public class ConfigClientImpl implements ConfigClient {
 				if(result.getCode() == ResponseCode.HEARTBEAT_OK){
 					//logger.info("send heartbeat ok");
 					sendSuccess = true;
+					heartbeatFailedTimes.set(0);
 					break;
 				}
 			} catch (Exception e) {
