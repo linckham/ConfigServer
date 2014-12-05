@@ -247,27 +247,26 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
 		@Override
 		public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            if (totalConnectionNumber.get() >= nettyServerConfig.getServerMaxConnectionNumbers()) {
+            int connectionCount = totalConnectionNumber.incrementAndGet();
+            String channelId = RemotingHelper.getChannelId(ctx.channel());
+            if (connectionCount > nettyServerConfig.getServerMaxConnectionNumbers()) {
                 //close the channel
                 RemotingUtil.closeChannel(ctx.channel());
                 //throw an runtime exception
-                throw new RuntimeException(String.format("channel connection exceeds the max_connection_number %s. close the channel %s", nettyServerConfig.getServerMaxConnectionNumbers(), RemotingHelper.getChannelId(ctx.channel())));
-
+                throw new RuntimeException(String.format("channel connection exceeds the max_connection_number %s. close the channel %s", nettyServerConfig.getServerMaxConnectionNumbers(), channelId));
             }
-
-            int connectionCount = totalConnectionNumber.incrementAndGet();
-            ConfigServerLogger.info(String.format("channel %s is connected to server. the total connection count is %s", RemotingHelper.getChannelId(ctx.channel()), connectionCount));
+            ConfigServerLogger.info(String.format("channel %s is connected to server. the total connection count is %s", channelId, connectionCount));
 
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddress(ctx.channel());
             log.info("NettyConnectManageHandler channelActive, the channel {}", remoteAddress);
             super.channelActive(ctx);
 
-			if (NettyRemotingServer.this.channelEventListener != null) {
-				NettyRemotingServer.this.putNettyEvent(new NettyEvent(
-						NettyEventType.ACTIVE, remoteAddress, ctx
-								.channel(),null));
-			}
-		}
+            if (NettyRemotingServer.this.channelEventListener != null) {
+                NettyRemotingServer.this.putNettyEvent(new NettyEvent(
+                        NettyEventType.ACTIVE, remoteAddress, ctx
+                        .channel(), null));
+            }
+        }
 
 		@Override
 		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -339,4 +338,12 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 	public int localPort() {
 		return this.port;
 	}
+
+    /**
+     * get the connection count of the config server
+     * @return the current connection count
+     */
+    public int getConnectionCount(){
+        return this.totalConnectionNumber.get();
+    }
 }

@@ -34,5 +34,11 @@ public interface RemotingServer extends RemotingService {
 	public void registerProcessor(final int requestCode,
 			final RequestProcessor processor, final ExecutorService executor);
 	
-	 public void registerDefaultProcessor(final RequestProcessor processor, final ExecutorService executor);
+	public void registerDefaultProcessor(final RequestProcessor processor, final ExecutorService executor);
+
+    /**
+     * get the connection count of the config server
+     * @return the current connection count
+     */
+    public int getConnectionCount();
 }

@@ -36,4 +36,12 @@ public class ThreadUtils {
             }
         }
     }
+
+    public static void safeSleep(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            //ignore it
+        }
+    }
 }

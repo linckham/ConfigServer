@@ -23,8 +23,11 @@ public class EventServiceImpl implements EventService<Event> {
      *
      */
     public void publish(Event event) {
-        ConfigServerLogger.info(String.format("new event %s is adding to the event queue,the size of queue is %d", event, eventQueue.size()));
-        this.eventQueue.offer(event);
+        if (this.eventQueue.offer(event)) {
+            ConfigServerLogger.info(String.format("new event %s is enqueue,the size of queue is %d", event, eventQueue.size()));
+        } else {
+            ConfigServerLogger.warn(String.format("new event %s can not enqueue due to the queue is full", event));
+        }
     }
 
     @Override
